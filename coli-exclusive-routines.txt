@@ -1,0 +1,87 @@
+Coli-exclusive:
+addopa.f	 -- currently also in STEAL->SETXJFINE (non-standard option, likely to be abolished in the future)
+calc_s.f         
+check_cont.f
+check_lines.f
+cldiffus.f
+clloade.f
+clopene.f
+clsavee.f
+clsavewc.f
+cmfcoop.f        -- used to be called in STEAL->SETXJFINE (no longer used, commented out)
+coli.f           
+colihist.f
+colimo.f
+colimop.f
+coli_setzero.f
+coliwm.f
+deccoli.f
+frequbak.f        
+frequbakion.f
+frequint.f
+frequnorm.f
+genwp1.f     
+lintridiagsol.f
+plotalpha.f      
+shortray.f
+plotrtau1coli.f
+preline.f        -- currently also in STEAL->SETXJFINE (non-standard option, likely to be abolished in the future)
+prepk.f
+prep_ppp.f
+pri_epsg.f
+priopacoli.f
+rmodcoli.f
+rsort.f          -- currently via SEQLINECL also in STEAL->SETXJFINE
+seqlinecl.f      -- currently also in STEAL->SETXJFINE (non-standard option, likely to be abolished in the future)
+set_momzero.f
+setup_ff.f
+store_ff.f
+wmodcoli.f
+
+Common routines:
+addhistentry.f   -- in all main programs
+backjc.f	 -- also in FORMAL program
+clock.f	         -- in all main programs
+closms.f         -- in all main programs
+cmffeop.f        -- also in FORMAL program
+cmsstore.f       -- in all main programs
+coop.f           -- in most main programs
+count.f          -- in all main programs (via DATOM->FEDAT)
+datom.f          -- in all main programs
+difdtdr.f        -- also in WRCONT program
+drlevel.f        -- in all main programs
+fedat.f          -- in all main programs
+findcharge.f     -- in all main programs (via DATOM)
+gauntff.f        -- in most main programs
+gethistentry.f   -- in all main programs
+horner.f         -- also from WRCONT and FORMAL->FORMCMF via SFIT
+install.f        -- in all main programs
+inv.f            -- in most main programs
+jsymset.f        -- in all main programs
+ksigma.f         -- also in STEAL
+liop.f           -- also in STEAL
+load_ff.f        -- only in STEAL->LINPOP (listed only to complement STORE_FF)
+opaross.f        -- also in STEAL
+openexms.f       -- in all main programs
+openms.f         -- in all main programs
+owninv.f         -- in most main programs (via INV)
+photocs.f        -- in most main programs
+plotanf.f        -- in most main programs
+plotcon.f        -- in most main programs
+polyfit.f        -- also from WRCONT and FORMAL->FORMCMF via SFIT
+popmin_nulling.f -- also in COMO, FORMAL, WRCONT
+prep_drlines.f   -- also in WRSTART, STEAL
+readms.f         -- in most main programs
+remark.f         -- in all main programs
+sargc.f          -- in all main programs
+sargp.f          -- in all main programs
+sargv.f          -- in all main programs
+sfit.f           -- also from WRCONT->ELIMIN and FORMAL->FORMCMF
+splinpo_fast.f   -- in all main programs
+splinpox.f       -- in all main programs
+stamp.f          -- in all main programs
+storage.f        -- in all main programs
+trbk.f           -- in all main programs
+vdopdd_setup.f   -- ist most main programs
+vmf.f            -- also in STEAL
+writms.f         -- in all main programs
