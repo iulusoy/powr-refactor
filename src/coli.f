@@ -1,6 +1,6 @@
 C***  MAIN PROGRAM COLI ********************************************************
       SUBROUTINE COLI
-
+!! This is our program
 C*******************************************************************************
 C***  RADIATION TRANSFER IN THE COMOVING FRAME: CONTINUA AND LINES
 C***   FORMAL SOLUTION FROM GIVEN POPULATION NUMBERS
