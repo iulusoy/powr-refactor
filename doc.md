@@ -1,6 +1,7 @@
 ---
-project: My Fortran project
-author: Me
+project: powr API documentation
+author: Scientific Software Center, Inga Ulusoy
+exclude: maincoli.for
 exclude: storage.f
 exclude: writms.f
 graph: True
