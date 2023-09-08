@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+*.for
+*.opt
+
+# doc folder
+doc/
+
+# test folder
+testmodels/
