@@ -25,6 +25,10 @@ jobs:
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
+    - name: setup Intel oneAPI environment
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
     - name: get compiler version
       run: ${{ env.FC }} --version
       env:
