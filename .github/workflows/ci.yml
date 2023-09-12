@@ -13,27 +13,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         toolchain:
-          - {compiler: intel-classic, version: '2021.10'}
-        include:
-          - os: windows-latest
-            toolchain: {compiler: intel-classic, version: '2021.10.0'}
-        exclude:
-          - os: windows-latest
-            toolchain: {compiler: intel-classic, version: '2021.10'}
+          - {compiler: intel-classic, version: '2021.4'}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: compile powr
+    - name: get fortran compiler
       uses: awvwgk/setup-fortran@v1
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
-    - run: ${{ env.FC }} --version
+    - name: get compiler version
+      run: ${{ env.FC }} --version
       env:
         FC: ${{ steps.setup-fortran.outputs.fc }}
-    - run: |
+    - name: compile powr
+      run: |
         cd src
         make
