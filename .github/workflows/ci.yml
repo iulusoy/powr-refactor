@@ -25,6 +25,9 @@ jobs:
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
+    - name: get mkl libraries
+      run: |
+        sudo apt install intel-oneapi-mkl
     - name: setup Intel oneAPI environment
       run: |
         source /opt/intel/oneapi/setvars.sh
