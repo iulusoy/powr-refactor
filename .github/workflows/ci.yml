@@ -25,10 +25,9 @@ jobs:
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
-    - name: setup Intel oneAPI environment
+    - name: install mkl through pip
       run: |
-        source /opt/intel/oneapi/setvars.sh
-        printenv >> $GITHUB_ENV
+        pip install mkl
     - name: get compiler version
       run: ${{ env.FC }} --version
       env:

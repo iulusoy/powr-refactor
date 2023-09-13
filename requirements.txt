@@ -1,2 +1,3 @@
 ford
 fortran-language-server
+mkl
