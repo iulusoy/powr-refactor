@@ -20,7 +20,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: get fortran compiler
-      uses: iulusoy/setup-fortran@v1
+      uses: iulusoy/setup-fortran@v0
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
