@@ -13,21 +13,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         toolchain:
           - {compiler: intel-classic, version: '2021.4'}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: get fortran compiler
-      uses: awvwgk/setup-fortran@v1
+      uses: iulusoy/setup-fortran@v1
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
-    - name: get mkl libraries
-      run: |
-        sudo apt install intel-oneapi-mkl
     - name: setup Intel oneAPI environment
       run: |
         source /opt/intel/oneapi/setvars.sh
