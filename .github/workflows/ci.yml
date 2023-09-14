@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         toolchain:
           - {compiler: intel-classic, version: '2021.4'}
     steps:
@@ -25,9 +25,6 @@ jobs:
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
-    - name: install mkl through pip
-      run: |
-        pip install mkl
     - name: get compiler version
       run: ${{ env.FC }} --version
       env:
