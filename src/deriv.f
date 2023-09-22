@@ -1,0 +1,305 @@
+      SUBROUTINE DERIV (DM,NRANK,I,NPLUS1,EN,CRATE,RRATE,EXPFAC,NFEDGE,
+     $      WCHARM,ND,L,ENLTE,PHI,PWEIGHT,NFL,DELTAX,XMAX,
+     $      XRED,XBLUE,DETAL,DOPAL,SLNEW,OPAL,XJLAPP,XJCAPP,FWEIGHT,
+     $      DOPA,DETA,OPAC,SCNEW,XLAMBDA,NF,SCNEIND,OPACIND,NDIM,N,
+     $      EINST,SIGMAKI,RUDLINE, bLAMAPPCOLI, XLAMAPPMEAN, bUSEALO,
+     $      LASTIND,LASTINDAUTO,INDLOW,INDNUP,KONTLOW,KONTNUP,LASTKON,
+     $      IBLENDS,MAXLAP,XLAMZERO,BETA,PHIL,NBLENDS,VDOPUNIT,
+     >      ATEST,BTEST,
+     $      RDIEL,IONGRND,KODRLOW,LASTKDR,WFELOW,WFENUP,BDIAG, WEIGHT,
+     >      ELEVEL, NRB_CONT, TL, ENE, NOM, NCHARG, DEXFAC,
+     >      iBLOCKINVERSION)
+C*******************************************************************************
+C***  DERIVATIVE OF RATE EQ. COEFFICIENTS : 
+C***  D(I,M,J):= N(M) * D(RATCO(M,J))/DN(I) - N(J) * D(RATCO(J,M))/DN(I)
+C*******************************************************************************
+ 
+      DIMENSION EN(NDIM),CRATE(NDIM,NDIM),RRATE(NDIM,NDIM)
+      DIMENSION RDIEL(NDIM),IONGRND(NDIM), WEIGHT(NDIM), ELEVEL(NDIM)
+      DIMENSION EINST(NDIM,NDIM),ENLTE(NDIM)
+      DIMENSION WCHARM(ND,NF),DOPA(NF),DETA(NF),OPAC(NF),SCNEW(NF)
+      DIMENSION FWEIGHT(NF),XLAMBDA(NF),XJCAPP(NF),EXPFAC(NF)
+      DIMENSION XRED(2), XBLUE(2),DETAL(2),DOPAL(2),SLNEW(2),OPAL(2)
+      DIMENSION XJLAPP(2),SCNEIND(2),OPACIND(2)
+      DIMENSION SIGMAKI(NF,LASTKON)
+      DIMENSION DM(NRANK,NRANK)
+      INTEGER, DIMENSION(LASTIND) :: INDLOW, INDNUP, NBLENDS
+      INTEGER, DIMENSION(MAXLAP, LASTIND) :: IBLENDS
+      INTEGER, DIMENSION(LASTKON) :: KONTLOW, KONTNUP, NFEDGE
+      INTEGER, DIMENSION(LASTKDR) :: KODRLOW
+      REAL, DIMENSION(ND, LASTIND) :: WFELOW, WFENUP
+      REAL, DIMENSION(ND, LASTINDAUTO) :: XLAMAPPMEAN
+      REAL, DIMENSION(LASTIND) :: XLAMZERO, DEXFAC
+      INTEGER, DIMENSION(N) :: NOM, NCHARG
+      LOGICAL NRB_CONT(LASTKON), bLAMAPPCOLI
+      LOGICAL, DIMENSION(LASTIND) :: RUDLINE, BDIAG
+      LOGICAL, DIMENSION(LASTINDAUTO) :: bUSEALO
+      INTEGER :: iBLOCKINVERSION
+
+      REAL :: SUMSL, SUMOPAL, SUMDETA, SUMDOPA
+      
+C***  CI : FACTOR IN SAHA EQUATION (MIHALAS, P. 113)
+      DATA CI / 2.07E-16 /
+C***  C1 = H * C / K    ( CM * KELVIN )
+      DATA C1 / 1.4388 /
+C***  C2 = 2 * H * C    ( H AND C IN CGS UNITS )
+      DATA C2 / 3.9724E-16 /
+C***  C4 = 4 * PI / (H * C) * 1.E-8
+      DATA C4 / 6.326840507E8 /
+C***  Speed of light in km/s      
+      REAL, PARAMETER :: CLIGHTKMS = 2.99792458E5
+      
+
+C***  DEFINE KMAX = HIGHEST FREQUENCY INDEX WITH NON-ZERO WCHARM(L,K)
+      DO 4 K=NF,1,-1
+      KMAX=K
+      IF (WCHARM(L,K) .GT. 0.0) GOTO 5
+    4 CONTINUE
+
+    5 CONTINUE
+      ENI=EN(I)
+      T32 = TL * SQRT(TL)
+
+
+C***  COMPUTE ELEMENT D(I,LOW,NUP)
+C***    NOTE: DERIVATIVES WITH RESPECT TO EN(I)
+C***    NOTE: D(I,NUP,LOW = -D(I,LOW,NUP)
+
+C***  BOUND-FREE TRANSITIONS *******************************************
+      DO 8 KONT=1,LASTKON
+      NUP=KONTNUP(KONT)
+      IF (iBLOCKINVERSION > 0 .AND. (NOM(I) /= NOM(NUP))) GOTO 8
+      ENNUP=EN(NUP)
+      ENLTEUP=ENLTE(NUP)
+
+      LOW=KONTLOW(KONT)
+      ENLOW=EN(LOW)
+      ENLTELO=ENLTE(LOW)
+      NFEDGLO=NFEDGE(KONT)
+
+      DLOWUP=.0
+  
+C***  DERIVATIVE WITH RESPECT TO ELECTRON DENSITY  -----------------------------
+      IF (I .EQ. NPLUS1)
+     $  DLOWUP=-(ENLOW*CRATE(LOW,NUP)   -
+     -  ENNUP*(2.*CRATE(NUP,LOW)+RRATE(NUP,LOW)))/ENI
+ 
+C***  DERIVATIVE OF RADIATIVE RATES (TO ALL I EXCEPT TEMPERATURE) --------------
+C***  (2 Branches: NRBs / no NRBs)
+
+C***  Branch for NET RADIATIVE BRACKET
+      IF (NRB_CONT(KONT)) THEN
+
+C***  NOTE: BECAUSE OF THE NET RADIATIVE BRACKETS, TWO TERMS ARISE:
+C***        1. TERM: XJCAPP IS CONSTANT:
+C***           - THE DERIVATIVES OF S-LU ARE ZERO IF LEVEL I IS NOT INVOLVED!
+      IF (I .EQ. LOW .OR. I .EQ. NUP .OR. I .EQ. NPLUS1) THEN
+         SUM=.0
+         DO 12 K=1, NFEDGLO
+         SUM = SUM + 
+     +     XJCAPP(K) * SIGMAKI(K,KONT) * XLAMBDA(K) * FWEIGHT(K)
+   12    CONTINUE
+         IF (I .EQ. LOW) THEN
+            PREFAC=-1.
+            ELSE
+            PREFAC=ENLOW/ENI
+         ENDIF
+         DLOWUP = DLOWUP + SUM * PREFAC * C4
+      ENDIF
+
+C***  2. TERM: S-LU IS CONSTANT:
+C***           - THE DERIVATIVES VANISH IF WCHARM IS ZERO!
+      SUM=.0
+C!!!  To avoid a division by zero
+      QUL= (ENLTEUP / ENLTELO) * (ENLOW / ENNUP)
+C!!!      QUL= ENLTEUP * ENLOW / (ENLTELO*ENNUP)
+      NFMAX = MIN0 (NFEDGLO, KMAX)
+      DO 2 K=1,NFMAX
+c***  TEST: I think here is a minus bug (ansander Mar 2017)      
+c      DJCDNI = WCHARM(L,K) * (DETA(K)-DOPA(K)*SCNEW(K)) / OPAC(K)
+c      SUM = SUM - 
+c     - SIGMAKI(K,KONT)* XLAMBDA(K)* (QUL-EXPFAC(K)) * DJCDNI *FWEIGHT(K)
+      DJCDNI = WCHARM(L,K) * (DOPA(K)*SCNEW(K)-DETA(K)) / OPAC(K)
+      SUM = SUM +
+     + SIGMAKI(K,KONT)* XLAMBDA(K)* (QUL-EXPFAC(K)) * DJCDNI *FWEIGHT(K)
+    2 CONTINUE
+      DLOWUP = DLOWUP + SUM * C4 * ENNUP*ENLTELO/ENLTEUP
+
+      ELSE
+C***  Branch without NET RADIATIVE BRACKET
+   
+      DRLUDNI = .0      
+      DRULDNI = .0 
+      DO K=1, NFMAX
+         DJCDNI = WCHARM(L,K) * (DOPA(K)*SCNEW(K)-DETA(K)) / OPAC(K)
+         DRLUDNI = DRLUDNI +
+     >             DJCDNI * SIGMAKI(K,KONT) * XLAMBDA(K) * FWEIGHT(K)
+         HNUEKT = C1 * (1.E8/XLAMBDA(K) - 1.E8/XLAMBDA(NFEDGLO)) / TL
+C***     HNUEKT .GT. 600.  =>   EXP(-HNUEKT)->0.
+         IF (HNUEKT .GT. 500.) CYCLE
+         EXFAC = EXP(-HNUEKT)
+         DRULDNI = DRULDNI + EXFAC *
+     >             DJCDNI * SIGMAKI(K,KONT) * XLAMBDA(K) * FWEIGHT(K)
+      ENDDO
+      DRLUDNI = C4 * DRLUDNI 
+      DRULDNI = 
+     >      DRULDNI * C4 * ENE / T32 * CI * WEIGHT(LOW) / WEIGHT(NUP)
+      DLOWUP = DLOWUP + ENNUP * DRULDNI - ENLOW * DRLUDNI
+      ENDIF
+
+C***  ADD UP D(I,LOW,NUP) INTO THE MATRIX M (FORTRAN NAME: DM)
+      DM(I,NUP)=DM(I,NUP)+DLOWUP
+      DM(I,LOW)=DM(I,LOW)-DLOWUP
+
+    8 CONTINUE
+ 
+
+C***  D-R / AUTOIONIZATION TRANSITIONS  ********************************
+C***      ( NOTE:    IF (I .LE. N)  DLOWUP = .0 )
+
+C***  DERIVATIVE WITH RESPECT TO ELECTRON DENSITY  -----------------------------
+      IF (I .EQ. NPLUS1) THEN
+         DO 18 KDR=1,LASTKDR
+         LOW=KODRLOW(KDR)
+         NUP=IONGRND(LOW)
+
+C***     SAME TERM AS THE RADIATIVE RATE CONTRIBUTION:
+         DLOWUP = + EN(NUP) * RDIEL(LOW) / ENI
+
+C***     ADD UP D(I,LOW,NUP) INTO THE MATRIX M (FORTRAN NAME: DM)
+         DM(I,NUP)=DM(I,NUP)+DLOWUP
+         DM(I,LOW)=DM(I,LOW)-DLOWUP
+
+   18    CONTINUE
+      ENDIF
+
+
+C***  BOUND-BOUND TRANSITIONS  *****************************************
+
+C***  DERIVATIVE WITH RESPECT TO ELECTRON DENSITY .............................
+C**     - ONLY CONTRIBUTIONS FROM THE COLLISIONAL RATES ARISE -
+      IF (I .EQ. NPLUS1) THEN
+      ENEL=EN(NPLUS1)
+      DO 6 IND=1,LASTIND
+      NUP=INDNUP(IND)
+      LOW=INDLOW(IND)
+      ENNUP=EN(NUP)
+      ENLOW=EN(LOW)
+      CUL=CRATE(NUP,LOW)
+      CLU=CRATE(LOW,NUP)
+      DLOWUP=-(ENLOW*CLU-ENNUP*CUL)/ENEL
+
+C***  ADD UP D(I,LOW,NUP) INTO THE MATRIX M (FORTRAN NAME: DM)
+      DM(I,NUP)=DM(I,NUP)+DLOWUP
+      DM(I,LOW)=DM(I,LOW)-DLOWUP
+
+    6 CONTINUE
+
+C***  DERIVATIVES WITH RESPECT TO POPNUMBER EN(I) .............................
+      ELSE
+
+      DO 7 IND=1,LASTIND
+
+      NUP=INDNUP(IND)
+      LOW=INDLOW(IND)
+
+C***  THE DERIVATIVES OF THE CONT. BACKGROUND-OPACITY AND EMISSIVITY
+C***  ARE NEGLECTED. HENCE: 
+      IF (I .NE. NUP  .AND.  I .NE. LOW .AND. NBLENDS(IND) .EQ. 1) 
+     >       GOTO 7
+
+C***  RUDIMENTAL LINES: ZERO CORE ASSUMED
+      IF (RUDLINE(IND)) GOTO 7
+ 
+C***  ZERO CORE: ZERO DERIVATIVE TERM
+      IF (bLAMAPPCOLI) THEN
+        IF (.NOT. bUSEALO(IND) .AND. .NOT. BDIAG(IND)) GOTO 7     
+      ELSE
+        IF (XRED(IND) .GE. XBLUE(IND) .AND. .NOT. BDIAG(IND)) GOTO 7
+      ENDIF
+
+C***  test !!! muss mit RADNET uebereinstimmen!
+      if (slnew(ind) .lt. 1.e-100) goto 7
+ 
+      ENNUP=EN(NUP)
+      SLNEWI=SLNEW(IND)
+      OPALI=OPAL(IND)
+  
+C***  IRON: CALCULATE DERIVATIVE OF (APPR.) LINE RADIATION FIELD
+      IF (BDIAG(IND)) THEN
+C***     Non-Netto rates for iron lines
+C***     DERIVATIVES FOR IRON-LINES ARE TAKEN FROM DIAGONAL WEIGHTS
+         IF (I .EQ. LOW .OR. I .EQ. NUP) THEN 
+            IF(I .EQ. LOW) DJLDNI = WFELOW(L, IND)
+            IF(I .EQ. NUP) DJLDNI = WFENUP(L, IND)
+            WAVENUM=ELEVEL(NUP)-ELEVEL(LOW)
+            W3=WAVENUM*WAVENUM*WAVENUM
+            DLOWUP = (ENNUP * DEXFAC(IND)
+     >               - EN(LOW) * WEIGHT(NUP)/WEIGHT(LOW) ) * 
+     >               EINST(NUP,LOW) * DJLDNI / (C2*W3) 
+         ELSE
+            DLOWUP = .0
+         ENDIF
+         
+C***  NON-IRON LINES: --------------------------------------------------         
+      ELSE
+
+C***    TERM FOR NET RADIATIVE BRACKETS
+        ETAL=SLNEWI*OPALI
+        DLOWUP=(OPALI*DETAL(IND)-DOPAL(IND)*ETAL)
+     $          / (ETAL*ETAL) * XJLAPP(IND)
+
+C***    TERM FOR SCHARMER NON-LINEARITY
+        IF (bLAMAPPCOLI) THEN
+          DJLDNI = 0.
+          SUMDETA = 0.
+          SUMSL   = 0.
+          SUMOPAL = 0.
+          SUMDOPA = 0.
+          
+          IF (bUSEALO(IND)) THEN
+            DO LB=1, NBLENDS(IND)
+C***        Consider contributions  from all blending lines          
+              INDLB = IBLENDS(LB,IND)
+              IF (OPAL(INDLB) > 0.) THEN
+C***          Add this term only if ALO has been used in SETXJL
+C***          (i.e. not done for LASER situation)
+                SUMDETA = SUMDETA + DETAL(INDLB)
+                SUMDOPA = SUMDOPA + DOPAL(INDLB)
+                SUMOPAL = SUMOPAL + OPAL(INDLB)
+                SUMSL   = SUMSL   + SLNEW(INDLB) * OPAL(INDLB)
+              ENDIF    
+            ENDDO  
+            IF (SUMOPAL > 0. .AND. SUMDETA > 0.) THEN
+              SUMSL  = SUMSL / SUMOPAL
+              DSLDNI = SUMDETA / SUMOPAL - SUMDOPA * SUMSL / SUMOPAL
+              DJLDNI = XLAMAPPMEAN(L, IND) * DSLDNI
+              DLOWUP = DLOWUP - DJLDNI/SLNEWI        
+            ENDIF
+          ENDIF
+        
+        ELSE      
+C***      Note that DJLDNI returned by JLDERIV has the meaning of -DJLDNI !
+          CALL JLDERIV (DJLDNI,IND,DELTAX,XMAX,XRED,XBLUE,
+     $    DETAL,DOPAL,SLNEW,OPAL,NFL,PHI,PWEIGHT,OPACIND,SCNEIND,
+     $    IBLENDS,MAXLAP,XLAMZERO,BETA,PHIL,NBLENDS,
+     $    VDOPUNIT,I,INDNUP,INDLOW,ATEST,BTEST)
+
+           DLOWUP=DLOWUP+DJLDNI/SLNEWI
+         ENDIF  
+           
+C***     COMMON PRE-FACTORS
+         DLOWUP= ENNUP * EINST(NUP,LOW) * DLOWUP
+      ENDIF
+
+C***  ADD UP D(I,LOW,NUP) INTO THE MATRIX M (FORTRAN NAME: DM)
+      DM(I,NUP)=DM(I,NUP)+DLOWUP
+      DM(I,LOW)=DM(I,LOW)-DLOWUP
+
+    7 CONTINUE
+      ENDIF
+
+
+
+      RETURN
+      END
