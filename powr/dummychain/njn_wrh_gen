@@ -1,0 +1,142 @@
+#!/bin/bash
+source ~/.powrconfig
+
+#---------- begin of settings -----------------------
+kn=$1
+
+HOSTNAME=$(hostname | cut -d '.' -f 1)
+
+path=$POWR_WORK/wrdata$kn
+
+# path to exe-files
+# and path where the non-optimized version has been linked (for debugger!)
+if [[ $HOSTTYPE == *x86_64* ]] ; then
+    exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
+    if [ _$POWR_INSTTYPE == _local ] ; then
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
+    elif [ _$POWR_INSTTYPE == _potsdam ] ; then
+        source $exepath/LDpath.bash
+    fi
+    DBXPATH=${DBXPATH:-~htodt/lib_intel11.1_emt64_wrh}
+    DBX=${DBX:-"/opt/intel/Compiler/11.1/038/bin/intel64/idbc -exec"}
+else
+    echo "Could not determine HOSTTYPE"
+    exit
+fi
+
+# Path of the Ass. files (EDDI, DMFILE) --- ATTENTION! Needs big space!!
+TMPHOST=$(grep kette$kn $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+if [ _"$TMPHOST" == _ ] ; then
+  TMPHOST=$(grep default $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+fi
+if [ "_$TMPHOST" == '_' ] ; then
+    TMPHOST=$(echo $HOME | cut -d/ -f3)
+fi
+
+if [ _$POWR_INSTTYPE == _local ] ; then
+    pathass=$POWR_TMP_2DAY/ass$kn
+elif [ _$POWR_INSTTYPE == _potsdam ] ; then
+    pathass=/home/$TMPHOST/tmp_2day/$USER/ass$kn
+fi
+
+# tool for submitting the wruniq-job
+submit=${submit:-$POWR_WORK/proc.dir/submit.com}
+
+#
+###type=big2
+type=''
+
+#------------- end of settings -----------------------
+
+if [ $# -eq 2 ] ; then
+  if [ $2 == 'dbx' ] ; then
+    dbx=true
+  else
+    echo unknown option
+    exit
+  fi
+else
+  dbx=false
+fi
+mkdir -p $POWR_WORK/scratch/njn$kn
+cd       $POWR_WORK/scratch/njn$kn || exit
+#
+#Check if status in wrstart-directory is active
+if [ -e ../wrstart$kn/status ] ; then
+  if [ $(cat ../wrstart$kn/status) == 'active' ] ; then
+    echo "Status in WRSTART${kn} = active; Job aborted" > $POWR_WORK/output/error
+    exit
+  fi
+fi
+#
+#Check if status in wruniq$kn-directory is active
+if [ -e ../wruniq$kn/status ] ; then
+  if [ $(cat ../wruniq$kn/status) == 'active' -o $(cat ../wruniq$kn/status) == 'sleep' ] ; then
+    echo "Status in WRUNIQ${kn} = active; Job aborted" > $POWR_WORK/output/error
+    exit
+  fi
+fi
+#
+rm $POWR_WORK/scratch/njn$kn/*
+rm $POWR_WORK/output/njn$kn.log
+echo "njn${kn} started " $(date)
+echo "njn${kn} started " $(date)  >> $POWR_WORK/output/wruniq$kn.log
+#
+# PRINT SMALL PAGE HEADER  --------------------------
+echo ' ----------------------------------'  > out
+echo " USER: ${USER}                     " >> out
+echo " HOST: ${HOST}                     " >> out
+echo " JOBNAME: njn${kn}                 " >> out
+date '+ Time: %H:%M:%S   Date: %d-%h-%Y' >> out
+echo ' ----------------------------------' >> out
+echo '                                   ' >> out
+#
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+cp $path/MODEL fort.3
+mv $pathass/EDDI fort.17
+chmod u+w *
+# ------- EXECUTION OF PROGRAMS ----------------------------
+#
+# SET ERROR STOP CODE
+echo "now NJN"
+echo "now NJN" >> $POWR_WORK/output/wruniq$kn.log
+echo "1" >G0
+   if [ $dbx == 'true' ] ; then
+     eval "$DBX -I $DBXPATH $exepath/njn$type.exe"
+     exit
+   else
+     $exepath/njn$type.exe.opt > njn.out
+   fi
+# PROGRAM-REQUESTED ERROR STOP
+if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+   exit
+fi
+#
+# "------- REPLACING THE MODEL FILE & NEXTJOB ----------------"
+cp fort.3 $path/MODEL
+mv fort.17 $pathass/EDDI
+#
+# ------- PRINTER OUTPUT USING THE SCRATCH DISK ----------
+cp out $POWR_WORK/output/njn$kn.out
+#
+# ------- END OF JOB -------------------------
+rm $POWR_WORK/scratch/njn$kn/fort.*
+echo "NJN${kn} finished " $(date)
+echo "NJN${kn} finished " $(date) >> $POWR_WORK/output/wruniq$kn.log
+echo
+
+# truncating wruniq.cpr wruniq.log wruniq.out
+tail -2000 $POWR_WORK/output/wruniq${kn}.cpr > $POWR_WORK/output/wruniq${kn}.cprt
+mv -f $POWR_WORK/output/wruniq${kn}.cprt $POWR_WORK/output/wruniq${kn}.cpr
+
+tail -2000 $POWR_WORK/output/wruniq${kn}.log > $POWR_WORK/output/wruniq${kn}.logt
+mv -f $POWR_WORK/output/wruniq${kn}.logt $POWR_WORK/output/wruniq${kn}.log
+
+tail -2000 $POWR_WORK/output/wruniq${kn}.out > $POWR_WORK/output/wruniq${kn}.outt
+mv -f $POWR_WORK/output/wruniq${kn}.outt $POWR_WORK/output/wruniq${kn}.out
+
+
+# Automatic start of next wruniq job
+eval "$submit wruniq${kn} to-$HOSTNAME"
+echo "WRUNIQ-Job submitted by NJN-job" >>  $POWR_WORK/output/wruniq"${kn}".cpr
+

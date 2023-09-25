@@ -1,0 +1,123 @@
+
+# ------------- begin of settings for modify -------------
+
+# path to exe-files
+# and path where the non-optimized version has been linked (for debugger!)
+if [[ $HOSTTYPE == *x86_64* ]] ; then
+    exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
+    if [ _$POWR_INSTTYPE == _local ] ; then
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
+    elif [ _$POWR_INSTTYPE == _potsdam ] ; then
+        source $exepath/LDpath.bash
+    fi
+    DBXPATH=${DBXPATH:-~htodt/lib_intel11.1_emt64_wrh}
+    DBX=${DBX:-"/opt/intel/Compiler/11.1/038/bin/intel64/idbc -exec"}
+else
+    echo "Could not determine HOSTTYPE: ${HOSTTYPE}"
+ exit
+fi
+
+# ------------- end of settings -----------------------------
+
+if [ $# -eq 1 ] ; then
+  if [ $1 == 'dbx' ] ; then
+    dbx=true
+  else
+    echo "unknown option"
+    exit
+  fi
+else
+  dbx=false
+fi
+mkdir -p $POWR_WORK/scratch/modify$kn
+cd       $POWR_WORK/scratch/modify$kn || exit
+
+#Check if status in wrstart-directory is active
+
+if [ -e ../wrstart$kn/status ] ; then
+  if [ $(cat ../wrstart$kn/status) == 'active' ] ; then
+    echo "Status in WRSTART${kn} = active; Job aborted" > $POWR_WORK/output/error
+    exit
+  fi
+fi
+
+# Check if status in wruniq$kn-directory is active
+
+if [ -e ../wruniq$kn/status ] ; then
+  if [ $(cat ../wruniq$kn/status) == 'active' -o $(cat ../wruniq$kn/status) == 'sleep' ] ; then
+    echo "Status in WRUNIQ${kn} = active; Job aborted" > $POWR_WORK/output/error
+    exit
+  fi
+fi
+
+rm $POWR_WORK/scratch/modify$kn/*
+echo "MODIFY$kn started $(date)"
+echo "MODIFY$kn started $(date)"  >> $POWR_WORK/output/wruniq$kn.log
+path=$POWR_WORK/wrdata$kn
+
+###type=big2
+type=''
+
+# PRINT SMALL PAGE HEADER  --------------------------
+echo ' ----------------------------------' >  out
+echo " USER: ${USER}                     " >> out
+echo " HOST: ${HOST}                     " >> out
+echo " JOBNAME: MODIFY${kn}              " >> out
+date '+ Time: %H:%M:%S   Date: %d-%h-%Y  ' >> out
+echo ' ----------------------------------' >> out
+echo '                                   ' >> out
+
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+cp $path/MODEL fort.3
+cp $path/DATOM DATOM
+cp $path/CARDS CARDS
+cp $path/FEDAT fort.21
+chmod u+w fort.21
+# ------- INPUT OPTIONS  -----------------------------------
+cat > MODIFY_INPUT << %
+-NO TEMPERATURE CORRECTIONS
+-NO POP
+INTERPOLATE FROM POINT 38 TO POINT  45
+-INTERPOLATE FROM POINT 29 TO POINT  33
+-INNER EXTRAPOLATION  FROM POINT  69.  SECOND POINT  69.
+-OUTER EXTRAPOLATION  FROM POINT 13  SECOND POINT 13
+%
+#
+# ------- EXECUTION OF PROGRAMS ----------------------------
+#
+# 1. modify  ----------------
+# SET ERROR STOP CODE
+echo "now MODIFY"
+echo "now MODIFY" >> $POWR_WORK/output/wruniq$kn.log
+echo "1" >G0
+if [ $dbx == 'true' ] ; then
+   eval "$DBX -I $DBXPATH/routines/ $DBXPATH/modify.exe"
+   exit
+else
+   $exepath/modify.exe.opt > modify.out
+fi
+cat modify.out >> out
+
+# PROGRAM-REQUESTED ERROR STOP
+
+if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+   exit
+fi
+
+
+# "------- REPLACING THE MODEL FILE & NEXTJOB ----------------"
+cp fort.3 $path/MODEL
+
+# Set next job to WRCONT
+echo 'WRCONT' > $POWR_WORK/wrdata"$kn"/next_job
+echo 'REPEAT' > $POWR_WORK/wrdata"$kn"/next_jobz
+
+# ------- PRINTER OUTPUT USING THE SCRATCH DISK ----------
+cp out $POWR_WORK/output/modify$kn.out
+#
+#
+# ------- END OF JOB -------------------------
+echo "MODIFY$kn finished  $(date)"
+echo "MODIFY$kn finished  $(date)" >> $POWR_WORK/output/wruniq$kn.log
+echo "MODIFY$kn finished  $(date)" >> $POWR_WORK/output/wruniq$kn.cpr
+echo ""

@@ -1,0 +1,90 @@
+========================================================================
+HEADLINE:  70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17
+========================================================================
+TEFF= 70795.
+RTRANS = 0.40DEX
+--------------------  oldstart options  --------------------------------
+OLDSTART 
+OLD T 
+OLD STRAT
+-LTESTART 
+-JSTART BLACKEDGE 228.
+--------------------  abundances  --------------------------------------
+xxxxxxxxxx----------xxxxxxxxxx
+NITROGEN:  0.015    (mass fraction)
+CARBON:    1.E-4    (mass fraction)
+GENERIC:   1.4E-3   (mass fraction)
+--------------------  stellar parameters  ------------------------------
+DENSCON = 4.
+LOG L = 5.3
+RMAX_IN_RSUN
+VELPAR: VFINAL (KM/S)= 1600. VMIN= 12.  BETA=1.0 RMAX=1000. XXXXXXX
+xxxxxxxxxxxxxxxxxxxxxx.......xxxxx......xxxxx....xxxxx......xxxxxxx
+VDOP=100.
+--------------------- temperature structure WRSTART  -------------------
+SPHERICAL TEMPERATURE STRUCTURE
+TMIN= 8000.
+-------------------- radius grid----------------------------------------
+RGRID: ND= 50. ND2=  8. ND3= 4.  DLOGTAU= 5.0
+--------------------- frequency grid -----------------------------------
+BLUEMOST-WAVELENGTH = 5.
+
+--------------------  details for iteration  ---------------------------
+TAUMAX=20. FIX REDUCE=0.3 EPS=0.01 CORRLIMIT=-0.5
+-HYDROSTATIC INTEGRATION
+
+-OB-VERS 0
+LASERV = 2
+COLI: INTEGRATION ELABORATED
+OPC= DIAGTAU
+COLI: GAMMA=20.
+COLI: OPERATOR NOFREQUENCY
+REDISMODE= COHERENCE
+ITERATION CONTINUUM
+
+NOTDIFFUS
+
+-NO TEMPERATURE CORRECTION
+NO TEMPERATURE CORRECTIONS WHILE COR. .GT. -1.0 1.0
+COLI: UNLUPAR GAMMAT=1. TAUMAX=0. TAUMAX2=0.
+UNLUTEC LOC=0.1 INT=.3 OUT=.3 TB=.05 TBTAU=0.01
+-UNLUTEC TAUINT=20.
+UNLUTEC EXPTAU=AUTO LIMIT-TO-FLUXERR=0.05
+UNLUTEC SMOOTH TMIN=8000. CUTCORR=0.02 MONOTONIC
+
+EDDIMIX START = 100. 
+EDDIMIX FIX = 100.
+
+SMALLPOP=1.E-8
+POPMIN = 1.E-27
+
+SPLITINVERSION
+BROYDEN= 2
+BROYDEN RESET 10.
+ITMAX= 50
+LINES: ALL
+DELTAC= -1.
+AUTO GAMMA 640. 80. -1.1 0.5 0.1 0.1 1. 
+GAMMAD=1.
+-GAMMA= 0.
+NEWWRC= 6.
+NO EXTRAPOLATION
+REDUCE=0.5
+
+--------------------  output options  ----------------------------------
+PLOT_INBOX
+PLOT_POPRANGE=1.E-30
+PLOT POP GROUNDSTATES
+PLOT FLUX FLAM 10PC
+PLOT T(LOG(R-1))
+PLOT HTOT
+PLOT UNLU
+PLOT ACC VELOCITY
+PLOT ACC
+PLOT GAMMA
+PLOT RTAU1
+************************************************************************
+
+JOBMAX= 9000.
+EPSILON=0.001
+FLUXEPS=0.01

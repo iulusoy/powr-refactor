@@ -37,7 +37,8 @@
 doc/
 
 # test folder
-powr/
+powr/*
 
-# but include dummychain
+# but include dummychain and proc.dir
 !powr/dummychain
+!powr/proc.dir
