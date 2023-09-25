@@ -37,4 +37,7 @@
 doc/
 
 # test folder
-testmodels/
+powr/
+
+# but include dummychain
+!powr/dummychain
