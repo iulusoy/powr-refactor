@@ -34,3 +34,13 @@ jobs:
       run: |
         cd src
         make
+    - name: create folder structure
+      run: |
+        mkdir powr/exe_dev.dir
+        cp src/*.opt exe_dev.dir
+    - name: create chain
+      run: |
+        makechain 1
+    - name: run colitest
+      run: | 
+        sub colitest1
