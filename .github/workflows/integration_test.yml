@@ -1,0 +1,42 @@
+name: integration test
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  compile:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        toolchain:
+          - {compiler: intel-classic, version: '2021.10'}
+          - {compiler: intel-classic, version: '2021.1'}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: get fortran compiler
+      uses: iulusoy/setup-fortran@v0
+      id: setup-fortran
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
+    - name: get compiler version
+      run: ${{ env.FC }} --version
+      env:
+        FC: ${{ steps.setup-fortran.outputs.fc }}
+    - name: compile powr
+      run: |
+        cd src
+        make
+    - name: set up folder structure
+      run: | 
+        mkdir powr/exe.dir
+        cp -r src/*.opt exe.dir
+    - name: create chain
+      run: |
+        makechain 1
+    - name: run wrstart, here we actually need to wait for job to finish
+      run: |
+        sub wrstart1
