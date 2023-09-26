@@ -1,5 +1,9 @@
 # powr-refactor
 
+![License: GPL-3](https://img.shields.io/github/license/ssciwr/powr-refactor)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ssciwr/powr-refactor/ci.yml?branch=main)
+![Language](https://img.shields.io/github/languages/top/ssciwr/powr-refactor)
+
 This is a development repository for refactoring and improving the numerical stability of the coli part of the [PoWR code](https://github.com/powr-code/PoWR) (Potsdam Wolf-Rayet Stellar Atmospheres). For a description of PoWR and the available models, see [here](https://www.astro.physik.uni-potsdam.de/~wrh/PoWR/powrgrid1.php).
 
 *This library is currently under development!*
