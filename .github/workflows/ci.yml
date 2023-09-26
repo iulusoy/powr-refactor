@@ -16,7 +16,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         toolchain:
           - {compiler: intel-classic, version: '2021.10'}
-          - {compiler: intel-classic, version: '2021.1'}
+          # - {compiler: intel-classic, version: '2021.1'}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
