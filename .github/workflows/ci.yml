@@ -37,7 +37,7 @@ jobs:
     - name: create folder structure
       run: |
         mkdir powr/exe_dev.dir
-        cp src/*.opt exe_dev.dir
+        cp src/*.opt powr/exe_dev.dir/.
     - name: create chain
       run: |
         makechain 1
