@@ -13,7 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
+        # os: [ubuntu-latest, macos-latest]
         toolchain:
           - {compiler: intel-classic, version: '2021.10'}
           # - {compiler: intel-classic, version: '2021.1'}
@@ -38,10 +39,12 @@ jobs:
       run: |
         mkdir powr/exe_dev.dir
         cp src/*.opt powr/exe_dev.dir/.
+        pwd
+        ls
     - name: set up environment
       run: |
         source .powrconfig
-        ./powr/proc.dir/bash_setup
+        source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
     - name: create chain
       run: |

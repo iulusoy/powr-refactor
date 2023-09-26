@@ -25,3 +25,25 @@ It also includes compilation of the source code on MacOS and Ubuntu OS with diff
 - profile the test runs for time and memory consumption
 - implement Fortran best practices in `colimo.f` and modernize to latest standards
 - identify computational and numerical bottlenecks and improve the algorithm
+
+
+## Detailed description of the tests
+To run all the commands, you need to source `.powrconfig` and `powr/proc.dir/bash_setup` to set the environment.
+
+### `coli` test
+Create a new chain, ie 1, by `makechain 1`. This copies some scripts and executables into different folders:
+
+| Folder      | Purpose |
+| ----------- | ----------- |
+| wrdata1     | data directory of the current results |
+| scratch subdirectories | directories to handle execution cycle process |
+| wrjobs | collection of scripts to run |
+| output | directory containing the global output |
+| tmp_data | intermediate results? commonly scratch? |
+| tmp_2day | ? |
+
+
+### Integration test
+
+### Unit tests
+TBD
