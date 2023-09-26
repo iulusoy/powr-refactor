@@ -38,6 +38,11 @@ jobs:
       run: |
         mkdir powr/exe_dev.dir
         cp src/*.opt powr/exe_dev.dir/.
+    - name: set up environment
+      run: |
+        source .powrconfig
+        ./powr/proc.dir/bash_setup
+        # csh_setup for MacOS?
     - name: create chain
       run: |
         makechain 1
