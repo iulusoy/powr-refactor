@@ -21,6 +21,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          .powrconfig
+          src
+          powr
     - name: get fortran compiler
       uses: iulusoy/setup-fortran@v0
       id: setup-fortran

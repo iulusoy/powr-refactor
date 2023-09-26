@@ -42,6 +42,13 @@ Create a new chain, ie 1, by `makechain 1`. This copies some scripts and executa
 | tmp_data | intermediate results? commonly scratch? |
 | tmp_2day | ? |
 
+The most important files are in the `wrdata1` directory: `CARDS, DATOM, FEDAT, FEDAT_FORMAL, FGRID, FORMAL_CARDS, MODEL, MODEL_STUDY, NEWDATOM_INPUT, NEWFORMAL_CARDS_INPUT, next_job, next_jobz`  
+Most of these are input files, some control the job execution.
+
+The test is then run by `sub colitest1`. This creates the run log in `output` (`colitest1.log` and `colitest1.cpr`) - these are checked if the run are successful (`COLITEST  finished` in `log`). The results in `cpr` are compared to the reference file.
+
+The output that is generated in `wrdata1` is also compared: `MODEL_STUDY_DONE, MODEL_STUDY_DONE_STEAL`
+
 
 ### Integration test
 
