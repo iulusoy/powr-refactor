@@ -42,3 +42,4 @@ powr/*
 # but include dummychain and proc.dir
 !powr/dummychain
 !powr/proc.dir
+!powr/.powrconfig
