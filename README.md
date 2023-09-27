@@ -28,7 +28,12 @@ It also includes compilation of the source code on MacOS and Ubuntu OS with diff
 
 
 ## Detailed description of the tests
-To run all the commands, you need to source `.powrconfig` and `powr/proc.dir/bash_setup` to set the environment.
+To run all the commands, you need to source `.powrconfig` and `powr/proc.dir/bash_setup` to set the environment. 
+
+The testmodel files can be downloaded using
+```
+wget -O testmodels.tgz https://heibox.uni-heidelberg.de/f/a62c7ae5559d43a0a8b2/?dl=1
+```
 
 ### `coli` test
 Create a new chain, ie 1, by `makechain 1`. This copies some scripts and executables into different folders:

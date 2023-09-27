@@ -1,5 +1,5 @@
 # -------- running PoWR ------------------------
-source ~/.powrconfig
+# source ~/.powrconfig
 
 # set up a new chain
 alias makechain=${POWR_WORK}/proc.dir/makechain.com

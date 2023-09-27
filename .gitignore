@@ -39,6 +39,9 @@ doc/
 # test folder
 powr/*
 
+# testmodels
+testmodels/
+
 # but include dummychain and proc.dir
 !powr/dummychain
 !powr/proc.dir
