@@ -49,5 +49,6 @@ jobs:
         source .powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
-        makechain 1
+        echo "$POWR_WORK"
+        powr/proc.dir/makechain.com 1
         sub colitest1
