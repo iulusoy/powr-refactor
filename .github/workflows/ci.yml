@@ -45,9 +45,10 @@ jobs:
         cp src/*.opt powr/exe_dev.dir/.
         pwd
         ls
+        ls powr
     - name: set up environment
       run: |
-        cp pwr/powrconfig .powrconfig
+        cp powr/powrconfig .powrconfig
         source .powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
