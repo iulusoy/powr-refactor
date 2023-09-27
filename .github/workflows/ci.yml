@@ -43,17 +43,11 @@ jobs:
       run: |
         mkdir powr/exe_dev.dir
         # cp src/*.opt powr/exe_dev.dir/.
-    - name: set up environment
+    - name: set up the job
       run: |
         cp powr/powrconfig .powrconfig
         source .powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
-        echo "${POWR_WORK}"
-    - name: create chain
-      run: |
-        echo "${POWR_WORK}"
         makechain 1
-    - name: run colitest
-      run: | 
         sub colitest1
