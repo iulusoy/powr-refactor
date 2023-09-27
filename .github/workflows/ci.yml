@@ -42,10 +42,7 @@ jobs:
     - name: create folder structure
       run: |
         mkdir powr/exe_dev.dir
-        cp src/*.opt powr/exe_dev.dir/.
-        pwd
-        ls
-        ls powr
+        # cp src/*.opt powr/exe_dev.dir/.
     - name: set up environment
       run: |
         cp powr/powrconfig .powrconfig
