@@ -47,7 +47,7 @@ jobs:
         ls
     - name: set up environment
       run: |
-        cp pwr/.powrconfig .
+        cp pwr/powrconfig .powrconfig
         source .powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
