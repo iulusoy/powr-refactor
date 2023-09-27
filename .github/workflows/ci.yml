@@ -38,7 +38,7 @@ jobs:
     - name: compile powr
       run: |
         cd src
-        make
+        # make
     - name: create folder structure
       run: |
         mkdir powr/exe_dev.dir
@@ -52,8 +52,10 @@ jobs:
         source .powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
+        echo "${POWR_WORK}""
     - name: create chain
       run: |
+        echo "${POWR_WORK}"
         makechain 1
     - name: run colitest
       run: | 
