@@ -49,7 +49,7 @@ jobs:
         source .powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
-        echo "${POWR_WORK}""
+        echo "${POWR_WORK}"
     - name: create chain
       run: |
         echo "${POWR_WORK}"
