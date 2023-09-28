@@ -45,8 +45,8 @@ jobs:
         # cp src/*.opt powr/exe_dev.dir/.
     - name: set up the job
       run: |
-        cp powr/powrconfig .powrconfig
-        source .powrconfig
+        cp powr/powrconfig ~/.powrconfig
+        source ~/.powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
         echo "$POWR_WORK"
