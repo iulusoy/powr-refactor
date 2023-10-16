@@ -48,6 +48,7 @@ jobs:
         cp powr/powrconfig ~/.powrconfig
         pwd
         ls
+        ls ./powr
         source ~/.powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
