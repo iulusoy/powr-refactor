@@ -37,7 +37,8 @@
 doc/
 
 # test folder
-powr/*
+powr/
+testmodels/
 
 # testmodels
 testmodels/
