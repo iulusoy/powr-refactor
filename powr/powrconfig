@@ -1,7 +1,7 @@
 # bash style for the PoWR scripts
 
 # define the powr work directory
-export POWR_WORK=./powr/
+export POWR_WORK=powr/
 export POWR_INSTTYPE=local
 # export POWR_INSTTYPE=potsdam
 # export POWR_INSTTYPE=niscluster

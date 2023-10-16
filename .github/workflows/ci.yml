@@ -49,6 +49,7 @@ jobs:
         pwd
         ls
         ls ./powr
+        ls ./powr/dummychain
         source ~/.powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
