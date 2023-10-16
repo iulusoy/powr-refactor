@@ -46,6 +46,8 @@ jobs:
     - name: set up the job
       run: |
         cp powr/powrconfig ~/.powrconfig
+        pwd
+        ls
         source ~/.powrconfig
         source powr/proc.dir/bash_setup
         # csh_setup for MacOS?
