@@ -1,3 +1,4 @@
+#!/bin/bash
 # -------- running PoWR ------------------------
 # source ~/.powrconfig
 
@@ -87,3 +88,5 @@ _wrjobs() {
     return 0
 }
 complete -F _wrjobs sub
+
+echo "all done"

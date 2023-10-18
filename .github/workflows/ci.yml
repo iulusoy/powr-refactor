@@ -13,6 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        python-version: [3.9]
         os: [ubuntu-latest]
         # os: [ubuntu-latest, macos-latest]
         toolchain:
@@ -25,6 +26,14 @@ jobs:
         sparse-checkout: |
           src
           powr
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
     - name: get fortran compiler
       uses: iulusoy/setup-fortran@v0
       id: setup-fortran
@@ -43,16 +52,11 @@ jobs:
       run: |
         mkdir powr/exe_dev.dir
         # cp src/*.opt powr/exe_dev.dir/.
-    - name: set up the job
+    - name: set up the job and run base tests
       run: |
         cp powr/powrconfig ~/.powrconfig
         pwd
         ls
         ls ./powr
         ls ./powr/dummychain
-        source ~/.powrconfig
-        source powr/proc.dir/bash_setup
-        # csh_setup for MacOS?
-        echo "$POWR_WORK"
-        powr/proc.dir/makechain.com 1
-        sub colitest1
+        python -m pytest -svv

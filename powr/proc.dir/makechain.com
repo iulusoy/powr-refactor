@@ -1,11 +1,11 @@
 #!/bin/bash
 
-source ~/.powrconfig || exit
+# source ~/.powrconfig || exit
 
 # this script generates a new chain for PoWR with number "kn" given via call
 # created by H. Todt 05.03.2008
 # usage: makechain -wrh -sforce 32
-
+echo "making chain"
 export workdir="$POWR_WORK"
 
 if [ $# -lt 1 ] ; then

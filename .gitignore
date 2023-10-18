@@ -36,13 +36,10 @@
 # doc folder
 doc/
 
-# test folder
-testmodels/
-
 # testmodels
 testmodels/
 
 # but include dummychain and proc.dir
-!powr/dummychain
-!powr/proc.dir
-!powr/.powrconfig
+powr/scratch
+powr/wrdata*
+powr/wrjobs
