@@ -38,6 +38,9 @@ jobs:
         pip list
         python --version
         python -m pytest -svv
+    - name: set up the job and run base tests
+      run: |
+        python -m pytest -svv
     # - name: get fortran compiler
       # uses: iulusoy/setup-fortran@v0
       # id: setup-fortran
@@ -56,5 +59,4 @@ jobs:
       # run: |
         # mkdir powr/exe_dev.dir
         # cp src/*.opt powr/exe_dev.dir/.
-    # - name: set up the job and run base tests
-      # run: |
+
