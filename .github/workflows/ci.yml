@@ -59,4 +59,6 @@ jobs:
         ls
         ls ./powr
         ls ./powr/dummychain
+        which python
+        pip list
         python -m pytest -svv
