@@ -1,6 +1,6 @@
 import os
 import subprocess
-from pathlib import Path, PurePath
+from pathlib import Path
 import pytest
 
 # get the path of this file and export variables accordingly
@@ -18,7 +18,7 @@ def set_aliases(set_vars):
     # the aliases setup currently does not work as the aliases
     # are destryed between subprocess sessions
     # either we set them in the python script or 
-    # run them through an os.system command, not subprocess
+    # run explicitly with passing the env as dict
     full_file_path = "${POWR_WORK}/proc.dir/" + setup_file
     subprocess.run(full_file_path, shell=True, check=True, executable='/bin/bash', capture_output=True, text=True)
 
@@ -28,6 +28,7 @@ def get_chain(set_aliases):
     subprocess.run(makechain_command, shell=True, check=True, executable='/bin/bash', capture_output=True, text=True)
     yield "Created chain 1"
     # teardown directories
+    # we need access to ${POWR_WORK} so shutil will not work
     os.system("rm -rf ${POWR_WORK}/scratch")
     os.system("rm -rf ${POWR_WORK}/output")
     os.system("rm -rf ${POWR_WORK}/wrdata1")
