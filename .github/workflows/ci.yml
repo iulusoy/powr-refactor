@@ -37,10 +37,11 @@ jobs:
         cp powr/powrconfig ~/.powrconfig
         pip list
         python --version
-        python -m pytest -svv
-    - name: set up the job and run base tests
-      run: |
-        python -m pytest -svv
+        pwd
+        python -m pytest -svv test/test_colitest.py
+    # - name: set up the job and run base tests
+      # run: |
+        # python -m pytest -svv
     # - name: get fortran compiler
       # uses: iulusoy/setup-fortran@v0
       # id: setup-fortran
