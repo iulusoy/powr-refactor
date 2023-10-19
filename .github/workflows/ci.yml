@@ -36,29 +36,25 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
         cp powr/powrconfig ~/.powrconfig
-        pip list
-        python --version
-        pwd
-        python -m pytest -svv test/test_colitest.py
+    - name: get fortran compiler
+      uses: iulusoy/setup-fortran@v0
+      id: setup-fortran
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
+    - name: get compiler version
+      run: ${{ env.FC }} --version
+      env:
+        FC: ${{ steps.setup-fortran.outputs.fc }}
+    - name: compile powr
+      run: |
+        cd src
+        # make
+    - name: create folder structure
+      run: |
+        mkdir powr/exe_dev.dir
+        # cp src/*.opt powr/exe_dev.dir/.
     - name: set up the job and run base tests
       run: |
         python -m pytest -svv
-    # - name: get fortran compiler
-      # uses: iulusoy/setup-fortran@v0
-      # id: setup-fortran
-      # with:
-        # compiler: ${{ matrix.toolchain.compiler }}
-        # version: ${{ matrix.toolchain.version }}
-    # - name: get compiler version
-      # run: ${{ env.FC }} --version
-      # env:
-        # FC: ${{ steps.setup-fortran.outputs.fc }}
-    # - name: compile powr
-      # run: |
-        # cd src
-        # make
-    # - name: create folder structure
-      # run: |
-        # mkdir powr/exe_dev.dir
-        # cp src/*.opt powr/exe_dev.dir/.
 
