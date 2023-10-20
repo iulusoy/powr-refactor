@@ -1,0 +1,110 @@
+#!/bin/bash
+source ~/.powrconfig
+
+#--------- begin of settings ----------------------------------------------
+vnice=19
+kn=$1
+
+# - local machine must be listed in $POWR_WORK/wrjobs/list-of-machines
+# - Allocation of scratchspace must be listed in $POWR_WORK/wrjobs/tmphosts 
+
+HOSTNAME=$(hostname | cut -d '.' -f 1)
+
+# path to where the output file (DATOM) is written
+path=$POWR_WORK/wrdata$kn
+
+# directory where the job is executed
+# path of the scratch directory
+path1=$POWR_WORK/scratch/newdatom$kn
+
+# path to exe-files
+# and path where the non-optimized version has been linked (for debugger!)
+if [[ $HOSTTYPE == *x86_64* ]] ; then
+    exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
+    if [ _$POWR_INSTTYPE == _local ] ; then
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
+    elif [ _$POWR_INSTTYPE == _potsdam ] ; then
+        source $exepath/LDpath.bash
+    fi
+    DBXPATH=${DBXPATH:-~htodt/lib_intel101_em64t_wrh}
+    DBX=${DBX:-"/opt/intel/Compiler/11.1/038/bin/intel64/idbc -exec"}
+else
+    echo "Could not determine valid HOSTTYPE: $HOSTTYPE"
+    exit
+fi
+
+# tool for submitting the wruniq-job
+submit=${submit:-$POWR_WORK/proc.dir/submit.com}
+
+# macOS: nice from /usr/bin/ is broken (dylibs paths not found for wrstart etc.)
+if [[ $OSTYPE == *darwin* ]] ; then
+    nice=$exepath/gnice
+else # Linux
+    nice=nice
+fi
+
+#-------------- end of settings -----------------------------------------
+wait=false
+vstop=false
+dbx=false
+
+if [ $# -eq 2 ] ; then
+  if [ $2 == 'dbx' ] ; then
+    dbx=true
+  else
+    echo "Abort: unknown option= $2" >> $POWR_WORK/output/newdatom$kn.cpr
+    exit
+  fi
+fi
+
+echo 'NEWDATOM started ' `date`  >> $POWR_WORK/output/newdatom$kn.cpr
+echo 'NEWDATOM started ' `date`  >  $POWR_WORK/output/newdatom$kn.log
+
+mkdir -p $path1
+cd $path1 || exit
+
+# INITIALIZE ERROR STOP CODE
+echo 1 > G0
+
+# fetch input file
+cp $POWR_WORK/wrdata$kn/NEWDATOM_INPUT .
+
+# replace ~ with absolut path, = and : and , are ignored
+rm -rf NEWDATOM_INPUT.tmp
+while read line ; do 
+ archivepath=$(echo $line | grep "^PATH" | tr = ' ' | tr : ' ' | tr , ' ' | awk '{print $2}')
+ echo $archivepath
+ if [ _$archivepath == "_" ] ; then
+  printf "$line \n" >> NEWDATOM_INPUT.tmp
+ else
+  homedir1=$(echo $archivepath | cut -d / -f1)
+  homedir2=$(eval echo $homedir1)
+  homedir1b=$(echo $archivepath | cut -d / -f2-)
+  echo "PATH = $homedir2/$homedir1b" >> NEWDATOM_INPUT.tmp
+ fi
+done < NEWDATOM_INPUT
+mv NEWDATOM_INPUT.tmp NEWDATOM_INPUT
+
+# ------- EXECUTION OF PROGRAM ----------------------------
+
+if [ $dbx == 'true' ] ; then
+  eval "$DBX -I  $DBXPATH/routines/ $DBXPATH/newdatom.exe"
+else
+  $nice -$vnice  $exepath/newdatom.exe.opt 
+fi
+
+# -------- ERROR EXIT ------------------------------------
+if [ ERROR_$(cat G0) == ERROR_1 ] ; then  
+ echo "NEWDATOM: FATAL ERROR " $(date) >> $POWR_WORK/output/newdatom$kn.cpr
+ echo "NEWDATOM: FATAL ERROR " $(date) >> $POWR_WORK/output/newdatom$kn.log
+ echo
+ exit
+fi
+
+# ------- Save created DATOM into wrdata directory ----------
+cp DATOM $POWR_WORK/wrdata$kn
+
+# ------- END OF JOB -------------------------
+echo "NEWDATOM finished " $(date) >> $POWR_WORK/output/newdatom$kn.cpr
+echo "NEWDATOM finished " $(date) >> $POWR_WORK/output/newdatom$kn.log
+echo

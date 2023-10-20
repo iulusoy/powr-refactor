@@ -1,0 +1,299 @@
+#!/bin/bash
+source ~/.powrconfig
+
+#------ begin of settings --------------------------------
+vnice=19
+kn=$1
+
+# - local machine must be listed in $lom
+# - Allocation of scratchspace must be listed in $POWR_WORK/wrjobs/tmphosts
+
+HOSTNAME=$(hostname | cut -d '.' -f 1)
+
+# definition of a function Mkdir = mkdir if directory not yet existing
+Mkdir() { [ -d $1 ] || { printf "mkdir $1\n"; mkdir $1; }; }
+
+#path of the scratch directory in HOME-Bereich
+pathbreak=$POWR_WORK/scratch/wruniq${kn}
+Mkdir $pathbreak
+
+# path of the wrstart scratch directory
+pathwrs=$POWR_WORK/scratch/wrstart${kn}
+
+# path of the input/output data 
+path=$POWR_WORK/wrdata${kn}
+
+# file with the list of valid machines
+lom=${lom:-$POWR_WORK/wrjobs/list-of-machines}
+
+# path to exe-files
+# and path where the non-optimized version has been linked (for debugger!)
+if [[ $HOSTTYPE == *x86_64* ]] ; then
+    exepath=${POWRVDEVPATH:-$POWR_WORK/exe_dev.dir}
+    if [ _$POWR_INSTTYPE == _local ] ; then
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
+    elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+        source $exepath/LDpath.bash
+    fi
+    DBXPATH=${DBXPATH:-~htodt/lib_intel11.1_emt64_wrh}
+    DBX=${DBX:-"/opt/intel/Compiler/11.1/038/bin/intel64/idbc -exec"}
+else
+    echo "Could not determine HOSTTYPE"
+    exit
+fi
+
+# Path of the Ass. files (EDDI, DMFILE) --- ATTENTION! Needs big space!!
+TMPHOST=$(grep "^kette${kn}" $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+if [ "_$TMPHOST" == '_' ] ; then
+   TMPHOST=$(grep default $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+fi
+if [ "_$TMPHOST" == '_' ] ; then
+    TMPHOST=$(echo $HOME | cut -d/ -f3)
+fi
+
+if [ _$POWR_INSTTYPE == _local ] ; then
+    pathass=$POWR_TMP_2DAY/ass$kn
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    pathass=/home/$TMPHOST/tmp_2day/$USER/ass$kn
+fi
+Mkdir $pathass
+
+# tool for submitting the colitest-job
+submit=${submit:-$POWR_WORK/proc.dir/submit.com}
+
+# macOS: nice from /usr/bin/ is broken (dylibs paths not found for wrstart etc.)
+if [[ $OSTYPE == *darwin* ]] ; then
+    nice=$exepath/gnice
+else # Linux
+    nice=nice
+fi
+
+#------------- end of settings ----------------------------
+
+dbx=false
+if [ $# -eq 2 ] ; then
+ if [ "_$2" == '_dbx' ] ; then
+   dbx=true
+   echo "Job wruniq${kn} in DEBUG mode !!!!!"
+ else
+   dbx=false
+ fi
+fi
+
+# Check if status in wruniq-directory is active
+if [ -e $pathbreak/status ] ; then
+  if [ $(cat $pathbreak/status) == 'active' ] ; then
+    echo "Status WRUNIQ${kn} = active: abort" >  $POWR_WORK/output/error${kn}
+    echo "Status WRUNIQ${kn} = active: abort" >> $POWR_WORK/output/colitest"${kn}".cpr
+    exit
+  fi
+fi
+#
+#Check if status in wrstart-directory is active
+if [ -e $pathwrs/status ] ; then
+  if [ $(cat $pathwrs/status) == 'active' ] ; then
+   echo "Status WRSTART${kn} = active: abort" > $POWR_WORK/output/error${kn}
+   echo "Status WRSTART${kn} = active: abort" >> $POWR_WORK/output/colitest"${kn}".cpr
+   exit
+  fi
+fi
+
+# clear all scratch directories if present
+if [ _$POWR_INSTTYPE == _local ] ; then
+    echo "clear directory at ${HOSTNAME}"
+    rm -f $POWR_TMP_DATA/colitest${kn}/*
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    for machine in $(grep -v '-' $lom) ; do
+        echo "clear directory at ${machine}"
+        if [ $(ping -c 1 $machine | grep loss | cut -f 4 -d ' ') == 1 ] ; then 
+            ssh $machine "rm -f /home/$machine/tmp_data/$USER/colitest${kn}/*"
+        fi
+    done
+fi
+
+#path of the work = scratch directory
+if [ _$POWR_INSTTYPE == _local ] ; then
+    pathscratch=$POWR_TMP_DATA/colitest${kn}  
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    pathscratch=/home/$HOSTNAME/tmp_data/$USER/colitest${kn}
+fi
+mkdir -p $pathscratch
+cd $pathscratch || exit
+
+echo 'COLITEST  started ' $(date)
+echo 'active' > ${pathbreak}/status
+echo ${HOSTNAME} > ${pathbreak}/fwhere
+echo 'no_break' > ${pathbreak}/fbreak
+
+echo ' ----------------------------------' >> out
+echo " USER: ${USER}                     " >> out
+echo " HOST: ${HOST}                     " >> out
+echo " JOBNAME: colitest${kn}            " >> out
+date '+ Time: %H:%M:%S   Date: %d-%h-%Y  ' >> out
+echo ' ----------------------------------' >> out
+echo '                                   ' >> out
+#
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+echo 'Copy files now (forward)' >> $POWR_WORK/output/colitest"${kn}".cpr
+cp ${path}/DATOM DATOM
+cp ${path}/FEDAT fort.21
+cp ${path}/CARDS CARDS
+if [ -e ${path}/MODEL_STUDY ]; then
+  cp ${path}/MODEL_STUDY fort.3
+else
+  echo 'WARNING: No specific file MODEL_STUDY found. Using MODEL file instead.' >> out
+  cp ${path}/MODEL ${path}/MODEL_STUDY
+  cp ${path}/MODEL fort.3
+fi
+if [ -e ${pathass}/DMFILE ]; then
+  cp ${pathass}/DMFILE fort.16
+fi
+if [ -${pathass}/EDDI ]; then
+  cp ${pathass}/EDDI fort.17
+fi
+if [ -e {$path}/next_job ]; then
+  cp ${path}/next_job G1
+  cp ${path}/next_jobz G1Z
+else
+  echo 'REPEAT' > G1
+  echo 'REPEAT' > G1Z
+fi
+chmod u+w ${pathscratch}/*
+echo '... all files have been fetched' >> $POWR_WORK/output/colitest"${kn}".cpr
+
+#  optimized exe files
+cp ${exepath}/wrcont.exe.opt "${kn}"_wrcont.exe       
+cp ${exepath}/como.exe.opt   "${kn}"_como.exe           
+cp ${exepath}/coli.exe.opt   "${kn}"_coli.exe          
+cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
+
+# Debugger dbx -- provide here the non-optimized exe file to be debugged!
+if [ "$dbx" == 'true' ] ; then
+  echo '--------  Debugger dbx is on' 
+  cp ${DBXPATH}/coli.exe      "${kn}"_coli.exe
+#  cp $DBXPATH/steal.exe      "${kn}"_steal.exe
+fi
+
+# ------- LOOP: EXECUTION OF PROGRAMS ---------------------------- 
+while true  ; do
+    
+echo 'active' > ${pathbreak}/status
+
+# Break or stop forced?  -------------------------------------  
+
+if [ $(cat $pathbreak/fbreak) == 'break' ] ; then
+  echo "Break forced at beginning of loop"
+  echo "Break forced at beginning of loop" >> $POWR_WORK/output/colitest"${kn}".cpr
+  break
+fi
+
+if [ $(cat $pathbreak/fbreak) == 'stop' ] ; then
+  echo 'stop forced'
+  echo 'stop forced' >> $POWR_WORK/output/colitest"${kn}".cpr
+  break
+fi
+
+vfbreak=$(cat $pathbreak/fbreak)
+if [ $(echo $vfbreak | cut -c1-3 ) == 'to-' ] ; then
+  vfbreak=$(echo $vfbreak | cut -c4-11)
+  if [ _$vfbreak == _$(grep $vfbreak $lom) ] ; then
+    echo "machine will be changed: New machine is ${vfbreak}"
+    echo "machine will be changed: New machine is ${vfbreak}" >> $POWR_WORK/output/colitest"${kn}".cpr
+    break
+  fi
+fi
+
+# EXITLOOP  -------------------------------------
+#
+# .. REPEAT CYCLE ...............................
+#
+#cp fort.3 $path/backup
+#                                               
+  echo 'debug NEXTJOB  '$(cat G1) >> $POWR_WORK/output/colitest"${kn}".cpr
+  echo 'debug NEXTJOBZ '$(cat G1Z) >> $POWR_WORK/output/colitest"${kn}".cpr
+  if [ NEXTJOBZ_$(cat G1Z) != NEXTJOBZ_STEAL ] ; then
+#
+# -- COLI  -------------------- 
+# SET ERROR STOP CODE 
+     echo 'now     COLI     ' $(date)
+     echo '1' > G0 
+     if [ "$dbx" == 'true' ] ; then
+        eval "$DBX -I $DBXPATH/routines/ ${kn}_coli.exe"
+     else
+        $nice -$vnice ./"${kn}"_coli.exe > coli.out
+     fi
+     echo '                 ' $(date)
+     cat coli.out >> out
+     mv PLOT coli.plot
+     cp fort.3  $path/MODEL_STUDY_DONE
+# PROGRAM REQUESTED ERROR STOP
+     if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+        echo 'AB_cmf' > ${pathbreak}/status
+        echo 'ERROR: COLI not finished correctly'
+        exit
+     fi
+     rm fort.7
+     echo 'STEAL' > G1Z
+   else
+
+#-- STEAL  ------------------
+#: SET ERROR STOP CODE
+     echo 'now STEAL    ' $(date)
+     echo '1' >G0
+     if [ -e steal.plot ] ; then
+        cp -f steal.plot steal_last.plot
+     fi
+     if [ "$dbx" == 'true' ] ; then
+        eval "$DBX -I $DBXPATH/routines/ ${kn}_steal.exe"
+     else
+        $nice -$vnice ./"${kn}"_steal.exe > steal.out
+     fi
+     echo '                 ' $(date)
+     cat steal.out >> out
+     mv PLOT steal.plot
+# PROGRAM REQUESTED ERROR STOP
+     if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+        echo 'AB_ste' > ${pathbreak}/status
+        echo 'ERROR: STEAL not finished correctly'
+        exit
+     fi
+     echo 'REPEAT' > G1Z
+     break
+
+  fi
+# ...............................................
+#
+  
+done
+# ------------- ENDLOOP  ----------------------------------------------
+
+
+# ------- REPLACING THE MODEL FILE / SAVE DATA  -----------------------
+
+echo 'Copy/move files now (back)'
+echo 'Copy/move files now (back)' >> $POWR_WORK/output/colitest"${kn}".cpr
+cp fort.3  $path/MODEL_STUDY_DONE_STEAL
+mv fort.16 $pathass/DMFILE
+mv fort.17 $pathass/EDDI
+cp G1      $path/next_job
+cp G1Z     $path/next_jobz
+echo '... all files saved'
+echo '... all files saved' >> $POWR_WORK/output/colitest"${kn}".cpr
+
+# ------- PRINTER OUTPUT USING THE SCRATCH DISK ----------
+cat RATES >> out
+date '+ Job ended at: %H:%M:%S   %d-%h-%Y' >> out
+cat out >> $POWR_WORK/output/colitest${kn}.out
+# ------- ROUTING OF PLOT DATA TO COLITESTxx.PLOT] -------
+cat coli.plot >> $POWR_WORK/output/colitest${kn}.plot
+cat steal.plot >> $POWR_WORK/output/colitest${kn}.plot
+
+# ------- ROUTING OF SUBSEQUENT JOB = WRUNIQ  ---------
+#
+echo 'non_active' > ${pathbreak}/status
+
+#
+# ------- END OF JOB -------------------------
+echo 'COLITEST  finished   ' $(date)
+echo '-------  COLITEST  finished --------  ' $(date) >> $POWR_WORK/output/colitest${kn}.cpr
+echo

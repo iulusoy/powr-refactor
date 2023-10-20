@@ -1,0 +1,277 @@
+#!/bin/bash
+source ~/.powrconfig
+
+#--------- begin of settings ----------------------------------------------
+vnice=19
+kn=$1
+
+# file with the list of valid machines (for clearing the tmp_data)
+lom=$POWR_WORK/wjobs/list-of-machines
+
+# - local machine must be listed in $POWR_WORK/wrjobs/list-of-machines
+# - Allocation of scratchspace must be listed in $POWR_WORK/wrjobs/tmphosts 
+
+HOSTNAME=$(hostname | cut -d '.' -f 1)
+
+# path of the scratch directory
+path1=$POWR_WORK/scratch/wrstart$kn
+if [ _$POWR_INSTTYPE == _local ] ; then
+    pathscratch=$POWR_TMP_DATA/wrstart${kn}  
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    pathscratch=/home/$HOSTNAME/tmp_data/$USER/wrstart${kn}
+fi
+
+# path of the wruniq scratch directory
+pathwru=$POWR_WORK/scratch/wruniq$kn
+
+# path to where the input data is
+path=$POWR_WORK/wrdata$kn
+
+# path to exe-files
+# and path where the non-optimized version has been linked (for debugger!)
+if [[ $HOSTTYPE == *x86_64* ]] ; then
+    exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
+    if [ _$POWR_INSTTYPE == _local ] ; then
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
+    elif [ _$POWR_INSTTYPE == _potsdam ] ; then
+        source $exepath/LDpath.bash
+    fi
+    DBXPATH=${DBXPATH:-~htodt/lib_intel11.1_emt64_wrh}
+    DBX=${DBX:-"/opt/intel/Compiler/11.1/038/bin/intel64/idbc -exec"}
+else
+    echo "Could not determine HOSTTYPE ($HOSTTYPE)"
+    exit
+fi
+
+# path where the Ass. files are
+# Path of the Ass. files (EDDI, DMFILE) --- ATTENTION! Needs big space!!
+TMPHOST=$(grep kette$kn $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+if [ "_$TMPHOST" == '_' ] ; then
+   TMPHOST=$(grep default $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+fi
+if [ "_$TMPHOST" == '_' ] ; then
+    TMPHOST=$(echo $HOME | cut -d/ -f3)
+fi
+
+if [ _$POWR_INSTTYPE == _local ] ; then
+    pathass=$POWR_TMP_2DAY/ass$kn
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    pathass=/home/$TMPHOST/tmp_2day/$USER/ass$kn
+fi
+
+# tool for submitting the wruniq-job
+submit=${submit:-$POWR_WORK/proc.dir/submit.com}
+
+# macOS: nice from /usr/bin/ is broken (dylibs paths not found for wrstart etc.)
+if [[ $OSTYPE == *darwin* ]] ; then
+    nice=$exepath/gnice
+else # Linux
+    nice=nice
+fi
+
+#-------------- end of settings -----------------------------------------
+wait=false
+vstop=false
+dbx=false
+if [ $# -eq 2 ] ; then
+  if [ "_$2" == '_dbx' ] ; then
+    dbx=true
+  else
+    echo "$0: Abort: unknown option: $2" >> $POWR_WORK/output/wrstart$kn.cpr
+    exit
+  fi
+else
+  dbx=false
+fi
+
+mkdir -p $path1
+mkdir -p $pathscratch
+cd $pathscratch || exit
+
+#Check if status in wrstart-directory is active
+if [ -e $path1/status ] ; then
+  if [ $(cat $path1/status) == 'active' ] ; then
+   echo "Status WRSTART$kn = active: abort!" >> $POWR_WORK/output/wrstart$kn.cpr
+   exit
+  fi
+fi
+
+#Check if status in wruniq-directory is active
+if [ -e $pathwru/status ] ; then
+  if [ $(cat $pathwru/status) == 'active' -o $(cat $pathwru/status) == 'sleep' ] ; then
+    echo "Status WRUNIQ${kn} = active: abort!" >> $POWR_WORK/output/wrstart$kn.cpr
+    exit
+  fi
+fi
+
+if [ -d $pathscratch ]; then
+  rm $pathscratch/*
+fi
+echo "$HOSTNAME" > $path1/fwhere
+echo "$HOSTNAME" > $POWR_WORK/scratch/wruniq$kn/fwhere
+echo "active" >    $path1/status
+
+# remove status entries for wruniq and formal
+echo '-       ' >  $POWR_WORK/scratch/wruniq$kn/status
+echo '-       ' >  $POWR_WORK/scratch/wruniq$kn/fbreak
+echo '-       ' >  $POWR_WORK/scratch/formal$kn/status
+echo '-       ' >  $POWR_WORK/scratch/steal$kn/status
+
+# keep last lines of cpr file which already come from the submit procedure
+tail -n-20 $POWR_WORK/output/wrstart$kn.cpr > wrstart_scratch.cpr
+cat wrstart_scratch.cpr > $POWR_WORK/output/wrstart$kn.cpr
+rm wrstart_scratch.cpr
+
+rm -f  $POWR_WORK/output/wrstart$kn.log
+rm -f  $POWR_WORK/output/wrstart$kn.out
+rm -f  $POWR_WORK/output/wrstart$kn.plot
+rm -f  $POWR_WORK/output/wruniq$kn.log
+rm -f  $POWR_WORK/output/wruniq$kn.out
+rm -f  $POWR_WORK/output/wruniq$kn.plot
+rm -f  $POWR_WORK/output/wruniq$kn.cpr
+
+echo 'WRSTART started ' $(date)  >> $POWR_WORK/output/wrstart$kn.cpr
+echo 'WRSTART started ' $(date)  >  $POWR_WORK/output/wrstart$kn.log
+
+# PRINT SMALL PAGE HEADER  --------------------------
+echo ' ----------------------------------' >> out
+echo " USER: ${USER}                     " >> out
+echo " HOST: ${HOST}                     " >> out
+echo " JOBNAME: wrstart${kn}             " >> out
+date '+ Time: %H:%M:%S   Date: %d-%h-%Y  ' >> out
+echo ' ----------------------------------' >> out
+echo '                                   ' >> out
+
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+rm -f  $pathass/DMFILE
+rm -f  $pathass/EDDI
+echo 'Copy files now (forward)' >> $POWR_WORK/output/wrstart"$kn".cpr
+cp $path/DATOM DATOM
+cp $path/FEDAT fort.21
+cp $path/FGRID FGRID
+if [ -e $path/TABLE ] ; then
+  cp -f  $path/TABLE TABLE
+fi
+cp $path/CARDS CARDS
+# PROVIDE AN OLD MODEL FILE FOR OPTION ***OLDSTART***
+cp -f  $path/model fort.8
+cp $path/MODEL fort.9
+#Second old model (for TWOTEMP option)
+if [ -e $path/model ] ; then
+  cp -f  $path/model fort.8
+fi 
+# Copy ADAPTER with LEVEL cards
+if [ -e $path/ADAPTER ] ; then
+  cp -f $path/ADAPTER ADAPTER
+fi
+chmod u+w $pathscratch/*
+echo '... all files have been fetched' >> $POWR_WORK/output/wrstart"$kn".cpr
+
+# exe files
+cp $exepath/wrstart.exe.opt "$kn"_wrstart.exe
+cp $exepath/steal.exe.opt   "$kn"_steal.exe
+cp $exepath/adapter.exe.opt "$kn"_adapter.exe
+
+# Debugger dbx -- provide here the non-optimized exe file to be debugged!
+if [ "$dbx" == 'true' ] ; then
+  echo '--------  Debugger dbx is on'
+  cp $DBXPATH/wrstart.exe      "$kn"_wrstart.exe
+fi
+
+#
+# ------- EXECUTION OF PROGRAMS ----------------------------
+#
+# 1. wrstart  ----------------
+echo "now WRSTART" >> $POWR_WORK/output/wrstart$kn.log
+# SET ERROR STOP CODE
+echo '1' >G0
+if [ "$dbx" == 'true' ] ; then
+    eval "$DBX -I  $DBXPATH/routines/ $kn_wrstart.exe"
+else
+    $nice -$vnice  ./"$kn"_wrstart.exe > wrstart.out
+fi
+cat wrstart.out >> out
+mv PLOT wrstart.plot
+
+if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+   echo 'WRSTART: ERROR STOP' >> $POWR_WORK/output/wrstart$kn.cpr
+   rm fort.*
+   echo 'AB_wrstart' > $path1/status
+   exit
+fi
+#
+# 1. steal  ----------------
+echo 'now STEAL' >> $POWR_WORK/output/wrstart$kn.log
+# SET ERROR STOP CODE
+echo '1' >G0
+if [ "$dbx" == 'true' ] ; then
+   eval "$DBX -I $DBXPATH/routines/ $kn_steal.exe"
+else
+   $nice -$vnice  ./"$kn"_steal.exe > steal.out
+fi
+mv PLOT steal.plot
+cat steal.out >> out
+
+if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+   echo 'STEAL: ERROR STOP' >> $POWR_WORK/output/wrstart$kn.cpr
+   rm fort.*
+   echo 'AB_steal' > $path1/status
+   exit
+fi
+#
+: 3. ADAPTER -----------------
+echo 'now ADAPTER' >> $POWR_WORK/output/wrstart$kn.log
+# SET ERROR STOP CODE
+echo '1' >G0
+if [ "$dbx" == 'true' ] ; then
+   eval "$DBX -I $DBXPATH/routines/ $kn_adapter.exe" 
+   exit
+else
+   $nice -$vnice  ./"$kn"_adapter.exe > adapter.out
+fi
+cat adapter.out >> out
+if [ ERROR_$(cat G0) = ERROR_1 ] ; then
+   echo 'ADAPTER: ERROR STOP' >> $POWR_WORK/output/wrstart$kn.cpr
+   rm fort.*
+   echo 'AB_adapter' > $path1/status
+   exit
+fi
+
+# "------- REPLACING THE MODEL FILE & NEXTJOB ----------------"
+echo 'Copy/move files now (back)' >> $POWR_WORK/output/wrstart"$kn".cpr
+cp fort.3 $path/MODEL
+cp fort.3 $path/backup
+cp MODHIST $path/MODHIST
+cp G1 $path/next_job
+cp G1 $path/next_jobz
+echo '... all files saved' >> $POWR_WORK/output/wrstart"$kn".cpr
+
+# ------- PRINTER OUTPUT USING THE SCRATCH DISK ----------
+cat RATES >> out
+cp out $POWR_WORK/output/wrstart$kn.out
+rm -f  $POWR_WORK/output/wruniq$kn.out
+#
+: ------- COLLECT AND COPY PLOT DATA  -------
+if [ DUMMY_$(cat G2) == DUMMY_TRANSFER ] ; then
+   cat wrstart.plot > plot
+   cat steal.plot >> plot
+   cp plot $POWR_WORK/output/wrstart$kn.plot
+fi
+#
+echo 'done' > $path1/status
+# ------- ROUTING OF SUBSEQUENT JOB = WRUNIQ ---------
+#
+echo 'WRUNIQ-Job to be submitted?' >>  $POWR_WORK/output/wrstart"$kn".cpr
+if [ SWITCH_$(cat G3) == SWITCH_MOREJOBS -a NEXTJOB_$(cat G1) != NEXTJOB_MODEL ] ; then
+ if [ $vstop == 'false' ] ; then
+    eval "$submit wruniq$kn to-$HOSTNAME"
+    echo 'WRUNIQ-Job submitted' >>  $POWR_WORK/output/wrstart"$kn".cpr
+ fi
+fi
+#
+# ------- END OF JOB -------------------------
+rm fort.*
+rm *exe*
+echo "WRSTART finished " $(date) >> $POWR_WORK/output/wrstart$kn.cpr
+echo "WRSTART finished " $(date) >> $POWR_WORK/output/wrstart$kn.log
+echo ""

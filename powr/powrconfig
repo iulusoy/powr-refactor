@@ -1,0 +1,50 @@
+# bash style for the PoWR scripts
+
+# define the powr work directory
+export POWR_WORK=powr/
+export POWR_INSTTYPE=local
+# export POWR_INSTTYPE=potsdam
+# export POWR_INSTTYPE=niscluster
+
+export POWR_HOSTS_FILE=${POWR_WORK}/wrjobs/list-of-machines
+export POWR_HOST=`hostname`
+export POWR_TMP_HOSTS_FILE=${POWR_WORK}/wrjobs/tmphosts
+
+# --------- local installation on single computer -----------------
+if [ _"${POWR_INSTTYPE}" == _"local" ] ; then
+  export POWREXEPATH=${POWR_WORK}/exe.dir/
+  export POWRVD20PATH=${POWR_WORK}/exe_vd20.dir/
+  export POWRVXXLPATH=${POWR_WORK}/exe_xxl.dir/
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs/
+  export POWR_TMP_DATA=${POWR_WORK}/tmp_data/  
+  export POWR_TMP_2DAY=${POWR_WORK}/tmp_2day/  
+  export POWR_BROAD_DATA=${POWR_WORK}/wrdata-archive/  
+  export POWR_ATOM_DATA=${POWR_WORK}/wrdata-archive/
+#------------------------------------------------------------------
+
+# ---------- cluster installation for astro in Potsdam ------------
+elif [ _"${POWR_INSTTYPE}" == _"potsdam" ] ; then 
+  export POWR_HOSTS_FILE_POTSDAM=~htodt/powr/wrjobs/list-of-machines 
+  export POWREXEPATH=~htodt/exe_wrh64.dir/
+  export POWRVD20PATH=~htodt/exe_wrh64_vd20.dir/
+  export POWRVXXLPATH=~htodt/exe_wrh64_xxl.dir/
+  export POWRVHDPATH=~ansander/exe_wrh64_hydro.dir/
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~htodt/powr/intellibs/
+  export POWR_BROAD_DATA=~wrh/work/wrdata/
+  export POWR_ATOM_DATA=~wrh/work/wrdata-archive/
+# ------------------------------------------------------------------
+
+# ---------- cluster installation for other NIS cluster ------------
+# # assumes that PoWR developer user has already set up PoWR inst.
+elif [  _"${POWR_INSTTYPE}" == _"niscluster" ] ; then 
+  export POWR_DEV=~ansander/powr/
+  export POWR_HOSTS_FILE_NIS=${POWR_DEV}/wrjobs/list-of-machines 
+  export POWREXEPATH=${POWR_DEV}/exe.dir/
+  export POWRVD20PATH=${POWR_DEV}/exe_vd20.dir/
+  export POWRVXXLPATH=${POWR_DEV}/exe_xxl.dir/
+  export POWRVHDPATH=${POWR_DEV}/exe_hydro.dir/
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_DEV}/intellibs/
+  export POWR_BROAD_DATA=${POWR_DEV}/wrdata-archive/
+  export POWR_ATOM_DATA=${POWR_DEV}/wrdata-archive/
+# ------------------------------------------------------------------
+fi

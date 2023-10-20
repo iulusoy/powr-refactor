@@ -1,0 +1,468 @@
+#!/bin/bash
+source ~/.powrconfig
+
+#------ begin of settings --------------------------------
+vnice=19
+kn=$1
+
+# - local machine must be listed in $lom
+# - Allocation of scratchspace must be listed in $POWR_WORK/wrjobs/tmphosts
+
+HOSTNAME=$(hostname | cut -d '.' -f 1)
+
+# definition of a function Mkdir = mkdir if directory not yet existing
+Mkdir() { [ -d $1 ] || { printf "mkdir $1\n"; mkdir $1; }; }
+
+#path of the scratch directory in HOME-Bereich
+pathbreak=$POWR_WORK/scratch/wruniq${kn}
+Mkdir $pathbreak
+
+# path of the wrstart scratch directory
+pathwrs=$POWR_WORK/scratch/wrstart${kn}
+
+# path of the input/output data 
+path=$POWR_WORK/wrdata${kn}
+
+# file with the list of valid machines
+lom=${lom:-$POWR_WORK/wrjobs/list-of-machines}
+
+# path to exe-files
+# and path where the non-optimized version has been linked (for debugger!)
+if [[ $HOSTTYPE == *x86_64* ]] ; then
+    exepath=${POWRVD20PATH:-$POWR_WORK/exe_vd20.dir}
+    if [ _$POWR_INSTTYPE == _local ] ; then
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
+    elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+        source $exepath/LDpath.bash
+    fi
+    DBXPATH=${DBXPATH:-~htodt/lib_intel11.1_emt64_wrh}
+    DBX=${DBX:-"/opt/intel/Compiler/11.1/038/bin/intel64/idbc -exec"}
+else
+    echo "Could not determine HOSTTYPE"
+    exit
+fi
+
+# Path of the Ass. files (EDDI, DMFILE) --- ATTENTION! Needs big space!!
+TMPHOST=$(grep "^kette${kn}" $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+if [ "_$TMPHOST" == '_' ] ; then
+   TMPHOST=$(grep default $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+fi
+if [ "_$TMPHOST" == '_' ] ; then
+    TMPHOST=$(echo $HOME | cut -d/ -f3)
+fi
+
+if [ _$POWR_INSTTYPE == _local ] ; then
+    pathass=$POWR_TMP_2DAY/ass$kn
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    pathass=/home/$TMPHOST/tmp_2day/$USER/ass$kn
+fi
+Mkdir $pathass
+
+# tool for submitting the wruniq-job
+submit=${submit:-$POWR_WORK/proc.dir/submit.com}
+
+# macOS: nice from /usr/bin/ is broken (dylibs paths not found for wrstart etc.)
+if [[ $OSTYPE == *darwin* ]] ; then
+    nice=$exepath/gnice
+else # Linux
+    nice=nice
+fi
+
+#------------- end of settings ----------------------------
+
+dbx=false
+if [ $# -eq 2 ] ; then
+ if [ "_$2" == '_dbx' ] ; then
+   dbx=true
+   echo "Job wruniq${kn} in DEBUG mode !!!!!"
+ else
+   dbx=false
+ fi
+fi
+
+# Check if status in wruniq-directory is active
+if [ -e $pathbreak/status ] ; then
+  if [ $(cat $pathbreak/status) == 'active' ] ; then
+    echo "Status WRUNIQ${kn} = active: abort" >  $POWR_WORK/output/error${kn}
+    echo "Status WRUNIQ${kn} = active: abort" >> $POWR_WORK/output/wruniq"${kn}".cpr
+    exit
+  fi
+fi
+#
+#Check if status in wrstart-directory is active
+if [ -e $pathwrs/status ] ; then
+  if [ $(cat $pathwrs/status) == 'active' ] ; then
+   echo "Status WRSTART${kn} = active: abort" > $POWR_WORK/output/error${kn}
+   echo "Status WRSTART${kn} = active: abort" >> $POWR_WORK/output/wruniq"${kn}".cpr
+   exit
+  fi
+fi
+
+# clear all scratch directories if present
+if [ _$POWR_INSTTYPE == _local ] ; then
+    echo "clear directory at ${HOSTNAME}"
+    rm -f $POWR_TMP_DATA/wruniq${kn}/*
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    for machine in $(grep -v '-' $lom) ; do
+        echo "clear directory at ${machine}"
+        if [ $(ping -c 1 $machine | grep loss | cut -f 4 -d ' ') == 1 ] ; then 
+            ssh $machine "rm -f /home/$machine/tmp_data/$USER/wruniq${kn}/*"
+        fi
+    done
+fi
+
+#path of the work = scratch directory
+if [ _$POWR_INSTTYPE == _local ] ; then
+    pathscratch=$POWR_TMP_DATA/wruniq${kn}  
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    pathscratch=/home/$HOSTNAME/tmp_data/$USER/wruniq${kn}
+fi
+mkdir -p $pathscratch
+cd $pathscratch || exit
+
+echo 'WRUNIQ  started ' $(date)
+echo 'active' > ${pathbreak}/status
+echo ${HOSTNAME} > ${pathbreak}/fwhere
+echo 'no_break' > ${pathbreak}/fbreak
+
+echo ' ----------------------------------' >> out
+echo " USER: ${USER}                     " >> out
+echo " HOST: ${HOST}                     " >> out
+echo " JOBNAME: wruniq${kn}              " >> out
+date '+ Time: %H:%M:%S   Date: %d-%h-%Y  ' >> out
+echo ' ----------------------------------' >> out
+echo '                                   ' >> out
+#
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+echo 'Copy files now (forward)' >> $POWR_WORK/output/wruniq"${kn}".cpr
+cp ${path}/DATOM DATOM
+cp ${path}/FEDAT fort.21
+cp ${path}/CARDS CARDS
+cp ${path}/MODEL fort.3
+cp ${pathass}/DMFILE fort.16
+cp ${pathass}/EDDI fort.17
+cp ${path}/next_job G1
+cp ${path}/next_jobz G1Z
+chmod u+w ${pathscratch}/*
+echo '... all files have been fetched' >> $POWR_WORK/output/wruniq"${kn}".cpr
+
+#  optimized exe files
+cp ${exepath}/wrcont.exe.opt "${kn}"_wrcont.exe       
+cp ${exepath}/como.exe.opt   "${kn}"_como.exe           
+cp ${exepath}/coli.exe.opt   "${kn}"_coli.exe          
+cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
+cp ${exepath}/extrap.exe.opt "${kn}"_extrap.exe
+cp ${exepath}/modify.exe.opt "${kn}"_modify.exe
+
+# Debugger dbx -- provide here the non-optimized exe file to be debugged!
+if [ "$dbx" == 'true' ] ; then
+  echo '--------  Debugger dbx is on' 
+  cp ${DBXPATH}/coli.exe      "${kn}"_coli.exe
+#  cp $DBXPATH/steal.exe      "${kn}"_steal.exe
+fi
+
+: ------- CONTENT OF FILE G1 = NAME OF NEXT JOB ---------
+# SAFETY CHECK OF ALLOWED CONTENT:
+if [ NEXTJOB_$(cat G1) != NEXTJOB_EXTRAP -a \
+     NEXTJOB_$(cat G1) != NEXTJOB_WRCONT -a \
+     NEXTJOB_$(cat G1) != NEXTJOB_REPEAT ] ; then
+  echo "invalid content of file next_job=$(cat G1)" 
+  echo "invalid content of file next_job=$(cat G1)" >> $POWR_WORK/output/wruniq"${kn}".cpr
+  exit
+fi
+echo 'MOREJOBS' > G3
+
+# ------- LOOP: EXECUTION OF PROGRAMS ---------------------------- 
+while true  ; do
+    
+echo 'active' > ${pathbreak}/status
+
+# Break or stop forced?  -------------------------------------  
+
+if [ $(cat $pathbreak/fbreak) == 'break' ] ; then
+  echo "Break forced at beginning of loop"
+  echo "Break forced at beginning of loop" >> $POWR_WORK/output/wruniq"${kn}".cpr
+  break
+fi
+
+if [ $(cat $pathbreak/fbreak) == 'stop' ] ; then
+  echo 'stop forced'
+  echo 'stop forced' >> $POWR_WORK/output/wruniq"${kn}".cpr
+  break
+fi
+
+vfbreak=$(cat $pathbreak/fbreak)
+if [ $(echo $vfbreak | cut -c1-3 ) == 'to-' ] ; then
+  vfbreak=$(echo $vfbreak | cut -c4-11)
+  if [ _$vfbreak == _$(grep $vfbreak $lom) ] ; then
+    echo "machine will be changed: New machine is ${vfbreak}"
+    echo "machine will be changed: New machine is ${vfbreak}" >> $POWR_WORK/output/wruniq"${kn}".cpr
+    break
+  fi
+fi
+
+# -- EXTRAP  -----------------  
+if [ NEXTJOB_$(cat G1) == NEXTJOB_EXTRAP ] ; then
+  echo 'now EXTRAP(CL)   ' $(date)
+# SET ERROR STOP CODE   
+  echo '1' >G0 
+  if [ "$dbx" == 'true' ] ; then
+    eval "$DBX -I $DBXPATH/routines/ ${kn}_extrap.exe"
+  else
+    $nice -$vnice ./"${kn}"_extrap.exe > extrap.out
+  fi
+  echo '                 ' $(date)
+  cat extrap.out >> out 
+# PROGRAM-REQUESTED ERROR STOP  
+  if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+    echo 'AB_ext' > ${pathbreak}/status
+    echo 'ERROR: EXTRAP not finished correctly'
+    exit 
+  fi
+fi
+
+# -- WRCONT  -----------------  
+if [ NEXTJOB_$(cat G1) == NEXTJOB_WRCONT ] ; then
+  echo 'now WRCONT(CL)   ' $(date)
+  cp fort.3 $path/backup
+  # SET ERROR STOP CODE 
+  echo '1' > G0 
+  if [ "$dbx" == 'true' ] ; then
+    eval "$DBX -I $DBXPATH/routines/ ${kn}_wrcont.exe"
+  else
+    $nice -$vnice ./"${kn}"_wrcont.exe > wrcont.out
+  fi
+  echo '                 ' $(date)
+  cat wrcont.out >> out 
+  mv PLOT wrcont.plot
+  # PROGRAM-REQUESTED ERROR STOP  
+  if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+    echo 'AB_wrc' > ${pathbreak}/status
+    echo 'ERROR: WRCONT not finished correctly'
+    exit 
+  fi 
+  # REMOVE BACKGROUND DATA 
+  rm -f  fort.7
+  # MAX. NUMBER OF JOBS EXCEEDED? 
+  if [ SWITCH_$(cat G3) != SWITCH_MOREJOBS ] ; then 
+    echo 'unicos: no more jobs' >> out 
+    echo 'unicos: no more jobs'
+    break
+  fi
+  echo 'active' > ${pathbreak}/status
+
+  # Break or stop forced?  -------------------------------------
+  if [ $(cat $pathbreak/fbreak) == 'break' ] ; then
+    echo 'Break forced after WRCONT'
+    echo 'Break forced after WRCONT' >> $POWR_WORK/output/wruniq"${kn}".cpr
+    break
+  fi
+  
+  if [ $(cat $pathbreak/fbreak) == 'stop' ] ; then
+    echo 'stop forced'
+    echo 'stop forced' >> $POWR_WORK/output/wruniq"${kn}".cpr
+    break
+  fi
+fi
+
+vfbreak=$(cat $pathbreak/fbreak)
+if [ $(echo $vfbreak | cut -c1-3 ) == 'to-' ] ; then
+  vfbreak=$(echo $vfbreak | cut -c4-11)
+  if [ _$vfbreak == _$(grep $vfbreak $lom) ] ; then
+    echo "machine will be changed: New machine is ${vfbreak}"
+    echo "machine will be changed: New machine is ${vfbreak}" >> $POWR_WORK/output/wruniq"${kn}".cpr
+    break
+  fi
+fi
+
+# EXITLOOP  -------------------------------------
+#
+# .. REPEAT CYCLE ...............................
+#
+#cp fort.3 $path/backup
+#                                               
+  if [ NEXTJOB_$(cat G1) == NEXTJOB_REPEAT ]  ; then
+   if [ NEXTJOBZ_$(cat G1Z) != NEXTJOBZ_STEAL ] ; then
+
+# -- COMO  -------------------
+# SET ERROR STOP CODE
+     echo 'now COMO(CL)     ' $(date)
+     echo '1' >G0
+     if [ "$dbx" == 'true' ] ; then
+        eval "$DBX -I $DBXPATH/routines/ ${kn}_como.exe"
+     else
+        $nice -$vnice ./"${kn}"_como.exe > como.out
+     fi
+     echo '                 ' $(date)
+     cat como.out >> out
+     mv PLOT como.plot
+# PROGRAM-REQUESTED ERROR STOP
+     if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+        echo 'AB_com' > ${pathbreak}/status
+        echo 'ERROR: COMO not finished correctly'
+        exit
+     fi
+#
+# -- CMF  -------------------- 
+# SET ERROR STOP CODE 
+     echo 'now     COLI     ' $(date)
+     echo '1' > G0 
+     if [ "$dbx" == 'true' ] ; then
+        eval "$DBX -I $DBXPATH/routines/ ${kn}_coli.exe"
+     else
+        $nice -$vnice ./"${kn}"_coli.exe > coli.out
+     fi
+     echo '                 ' $(date)
+     cat coli.out >> out
+# PROGRAM REQUESTED ERROR STOP
+     if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+        echo 'AB_cmf' > ${pathbreak}/status
+        echo 'ERROR: COLI not finished correctly'
+        exit
+     fi
+     rm fort.7
+     echo 'STEAL' > G1Z
+   else
+
+#-- STEAL  ------------------
+#: SET ERROR STOP CODE
+     echo 'now STEAL(CL)    ' $(date)
+     echo '1' >G0
+     if [ -e steal.plot ] ; then
+        cp -f steal.plot steal_last.plot
+     fi
+     if [ "$dbx" == 'true' ] ; then
+        eval "$DBX -I $DBXPATH/routines/ ${kn}_steal.exe"
+     else
+        $nice -$vnice ./"${kn}"_steal.exe > steal.out
+     fi
+     echo '                 ' $(date)
+     cat steal.out >> out
+     mv PLOT steal.plot
+# PROGRAM REQUESTED ERROR STOP
+     if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+        echo 'AB_ste' > ${pathbreak}/status
+        echo 'ERROR: STEAL not finished correctly'
+        exit
+     fi
+     echo 'REPEAT' > G1Z
+
+#  Auto-Modify-Artistik
+     if [ -e MODIFY_INPUT ] ; then
+      if [ "$(head -1 MODIFY_INPUT)" == "AUTO MODIFY" ] ; then
+         rm temp.doc
+         echo "Job has been submitted" > temp.doc
+         cat MODIFY_INPUT >> temp.doc
+         rm MODIFY_INPUT
+         mv temp.doc MODIFY_INPUT
+#     -- MODIFY  -----------------
+#     SET ERROR STOP CODE
+         echo 'now MODIFY(CL)   ' $(date)
+         echo '1' >G0
+         if [ "$dbx" == 'true' ] ; then
+            eval "$DBX -I $DBXPATH/routines/ ${kn}_modify.exe"
+         else
+            $nice -$vnice ./"${kn}"_modify.exe > modify.out
+         fi
+         echo '                 ' $(date)
+#     PROGRAM-REQUESTED ERROR STOP
+         if [ ERROR_$(cat G0) == ERROR_1 ] ; then
+            echo 'AB_mod' > ${pathbreak}/status
+            echo 'ERROR: MODIFY not finished correctly'
+            exit
+         fi
+      # echo 'MOREJOBS' > G3 # obsolet 10.2.2012 H.T.
+         echo 'WRCONT' > G1
+         echo 'REPEAT' > G1Z
+      fi
+     fi
+   fi
+
+# MAX. NUMBER OF JOBS EXCEEDED?
+   if [ SWITCH_$(cat G3) != SWITCH_MOREJOBS -a \
+        NEXTJOBZ_$(cat G1Z) != NEXTJOBZ_STEAL ] ; then
+       echo 'unicos: no more jobs' >> out
+       echo 'unicos: no more jobs'
+       break
+   fi
+  fi
+# ...............................................
+#
+# MODEL FINALLY CONVERGED?
+  if [ NEXTJOB_$(cat G1) == NEXTJOB_MODEL ] ; then
+     echo 'wruniq: model finally converged' >> out
+     echo 'wruniq: model finally converged'
+     echo 'wruniq: model finally converged' >> $POWR_WORK/output/wruniq"${kn}".cpr
+     cp -f modinfo.kasdefs $path/modinfo.kasdefs
+     break
+  fi
+  
+done
+# ------------- ENDLOOP  ----------------------------------------------
+
+
+# ------- REPLACING THE MODEL FILE / SAVE DATA  -----------------------
+
+echo 'Copy/move files now (back)'
+echo 'Copy/move files now (back)' >> $POWR_WORK/output/wruniq"${kn}".cpr
+cp fort.3  $path/MODEL
+mv fort.16 $pathass/DMFILE
+mv fort.17 $pathass/EDDI
+cp G1      $path/next_job
+cp G1Z     $path/next_jobz
+echo '... all files saved'
+echo '... all files saved' >> $POWR_WORK/output/wruniq"${kn}".cpr
+
+# ------- PRINTER OUTPUT USING THE SCRATCH DISK ----------
+cat RATES >> out
+date '+ Job ended at: %H:%M:%S   %d-%h-%Y' >> out
+cat out >> $POWR_WORK/output/wruniq${kn}.out
+# ------- ROUTING OF PLOT DATA TO CRVAX[:'OWN'.PLOT] -------
+if [ DUMMY_$(cat G2) == DUMMY_TRANSFER ] ; then
+   cat wrcont.plot > $POWR_WORK/output/wruniq${kn}.plot
+   cat como.plot  >> $POWR_WORK/output/wruniq${kn}.plot
+   cat steal.plot >> $POWR_WORK/output/wruniq${kn}.plot
+fi
+
+# ------- ROUTING OF SUBSEQUENT JOB = WRUNIQ  ---------
+#
+if [ NEXTJOB_$(cat G1) == NEXTJOB_MODEL ] ; then
+   echo 'Conv' > ${pathbreak}/status
+else
+   echo 'non_active' > ${pathbreak}/status
+fi                                                                 
+
+if [ SWITCH_$(cat G3) == SWITCH_MOREJOBS -a NEXTJOB_$(cat G1) != NEXTJOB_MODEL \
+     -o NEXTJOB_$(cat G1Z) == NEXTJOB_STEAL ] ; then
+  if [ $(cat $pathbreak/fbreak) == 'stop' ] ; then
+    echo 'Job stopped'
+    echo 'Job stopped' >> $POWR_WORK/output/wruniq"${kn}".cpr
+  elif [ $(cat $pathbreak/fbreak | cut -c1-3) == 'to-' ] ; then
+    vfbreak=$(cat $pathbreak/fbreak | cut -c4-11)
+    if [ _$vfbreak == _$(grep $vfbreak $lom) ] ; then
+      echo "Next job has been submitted to ${vfbreak}"
+      echo "Next job has been submitted to ${vfbreak}" >> $POWR_WORK/output/wruniq"${kn}".cpr
+      eval "$submit wruniq${kn} $(cat $pathbreak/fbreak)"
+    else
+      echo "machine ${vfbreak} not known!"
+      echo "machine ${vfbreak} not known!" >> $POWR_WORK/output/wruniq"${kn}".cpr
+    fi
+  else
+    echo "Next wruniq${kn} to be submitted"
+    echo "Next wruniq${kn} to be submitted" >>  $POWR_WORK/output/wruniq"${kn}".cpr
+    eval "$submit wruniq${kn}"
+  fi
+fi
+#
+# ------- ROUTING OF FORMAL ------------------------
+#
+if [ SWITCH_$(cat G3) == SWITCH_MOREJOBS -a NEXTJOB_$(cat G1) == NEXTJOB_MODEL ] ; then
+  echo "Formal-Job submitted"
+  echo "Formal-Job submitted" >>  $POWR_WORK/output/wruniq${kn}.cpr
+  eval "$submit formal${kn}" 
+fi
+#
+# ------- END OF JOB -------------------------
+echo 'WRUNIQ  finished   ' $(date)
+echo '-------  WRUNIQ  finished --------  ' $(date) >> $POWR_WORK/output/wruniq${kn}.cpr
+echo

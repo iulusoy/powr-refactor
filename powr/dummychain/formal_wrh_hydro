@@ -1,0 +1,158 @@
+#!/bin/bash
+source ~/.powrconfig
+
+# -------- begin of settings ----- formal ---------------------------
+
+workdir=$POWR_WORK/
+vnice=19
+kn=$1
+NAME=MODEL
+
+# path to exe-files
+# and path where the non-optimized version has been linked (for debugger!)
+if [[ $HOSTTYPE == *x86_64* ]] ; then
+    exepath=${POWRVHDPATH:-$POWR_WORK/exe_hydro.dir}    
+    if [ _$POWR_INSTTYPE == _local ] ; then
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
+    elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+        source $exepath/LDpath.bash
+    fi
+    DBXPATH=${DBXPATH:-~htodt/lib_intel11.1_emt64_wrh}
+    DBX=${DBX:-"/opt/intel/Compiler/11.1/038/bin/intel64/idbc -exec"}
+else
+    echo "Could not determine HOSTTYPE ($HOSTTYPE)"
+    exit
+fi
+
+# macOS: nice from /usr/bin/ is broken (dylibs paths not found for wrstart etc.)
+if [[ $OSTYPE == *darwin* ]] ; then
+    nice=$exepath/gnice
+else # Linux
+    nice=nice
+fi
+
+#-------- end of settings -------------------------------------------- 
+
+dbx=false
+if [ $# -eq 2 ] ; then
+  if [ "_$2" == '_dbx' ] ; then
+    dbx=true
+  else
+    echo "unknown option:= $2" >> $POWR_WORK/output/formal${kn}.cpr
+    exit
+  fi
+else
+  dbx=false
+fi
+
+pathformstat=$workdir/scratch/formal$kn
+mkdir -p $pathformstat
+HOSTNAME=$(hostname | cut -d '.' -f 1)
+pathbreak=$workdir/scratch/wruniq$kn
+echo "$HOSTNAME" > $pathbreak/queue
+echo "$HOSTNAME" > $pathbreak/fwhere
+
+if [ _$POWR_INSTTYPE == _local ] ; then
+    pathscratch=$POWR_TMP_DATA/formal${kn}
+elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
+    pathscratch=/home/$HOSTNAME/tmp_data/$USER/formal${kn}
+fi
+mkdir -p $pathscratch
+cd $pathscratch || exit
+
+#Check if status in formal-directory is active
+
+if [ -e "${pathformstat}/status" ] ; then
+ if [ $(cat ${pathformstat}/status) == 'active' ] ; then
+  echo "Status in FORMAL${kn} = active; Job aborted" > $workdir/output/error$kn
+  exit
+ fi
+fi
+
+rm ${pathformstat}/*
+rm ${pathscratch}/*
+
+echo 'FORMAL started ' $(date)
+echo 'active' > ${pathformstat}/status
+path=$workdir/wrdata$kn
+
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+
+# PRINT SMALL PAGE HEADER  --------------------------
+echo ' ----------------------------------'  > out
+echo " USER: ${USER}                     " >> out
+echo " HOST: ${HOST}                     " >> out
+echo " JOBNAME: FORMAL${kn}              " >> out
+date '+ Time: %H:%M:%S   Date: %d-%h-%Y'   >> out
+echo ' ----------------------------------' >> out
+echo '                                   ' >> out
+#
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+cp $path/DATOM DATOM
+cp $path/$NAME fort.3
+cp $path/FEDAT_FORMAL fort.21
+chmod u+w $pathscratch/*
+#
+cat >CARDS << EOF
+* ++++++++++++++++++++++++++++
+ABS WAVE
+NFOBS= 100.
+-IVERSION: TAU
+-IVERSION: Z
+TRANSFER
+-TRANS DWL
+-DISP=15.
+-YMAX=20.
+-IDENT
+IDENT OSMIN= 0.05
+REDISTRIBUTION
+-CONT FLAM
+-LISTONLY
+* ++++++++++++++++++++++++++++
+EOF
+
+#  The new (COLI) programm version requires preceding calculation
+#  of the reference continuum (without lines)
+
+cp -p $exepath/wrcont.exe.opt  ${kn}_wrcont.exe.opt
+./${kn}_wrcont.exe.opt
+cp -p $exepath/como.exe.opt ${kn}_como.exe.opt
+./${kn}_como.exe.opt
+
+#-- FORMAL  ------------------                  #                     #
+echo 'now FORMAL       ' $(date)
+#
+cat $path/FORMAL_CARDS | sed s,"\$POWR_WORK",$POWR_WORK,g >> CARDS
+#
+# SET ERROR STOP CODE                           #                     #
+echo '1' >G0                                      #                     #
+#
+if [ "$dbx" == 'true' ] ; then
+    eval "$DBX -I $DBXPATH/routines/ $DBXPATH/formal.exe"
+else 
+    cp -p ${exepath}/formal.exe.opt ${kn}_formal.exe.opt
+    $nice -${vnice} ./${kn}_formal.exe.opt > formal.out
+fi
+echo '                 ' $(date)
+
+cat formal.out >> out                            #                     #
+
+# ------- PRINTER OUTPUT USING THE SCRATCH DISK ----------
+date '+ Job ended at: %H:%M:%S   %d-%h-%Y' >> out
+cp out ${workdir}/output/formal${kn}.out
+# ------- Copying plot data back to output directory-------
+if [ DUMMY_$(cat G1) == DUMMY_TRANSFER ] ; then
+    cp PLOT ${workdir}/output/formal${kn}.plot
+fi
+#
+# ------- END OF JOB -------------------------
+
+# PROGRAM REQUESTED ERROR STOP                
+if [ ERROR_$(cat G0) == ERROR_1 ] ; then                                        
+    echo "AB_form" > ${pathformstat}/status
+    echo "ERROR: FORMAL${kn} not finished correctly"
+    exit                                      
+else
+   echo "done" > ${pathformstat}/status
+   echo "FORMAL${kn} finished   " $(date)
+fi                                          

@@ -1,0 +1,69 @@
+#! /bin/bash
+source ~/.powrconfig
+# gridformal1
+# change number of chain, used for formal jobs:
+
+kn=1
+
+echo "--------- gridformal$kn started on $(date) ----------"
+
+# -- Path of the grid models --
+gridpath=~wrh/science.dir/wnegrid.dir/models.dir/
+
+# -- Directory to store the formal.out and formal.plot --
+storepath=$HOME/science.dir/nodiel-wngrid.dir/formal_HeI_5876.dir/
+
+# ------------------------------------------------------------------------
+
+submit=${submit:-$POWR_WORK/proc.dir/submit.com}
+
+mkdir -p $storepath
+
+# ls can be switched off for tests ! -> old file is used
+cd $gridpath
+ls -1 */MODEL > $POWR_WORK/wrdata$kn/list-of-models
+echo 'finished' >> $POWR_WORK/wrdata$kn/list-of-models
+
+# Loop over all models
+lastmodel='-'
+for model in $(cat $POWR_WORK/wrdata$kn/list-of-models) ; do
+
+# check if status in formal-directory is abort
+   if [ _$(cat $POWR_WORK/scratch/formal$kn/status) == _'AB_form' ] ; then
+       echo "Last formal job failed. Stop gridformal." >> $POWR_WORK/output/gridformal${kn}.cpr
+       exit
+   fi
+
+# Check if status in formal-directory is active
+   while [ _$(cat $POWR_WORK/scratch/formal$kn/status) == _'active' ] ; do
+     ####    echo Status in FORMAL$kn = active 
+     sleep 5
+   done
+
+   # put symbolic link for file MODEL
+   ln -sf $gridpath/$model $POWR_WORK/wrdata$kn/MODEL
+
+# Now shorten the model name
+  model=$(echo $model | cut -d/ -f1)
+  echo "Waiting: $model" >> $POWR_WORK/output/gridformal${kn}.cpr
+
+# save output from last model
+  if [ $lastmodel != '-' ]; then
+    mv $POWR_WORK/output/formal$kn.out $storepath/$lastmodel.out
+    mv $POWR_WORK/output/formal$kn.plot $storepath/$lastmodel.plot
+    echo "saved $lastmodel"  >> $POWR_WORK/output/gridformal${kn}.cpr
+  fi
+
+  if [ _$model == _finished ]; then 
+     echo "------------- gridformal$1 finished on $(date) ---------------------" >> $POWR_WORK/output/gridformal${kn}.cpr
+     exit
+  fi
+
+  echo "Now started: $model"
+  lastmodel=$model
+  $submit formal$kn
+  sleep 5
+done
+
+echo "Error in gridformal$1: this line should never be reached!"
+

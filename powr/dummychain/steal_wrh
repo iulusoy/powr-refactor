@@ -1,0 +1,194 @@
+
+# ------- begin of settings for steal backup --------------
+vnice=18
+
+path=$POWR_WORK/wrdata$kn
+
+# path to exe-files
+# and path where the non-optimized version has been linked (for debugger!)
+if [[ $HOSTTYPE == *x86_64* ]] ; then
+    # exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
+    exepath=${POWRVD20PATH:-$POWR_WORK/exe_vd20.dir}    
+    # exepath=${POWRVXXLPATH:-$POWR_WORK/exe_xxl.dir}
+    if [ _$POWR_INSTTYPE == _local ] ; then
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
+    elif [ _$POWR_INSTTYPE == _potsdam ] ; then
+        source $exepath/LDpath.bash
+    fi
+    DBXPATH=${DBXPATH:-~htodt/lib_intel11.1_emt64_wrh}
+    DBX=${DBX:-"/opt/intel/Compiler/11.1/038/bin/intel64/idbc -exec"}
+else
+    echo "Could not determine HOSTTYPE"
+    exit
+fi
+
+# macOS: nice from /usr/bin/ is broken (dylibs paths not found for wrstart etc.)
+if [[ $OSTYPE == *darwin* ]] ; then
+    nice=$exepath/gnice
+else # Linux
+    nice=nice
+fi
+
+# Path of the Ass. files (here: for DMFILE) 
+TMPHOST=$(grep kette$kn $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+if [ _"$TMPHOST" == _ ] ; then
+   TMPHOST=$(grep default $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
+fi 
+if [ "_$TMPHOST" == '_' ] ; then
+    TMPHOST=$(echo $HOME | cut -d/ -f3)
+fi
+
+if [ _"$POWR_INSTTYPE" == _local ] ; then
+    pathass=$POWR_TMP_2DAY/ass$kn
+elif [ _"$POWR_INSTTYPE" == _potsdam ]
+then
+    pathass=/home/$TMPHOST/tmp_2day/$USER/ass$kn
+fi
+
+NAME=MODEL
+
+# ------- end of settings -----------------------------
+
+if [ $# -eq 1 ] ; then
+  if [ $1 == 'dbx' ] ; then
+    dbx=true
+  else
+    echo unknown option
+    exit
+  fi
+else
+  dbx=exe
+fi
+mkdir -p $POWR_WORK/scratch/steal$kn
+cd $POWR_WORK/scratch/steal$kn || exit
+
+#Check if status in steal-directory is active
+if [ -e status ] ; then
+  if [ $(cat status) == 'active' ] ; then
+    echo "Status in STEAL${kn} = active; Job aborted" > $POWR_WORK/output/error
+    exit
+  fi
+fi
+#
+rm $POWR_WORK/scratch/steal$kn/*
+echo 'STEAL started ' $(date)
+echo 'active' > status
+#
+
+# optimized exe files
+cp $exepath/steal.exe.opt            "$kn"_steal.exe
+
+if [ $dbx == 'true' ] ; then
+  echo '--------  Debugger dbx is on'
+  cp $DBXPATH/steal.exe      "$kn"_steal.exe
+fi
+
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+
+# PRINT SMALL PAGE HEADER  --------------------------
+echo ' ----------------------------------'  > out
+echo " USER: ${USER}                     " >> out
+echo " HOST: ${HOST}                     " >> out
+echo " JOBNAME: STEAL${kn}               " >> out
+date '+ Time: %H:%M:%S   Date: %d-%h-%Y' >> out
+echo ' ----------------------------------' >> out
+echo '                                   ' >> out
+#
+# FETCH AND ASSIGN THE NECESSARY FILES: --------------------
+cp $path/DATOM DATOM
+grep "^UNLUTEC" $path/CARDS > CARDS
+cp $path/$NAME fort.3
+cp $path/FEDAT fort.21
+cp $pathass/DMFILE fort.16
+chmod u+w $POWR_WORK/scratch/steal$kn/*
+# if >>  ADDITIONAL CARD-OPTIONS
+##cat > CARDS <<\eoi
+cat >> CARDS <<\eoi
+OUTPUT ONLY
+PRINT HIST
+-PRINT POP
+-PRINT COMPOSITION
+-PLOT V
+-UNLUTEC .7 .7 .7 SMOOTH MONOTONIC TMIN=8000. CUTCORR=0.02
+-PRINT TAU
+-PRINT FLUX
+PRINT DATOM
+PRINT OPA 30.
+-PLOT POP, "C 12P2P3P1" "C 22P2P..1" "C 22S2P2P1" "C 32S1S..1" "C 32S 1S  " "C IV 2S..1" "C V 1S1S01"
+-PLOT POP, "O 22P4S..1" "O 32P3P..1" "O 3 2P3P.1" "O 42P2P..1" "O IV2P 2PO" "O V2S  1S" "O VI 22S " "O VII 11S"
+-PLOT POP,  "H I......1" "H II......"
+
+-PLOT DEPART "HEI 1S1..1" "HE II....1" "HE III...."
+-PLOT DEPART "N III2P2.1" "N IV 2S1.1" "N V 2S...1" "N VI......"
+-PLOT DEPART  "G2 III...1" "G2 IV....1" "G2 V.....1" "G2 VI....1" "G2 VII...1" +
+
+-PLOT_POPRANGE=1.E-25
+PLOT_INBOX
+PLOT_POPRANGE=1.E-30
+PLOT POP GROUNDSTATES
+-PLOT POP, "HEI 1S1..1" "HE II....1" "HE III...."
+-PLOT POP, "C 22S2P2P1" "C 32S1S..1" "C IV 2S..1" "C V 1S1S01"
+-PLOT POP, "O 22P4S..1" "O 32P3P..1" "O 42P2P..1" "O V2S  1S " "O VI 22S  " "O VII 11S " 
+-PLOT POP, "C 22S2P2P1" "C 32S1S..1" "C IV 2S..1" "C V 1S1S01"
+-PLOT POP,  "NE3..dummy" "NE4p3*4S01" "NE5p2 3P01" "NE62p*2P01" "NE7s2 1S01" "NE8..dummy"
+-PLOT POP,  "G2 III...1" "G2 IV....1" "G2 V.....1" "G2 VI....1" "G2 VII...1" "G2 VIII..1" "G2 IX....1" "G2 X.....1"
+-PLOT POP, "C 22S2P2P1" "C 32S1S..1" "C IV 2S..1" "C V1s21S01" "C VI 1    " "C VII   "
+-PLOT POP, "C IV 7L.16" "C IV10L.19"
+-PLOT POP, "C 22S2P2P1" "C 32S1S..1" "C IV 2S..1" "C V1s21S01" "C VI 1    " "C VII   " "C IV 7L.16" "C IV10L.19"
+-PLOT POP, "O 22P4S..1" "O 32P3P..1" "O 42P2P..1" "O V2S  1S " "O VI 22S  " "O VII1    " "O 8 .1    " "O 9 1     "
+-PLOT POP, "N II2P2P31" "N III2P2.1" "N IV 2S1.1" "N V 2S...1" "N VI......"
+-PLOT POP,  "G2  I....1" "G2 II....1" "G2 III...1" "G2 IV....1" "G2 V.....1" "G2 VI....1" "G2 VII...1" "G2 VIII..1" "G2 IX....1"
+PLOT T(LOG(R-1)) Y-AXIS: MAX=250. _MIN=0.   ___X-AXIS: MAX=3.3  _MIN=-5.
+PLOT HTOT
+PLOT FLUX FLAM 10PC
+-PLOT FLUX LOGF
+-PLOT FLUX LOGF 10PC
+PLOT UNLU
+
+PLOT ACC
+
+-JOBMAX= 1.
+-PLOT JNUE K=71
+-PLOT JNUE L=30 TRAD
+-PLOT JNUE L=40 TRAD
+-PLOT JNUE L=50 TRAD
+-PLOT JNUE L=60 TRAD
+
+-PLOT JLINE L=30 
+-PLOT JLINE IND=142 
+JOBMAX=1.
+
+eoi
+
+#-- STEAL  ------------------                
+#: SET ERROR STOP CODE                          
+   echo 'now STEAL         ' $(date)
+   echo '1' >G0                       
+   if [ $dbx == 'true' ] ; then
+     eval "$DBX -I $DBXPATH/routines/ $kn_steal.exe"
+   else
+     $nice -$vnice ./"$kn"_steal.exe > steal.out 
+   fi
+   echo '                  ' $(date)
+cat steal.out >> out                     
+# PROGRAM REQUESTED ERROR STOP            
+if [ ERROR_$(cat G0) == ERROR_1 ] ; then                                     
+   echo 'AB_steal' > status
+   exit                                  
+fi                                    
+echo REPEAT > G1Z
+#
+# ------- PRINTER OUTPUT USING THE SCRATCH DISK ----------
+cat RATES >> out
+#date '+ Job ended at: %H:%M:%S   %d-%h-%Y' >> out
+cp out $POWR_WORK/output/steal$kn.out
+# ------- ROUTING OF PLOT DATA TO CRVAX:['OWN'.PLOT] -------
+if [ DUMMY_$(cat G2) == DUMMY_TRANSFER ] ; then
+   cp PLOT $POWR_WORK/output/steal$kn.plot
+fi 
+#
+# ------- END OF JOB -------------------------
+echo 'non_active' > status
+echo 'STEAL finished    ' $(date)  
+echo '-------  STEAL  finished --------  ' $(date) >> $POWR_WORK/output/steal"$kn".cpr
+
