@@ -36,15 +36,15 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
         cp powr/powrconfig ~/.powrconfig
-    - name: set up the job and run base tests
-      run: |
-        python -m pytest -svv
     - name: get fortran compiler
       uses: iulusoy/setup-fortran@v0
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
+    - name: set up the job and run base tests
+      run: |
+        python -m pytest -svv
     - name: get compiler version
       run: ${{ env.FC }} --version
       env:
