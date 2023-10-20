@@ -16,8 +16,8 @@ jobs:
         python-version: [3.9]
         os: [ubuntu-latest]
         # os: [ubuntu-latest, macos-latest]
-        toolchain:
-          - {compiler: intel-classic, version: '2021.10'}
+        # toolchain:
+          # - {compiler: intel-classic, version: '2021.10'}
           # - {compiler: intel-classic, version: '2021.1'}
     steps:
     - name: Checkout repository
@@ -40,8 +40,10 @@ jobs:
       uses: iulusoy/setup-fortran@v0
       id: setup-fortran
       with:
-        compiler: ${{ matrix.toolchain.compiler }}
-        version: ${{ matrix.toolchain.version }}
+        # compiler: ${{ matrix.toolchain.compiler }}
+        compiler: intel-classic
+        # version: ${{ matrix.toolchain.version }}
+        version: 2021.10
     - name: set up the job and run base tests
       run: |
         python -m pytest -svv
