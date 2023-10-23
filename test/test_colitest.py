@@ -57,7 +57,7 @@ def get_chain(set_aliases):
 def run_colitest(get_chain):
     # run colitest
     colitest_command = "${POWR_WORK}/wrjobs/colitest1"
-    subprocess.run(
+    temp = subprocess.run(
         colitest_command,
         shell=True,
         check=True,
@@ -65,6 +65,7 @@ def run_colitest(get_chain):
         capture_output=True,
         text=True,
     )
+    print(temp)
     yield "ran colitest"
     os.system("rm -rf ${POWR_WORK}/tmp_data")
     return "Cleaned colitest tmp data"
