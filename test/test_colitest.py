@@ -2,6 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 import pytest
+import numpy as np
 
 
 # get the path of this file and export variables accordingly
@@ -165,7 +166,5 @@ def test_colitest_run(set_vars, run_colitest):
 # compare the output from the colitest job
 def test_read_model(set_vars, run_colitest):
     model_output = set_vars / "wrdata1" / "MODEL_STUDY_DONE"
-    with open(model_output, "rb") as file:
-        data = file.read()
-    print("read model file")
-    print(data[0:20])
+    data_np = np.fromfile(model_output, dtype=float)
+    print(data_np[0])

@@ -2,3 +2,4 @@ ford
 fortran-language-server
 pytest
 pre-commit
+numpy
