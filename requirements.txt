@@ -1,4 +1,4 @@
 ford
 fortran-language-server
 pytest
-precommit
+pre-commit
