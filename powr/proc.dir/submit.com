@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ~/.powrconfig || exit
+# source ~/.powrconfig || exit
 
 ####################################################################
 #

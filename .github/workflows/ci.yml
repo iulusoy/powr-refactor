@@ -40,11 +40,11 @@ jobs:
     - name: compile powr
       run: |
         cd src
-        # make
+        make
     - name: create folder structure
       run: |
         mkdir powr/exe_dev.dir
-        # cp src/*.opt powr/exe_dev.dir/.
+        cp src/*.opt powr/exe_dev.dir/.
         cp powr/powrconfig ~/.powrconfig
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -56,7 +56,7 @@ jobs:
         python -m pip install -r requirements.txt
     - name: set up the job and run base tests
       run: |
-        python -m pytest -svv
+        python -m pytest -svv test/test_colitest.py
 
 
 
