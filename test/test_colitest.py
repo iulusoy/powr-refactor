@@ -4,6 +4,22 @@ from pathlib import Path
 import pytest
 import numpy as np
 
+MODEL_DATA_REF = np.array(
+    [
+        200.48528618028934,
+        170.96813898862962,
+        141.27907698674588,
+        113.21541313779215,
+        88.20625902763122,
+        67.06805146763016,
+        49.991012566374565,
+        36.694735175459314,
+        26.638377911447826,
+        19.19939157825736,
+        13.787069162858446,
+    ]
+)
+
 
 # get the path of this file and export variables accordingly
 @pytest.fixture(scope="module")
@@ -47,6 +63,7 @@ def get_chain(set_aliases):
     yield "Created chain 1"
     # teardown directories
     # we need access to ${POWR_WORK} so shutil will not work
+    # why does sourcing powrconfig in the script not work?
     os.system("rm -rf ${POWR_WORK}/scratch")
     os.system("rm -rf ${POWR_WORK}/output")
     os.system("rm -rf ${POWR_WORK}/wrdata1")
@@ -56,6 +73,7 @@ def get_chain(set_aliases):
 
 @pytest.fixture(scope="module")
 def run_colitest(get_chain):
+    # need aliases and env for this to run on CI
     # run colitest
     colitest_command = "${POWR_WORK}/wrjobs/colitest1"
     temp = subprocess.run(
@@ -167,4 +185,5 @@ def test_colitest_run(set_vars, run_colitest):
 def test_read_model(set_vars, run_colitest):
     model_output = set_vars / "wrdata1" / "MODEL_STUDY_DONE"
     data_np = np.fromfile(model_output, dtype=float)
-    print(data_np[0])
+    assert len(data_np) == 2233856
+    assert np.allclose(data_np[256138:256149], MODEL_DATA_REF)
