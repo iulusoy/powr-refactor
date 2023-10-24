@@ -28,6 +28,8 @@ def set_vars():
     powrdir = filedir.parents[0] / "powr"
     os.environ["POWR_WORK"] = powrdir.as_posix()
     os.environ["POWREXEPATH"] = (powrdir / "exe.dir").as_posix()
+    print("powr work in set_vars")
+    os.system("echo ${POWR_WORK}")
     return powrdir
 
 
