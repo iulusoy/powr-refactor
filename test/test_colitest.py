@@ -28,8 +28,6 @@ def set_vars():
     powrdir = filedir.parents[0] / "powr"
     os.environ["POWR_WORK"] = powrdir.as_posix()
     os.environ["POWREXEPATH"] = (powrdir / "exe.dir").as_posix()
-    print("powr work in set_vars")
-    os.system("echo ${POWR_WORK}")
     return powrdir
 
 
@@ -62,7 +60,6 @@ def get_chain(set_aliases):
         capture_output=True,
         text=True,
     )
-    os.system("ls ${POWR_WORK}")
     yield "Created chain 1"
     # teardown directories
     # we need access to ${POWR_WORK} so shutil will not work
@@ -89,11 +86,7 @@ def run_colitest(get_chain):
     )
     print(temp.stdout)
     print(temp.stderr)
-    os.system("ls ${POWR_WORK}")
-    os.system("ls ${POWR_WORK}/wrdata1")
-    os.system("ls ${POWR_WORK}/output")
     os.system("cat ${POWR_WORK}/output/colitest1.cpr")
-
     yield "ran colitest"
     os.system("rm -rf ${POWR_WORK}/tmp_data")
     return "Cleaned colitest tmp data"
