@@ -85,7 +85,8 @@ def run_colitest(get_chain):
         capture_output=True,
         text=True,
     )
-    print(temp)
+    print(temp.stdout)
+    print(temp.stderr)
     os.system("ls ${POWR_WORK}")
     os.system("ls ${POWR_WORK}/wrdata1")
     os.system("ls ${POWR_WORK}/output")

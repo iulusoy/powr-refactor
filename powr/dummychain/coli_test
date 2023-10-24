@@ -14,6 +14,8 @@ HOSTNAME=$(hostname | cut -d '.' -f 1)
 Mkdir() { [ -d $1 ] || { printf "mkdir $1\n"; mkdir $1; }; }
 
 #path of the scratch directory in HOME-Bereich
+echo "+++++++++++powr work dir:++++++++"
+echo "$POWR_WORK"
 pathbreak=$POWR_WORK/scratch/wruniq${kn}
 Mkdir $pathbreak
 
