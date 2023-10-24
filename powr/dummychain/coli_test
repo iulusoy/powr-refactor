@@ -1,5 +1,5 @@
 #!/bin/bash
-source ~/.powrconfig
+# source ~/.powrconfig
 
 #------ begin of settings --------------------------------
 vnice=19
