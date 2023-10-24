@@ -22,6 +22,7 @@ jobs:
         sparse-checkout: |
           src
           powr
+          test
     - name: get fortran compiler
       uses: iulusoy/setup-fortran@v0
       id: setup-fortran
@@ -38,21 +39,23 @@ jobs:
         make
     - name: create folder structure
       run: |
+        mkdir powr/exe.dir
         mkdir powr/exe_dev.dir
+        cp src/*.opt powr/exe.dir/.
         cp src/*.opt powr/exe_dev.dir/.
-    - name: set up environment
-      run: |
-        cp powr/powrconfig .powrconfig
-        source .powrconfig
-        source powr/proc.dir/bash_setup
-        # csh_setup for MacOS?
-    - name: create chain
-      run: |
-        makechain 1
-    - name: run colitest
-      run: | 
-        sub colitest1
+        cp powr/powrconfig ~/.powrconfig
     - name: get the test models
       run: | 
         wget -O testmodels.tgz https://heibox.uni-heidelberg.de/f/a62c7ae5559d43a0a8b2/?dl=1
         tar -xzf testmodels.tgz
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
+    - name: run integration tests
+      run: |
+        python -m pytest -svv test/test_wrstart.py
