@@ -173,3 +173,6 @@ doc/
 
 # testmodels
 testmodels/
+
+# modified .powrconfig
+powr/.powrconfig
