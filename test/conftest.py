@@ -11,31 +11,31 @@ def set_vars():
     powrdir = filedir.parents[0] / "powr"
     os.environ["POWR_WORK"] = powrdir.as_posix()
     os.environ["POWREXEPATH"] = (powrdir / "exe.dir").as_posix()
+    # create the tmp_2day folder if not exists
+    tmp_2day = powrdir / "tmp_2day"
+    if not os.path.exists(tmp_2day):
+        os.mkdir(tmp_2day)
     return powrdir
 
 
+# inject path into powrconfig
 @pytest.fixture(scope="session")
-def set_aliases(set_vars):
-    setup_file = "bash_setup"  # this could be different on MacOS
-    # the aliases setup currently does not work as the aliases
-    # are destryed between subprocess sessions
-    # either we set them in the python script or
-    # run explicitly with passing the env as dict
-    full_file_path = "${POWR_WORK}/proc.dir/" + setup_file
-    subprocess.run(
-        full_file_path,
-        shell=True,
-        check=True,
-        executable="/bin/bash",
-        capture_output=True,
-        text=True,
-    )
+def inject_path(set_vars):
+    powrconfig_file = set_vars / "powrconfig"
+    with open(powrconfig_file, "r") as f:
+        powrconfig = f.read()
+    # now insert path in correct spot
+    temp = powrconfig.split("export POWR_WORK=")
+    powrconfig = temp[0] + "export POWR_WORK=" + set_vars.as_posix() + temp[1]
+    powrconfig_file = set_vars / ".powrconfig"
+    with open(powrconfig_file, "w") as f:
+        f.write(powrconfig)
 
 
 @pytest.fixture(scope="session")
-def get_chain(set_aliases):
+def get_chain(inject_path):
     makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1"
-    subprocess.run(
+    temp = subprocess.run(
         makechain_command,
         shell=True,
         check=True,
@@ -43,6 +43,8 @@ def get_chain(set_aliases):
         capture_output=True,
         text=True,
     )
+    print(temp.stdout)
+    print(temp.stderr)
     yield "Created chain 1"
     # teardown directories
     # we need access to ${POWR_WORK} so shutil will not work

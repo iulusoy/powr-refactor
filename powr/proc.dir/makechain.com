@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# source ~/.powrconfig || exit
+source ~/.powrconfig || exit
 
 # this script generates a new chain for PoWR with number "kn" given via call
 # created by H. Todt 05.03.2008

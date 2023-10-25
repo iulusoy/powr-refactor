@@ -38,6 +38,7 @@ def run_colitest(get_chain):
     os.system("cat ${POWR_WORK}/output/colitest1.cpr")
     yield "ran colitest"
     os.system("rm -rf ${POWR_WORK}/tmp_data")
+    os.system("rm -rf ${POWR_WORK}/tmp_2day/*")
     return "Cleaned colitest tmp data"
 
 
@@ -69,6 +70,8 @@ def test_makechain(set_vars, get_chain):
     wrdata1_content = [
         "CARDS",
         "DATOM",
+        "FEDAT",
+        "FEDAT_FORMAL",
         "FGRID",
         "FORMAL_CARDS",
         "MODEL",
@@ -136,5 +139,5 @@ def test_colitest_run(set_vars, run_colitest):
 def test_read_model(set_vars, run_colitest):
     model_output = set_vars / "wrdata1" / "MODEL_STUDY_DONE"
     data_np = np.fromfile(model_output, dtype=float)
-    assert len(data_np) == 2233856
+    assert len(data_np) == 2246784
     assert np.allclose(data_np[256138:256149], MODEL_DATA_REF)
