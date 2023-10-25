@@ -23,7 +23,6 @@ def run_wrstart(get_chain):
     os.system("ls ${POWR_WORK}/wrdata1")
     os.system("ls ${POWR_WORK}/output")
     os.system("cat ${POWR_WORK}/output/*.cpr")
-
     yield "ran powr full cycle"
     os.system("rm -rf ${POWR_WORK}/tmp_data")
     return "Cleaned powr tmp data"

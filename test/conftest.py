@@ -31,7 +31,6 @@ def inject_path(set_vars):
     with open(powrconfig_file, "w") as f:
         f.write(powrconfig)
     os.system("cp ${POWR_WORK}/.powrconfig ${HOME}/.powrconfig")
-    os.system("echo ${HOME}")
 
 
 @pytest.fixture(scope="session")
