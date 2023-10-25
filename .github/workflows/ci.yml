@@ -45,7 +45,6 @@ jobs:
       run: |
         mkdir powr/exe_dev.dir
         cp src/*.opt powr/exe_dev.dir/.
-        cp powr/powrconfig ~/.powrconfig
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
