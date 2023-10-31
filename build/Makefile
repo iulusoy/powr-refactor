@@ -1,6 +1,7 @@
-BINDIR=../powr/exe.dir
-BINDIR_DEV=../powr/exe_dev.dir
-SRCDIR=../src/
+BINDIR:=../powr/exe.dir/
+BINDIR_DEV:=../powr/exe_dev.dir/
+SRCDIR:=../src/
+LIBDIR:=../lib/
 
 
 # Makefile to create all PoWR exe-files (.exe and .exe.opt) from the .f files in the same directory
@@ -17,7 +18,7 @@ FFLAGS_OPT = -assume byterecl -save -extend-source  -O2 -fpe0 -traceback -mcmode
 MKLPATH    = ${MKLROOT}/lib/intel64
 MKLINCLUDE = ${MKLROOT}/include
 
-LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium 
+LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -I${LIBDIR} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium
 LINKER_DYNAMIC = -shared-intel 
 # LINKER_STATIC  = -L${MKLPATH} -I${MKLINCLUDE} -Wl,--start-group ${MKLPATH}/libmkl_intel_lp64.a ${MKLPATH}/libmkl_sequential.a ${MKLPATH}/libmkl_core.a -Wl,--end-group -lpthread 
 
@@ -37,123 +38,123 @@ WRSTARTOBJECTS =  addhistentry.o  append_autolevels.o  bfcross.o  bnue.o  clock.
 
 .PHONY : all all_exe all_opt clean
 
-all : all_exe all_opt
-all_exe : adapter.exe coli.exe como.exe extrap.exe formal.exe modify.exe msinfo.exe newdatom.exe newformal_cards.exe njn.exe steal.exe wrcont.exe wrstart.exe
-all_opt : adapter.exe.opt coli.exe.opt como.exe.opt extrap.exe.opt formal.exe.opt modify.exe.opt msinfo.exe.opt newdatom.exe.opt newformal_cards.exe.opt njn.exe.opt steal.exe.opt wrcont.exe.opt wrstart.exe.opt
+all : $(BINDIR_DEV)/all_exe $(BINDIR)/all_opt
+$(BINDIR_DEV)/all_exe : $(BINDIR_DEV)/adapter.exe $(BINDIR_DEV)/coli.exe $(BINDIR_DEV)/como.exe $(BINDIR_DEV)/extrap.exe $(BINDIR_DEV)/formal.exe $(BINDIR_DEV)/modify.exe $(BINDIR_DEV)/msinfo.exe $(BINDIR_DEV)/newdatom.exe $(BINDIR_DEV)/newformal_cards.exe $(BINDIR_DEV)/njn.exe $(BINDIR_DEV)/steal.exe $(BINDIR_DEV)/wrcont.exe $(BINDIR_DEV)/wrstart.exe
+$(BINDIR)/all_opt : $(BINDIR)/adapter.exe.opt $(BINDIR)/coli.exe.opt $(BINDIR)/como.exe.opt $(BINDIR)/extrap.exe.opt $(BINDIR)/formal.exe.opt $(BINDIR)/modify.exe.opt $(BINDIR)/msinfo.exe.opt $(BINDIR)/newdatom.exe.opt $(BINDIR)/newformal_cards.exe.opt $(BINDIR)/njn.exe.opt $(BINDIR)/steal.exe.opt $(BINDIR)/wrcont.exe.opt $(BINDIR)/wrstart.exe.opt
 
-adapter.exe : $(addprefix $(SRCDIR),$(ADAPTEROBJECTS)) mainadapter.for
+$(BINDIR_DEV)/adapter.exe : $(addprefix $(SRCDIR),$(ADAPTEROBJECTS)) mainadapter.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-adapter.exe.opt : mainadapter.for $(addprefix $(SRCDIR),$(ADAPTEROBJECTS)) 
+$(BINDIR)/adapter.exe.opt : mainadapter.for $(addprefix $(SRCDIR),$(ADAPTEROBJECTS)) 
 	$(shell cat mainadapter.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(ADAPTEROBJECTS))) >> all.for )
 	$(shell mv all.for mainadapter.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainadapter.for
 
 
-coli.exe : $(addprefix $(SRCDIR),$(COLIOBJECTS)) maincoli.for
+$(BINDIR_DEV)/coli.exe : $(addprefix $(SRCDIR),$(COLIOBJECTS)) maincoli.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-coli.exe.opt : maincoli.for $(COLIOBJECTS) 
-	$(shell cat maincoli.for $(patsubst %.o, %.f,$(COLIOBJECTS)) >> all.for )
+$(BINDIR)/coli.exe.opt : maincoli.for $(addprefix $(SRCDIR),$(COLIOBJECTS))
+	$(shell cat maincoli.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(COLIOBJECTS))) >> all.for )
 	$(shell mv all.for maincoli.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) maincoli.for
 
 
-como.exe : $(addprefix $(SRCDIR),$(COMOOBJECTS)) maincomo.for
+$(BINDIR_DEV)/como.exe : $(addprefix $(SRCDIR),$(COMOOBJECTS)) maincomo.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-como.exe.opt : maincomo.for $(COMOOBJECTS) 
-	$(shell cat maincomo.for $(patsubst %.o, %.f,$(COMOOBJECTS)) >> all.for )
+$(BINDIR)/como.exe.opt : maincomo.for $(addprefix $(SRCDIR),$(COMOOBJECTS))
+	$(shell cat maincomo.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(COMOOBJECTS))) >> all.for )
 	$(shell mv all.for maincomo.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) maincomo.for
 
 
-extrap.exe : $(addprefix $(SRCDIR),$(EXTRAPOBJECTS)) mainextrap.for
+$(BINDIR_DEV)/extrap.exe : $(addprefix $(SRCDIR),$(EXTRAPOBJECTS)) mainextrap.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-extrap.exe.opt : mainextrap.for $(EXTRAPOBJECTS) 
-	$(shell cat mainextrap.for $(patsubst %.o, %.f,$(EXTRAPOBJECTS)) >> all.for )
+$(BINDIR)/extrap.exe.opt : mainextrap.for $(addprefix $(SRCDIR),$(EXTRAPOBJECTS))
+	$(shell cat mainextrap.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(EXTRAPOBJECTS))) >> all.for )
 	$(shell mv all.for mainextrap.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainextrap.for
 
 
-formal.exe : $(addprefix $(SRCDIR),$(FORMALOBJECTS)) mainformal.for
+$(BINDIR_DEV)/formal.exe : $(addprefix $(SRCDIR),$(FORMALOBJECTS)) mainformal.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-formal.exe.opt : mainformal.for $(FORMALOBJECTS) 
-	$(shell cat mainformal.for $(patsubst %.o, %.f,$(FORMALOBJECTS)) >> all.for )
+$(BINDIR)/formal.exe.opt : mainformal.for $(addprefix $(SRCDIR),$(FORMALOBJECTS))
+	$(shell cat mainformal.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(FORMALOBJECTS))) >> all.for )
 	$(shell mv all.for mainformal.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainformal.for
 
 
-modify.exe : $(addprefix $(SRCDIR),$(MODIFYOBJECTS)) mainmodify.for
+$(BINDIR_DEV)/modify.exe : $(addprefix $(SRCDIR),$(MODIFYOBJECTS)) mainmodify.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-modify.exe.opt : mainmodify.for $(MODIFYOBJECTS) 
-	$(shell cat mainmodify.for $(patsubst %.o, %.f,$(MODIFYOBJECTS)) >> all.for )
+$(BINDIR)/modify.exe.opt : mainmodify.for $(addprefix $(SRCDIR),$(MODIFYOBJECTS))
+	$(shell cat mainmodify.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(MODIFYOBJECTS))) >> all.for )
 	$(shell mv all.for mainmodify.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainmodify.for
 
 
-msinfo.exe : $(addprefix $(SRCDIR),$(MSINFOOBJECTS)) mainmsinfo.for
+$(BINDIR_DEV)/msinfo.exe : $(addprefix $(SRCDIR),$(MSINFOOBJECTS)) mainmsinfo.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-msinfo.exe.opt : mainmsinfo.for $(MSINFOOBJECTS) 
-	$(shell cat mainmsinfo.for $(patsubst %.o, %.f,$(MSINFOOBJECTS)) >> all.for )
+$(BINDIR)/msinfo.exe.opt : mainmsinfo.for $(addprefix $(SRCDIR),$(MSINFOOBJECTS))
+	$(shell cat mainmsinfo.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(MSINFOOBJECTS))) >> all.for )
 	$(shell mv all.for mainmsinfo.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainmsinfo.for
 
 
-newdatom.exe : $(addprefix $(SRCDIR),$(NEWDATOMOBJECTS)) mainnewdatom.for
+$(BINDIR_DEV)/newdatom.exe : $(addprefix $(SRCDIR),$(NEWDATOMOBJECTS)) mainnewdatom.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-newdatom.exe.opt : mainnewdatom.for $(NEWDATOMOBJECTS) 
-	$(shell cat mainnewdatom.for $(patsubst %.o, %.f,$(NEWDATOMOBJECTS)) >> all.for )
+$(BINDIR)/newdatom.exe.opt : mainnewdatom.for $(addprefix $(SRCDIR),$(NEWDATOMOBJECTS))
+	$(shell cat mainnewdatom.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(NEWDATOMOBJECTS))) >> all.for )
 	$(shell mv all.for mainnewdatom.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainnewdatom.for
 
 
-newformal_cards.exe : $(addprefix $(SRCDIR),$(NEWFORMAL_CARDSOBJECTS)) mainnewformal_cards.for
+$(BINDIR_DEV)/newformal_cards.exe : $(addprefix $(SRCDIR),$(NEWFORMAL_CARDSOBJECTS)) mainnewformal_cards.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-newformal_cards.exe.opt : mainnewformal_cards.for $(NEWFORMAL_CARDSOBJECTS) 
-	$(shell cat mainnewformal_cards.for $(patsubst %.o, %.f,$(NEWFORMAL_CARDSOBJECTS)) >> all.for )
+$(BINDIR)/newformal_cards.exe.opt : mainnewformal_cards.for $(addprefix $(SRCDIR),$(NEWFORMAL_CARDSOBJECTS)) 
+	$(shell cat mainnewformal_cards.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(NEWFORMAL_CARDSOBJECTS))) >> all.for )
 	$(shell mv all.for mainnewformal_cards.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainnewformal_cards.for
 
 
-njn.exe : $(addprefix $(SRCDIR),$(NJNOBJECTS)) mainnjn.for
+$(BINDIR_DEV)/njn.exe : $(addprefix $(SRCDIR),$(NJNOBJECTS)) mainnjn.for
 	$(FC) -o $(@) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-njn.exe.opt : mainnjn.for $(NJNOBJECTS) 
-	$(shell cat mainnjn.for $(patsubst %.o, %.f,$(NJNOBJECTS)) >> all.for )
+$(BINDIR)/njn.exe.opt : mainnjn.for $(addprefix $(SRCDIR),$(NJNOBJECTS))
+	$(shell cat mainnjn.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(NJNOBJECTS))) >> all.for )
 	$(shell mv all.for mainnjn.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainnjn.for
 
-steal.exe : $(addprefix $(SRCDIR),$(STEALOBJECTS)) mainsteal.for
+$(BINDIR_DEV)/steal.exe : $(addprefix $(SRCDIR),$(STEALOBJECTS)) mainsteal.for
 	$(FC) -o $(@) $(FFLAGS)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
 
-steal.exe.opt : mainsteal.for $(STEALOBJECTS) 
-	$(shell cat mainsteal.for $(patsubst %.o, %.f,$(STEALOBJECTS)) >> all.for )
+$(BINDIR)/steal.exe.opt : mainsteal.for $(addprefix $(SRCDIR),$(STEALOBJECTS))
+	$(shell cat mainsteal.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(STEALOBJECTS))) >> all.for )
 	$(shell mv all.for mainsteal.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainsteal.for
 
 
-wrcont.exe : $(addprefix $(SRCDIR),$(WRCONTOBJECTS)) mainwrcont.for
+$(BINDIR_DEV)/wrcont.exe : $(addprefix $(SRCDIR),$(WRCONTOBJECTS)) mainwrcont.for
 	$(FC) -o $(@) $(FFLAGS)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-wrcont.exe.opt : mainwrcont.for $(WRCONTOBJECTS) 
-	$(shell cat mainwrcont.for $(patsubst %.o, %.f,$(WRCONTOBJECTS)) >> all.for )
+$(BINDIR)/wrcont.exe.opt : mainwrcont.for $(addprefix $(SRCDIR),$(WRCONTOBJECTS))
+	$(shell cat mainwrcont.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(WRCONTOBJECTS))) >> all.for )
 	$(shell mv all.for mainwrcont.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainwrcont.for
 
 
-wrstart.exe : $(addprefix $(SRCDIR),$(WRSTARTOBJECTS)) mainwrstart.for
+$(BINDIR_DEV)/wrstart.exe : $(addprefix $(SRCDIR),$(WRSTARTOBJECTS)) mainwrstart.for
 	$(FC) -o $(@) $(FFLAGS)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) $(^)
 
-wrstart.exe.opt : mainwrstart.for $(WRSTARTOBJECTS) 
-	$(shell cat mainwrstart.for $(patsubst %.o, %.f,$(WRSTARTOBJECTS)) >> all.for )
+$(BINDIR)/wrstart.exe.opt : mainwrstart.for $(addprefix $(SRCDIR),$(WRSTARTOBJECTS))
+	$(shell cat mainwrstart.for $(patsubst %.o, %.f,$(addprefix $(SRCDIR),$(WRSTARTOBJECTS))) >> all.for )
 	$(shell mv all.for mainwrstart.for)
 	$(FC) -o $(@) $(FFLAGS_OPT)  $(LINKER_OPTIONS) $(LINKER_DYNAMIC) mainwrstart.for
 
