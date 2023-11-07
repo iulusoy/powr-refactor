@@ -24,7 +24,7 @@ MODEL_DATA_REF = np.array(
 def run_colitest(get_chain):
     # need aliases and env for this to run on CI
     # run colitest
-    colitest_command = "${POWR_WORK}/wrjobs/colitest1"
+    colitest_command = "${POWR_WORK}/wrjobs/colitest1 dbx"
     temp = subprocess.run(
         colitest_command,
         shell=True,
@@ -140,4 +140,6 @@ def test_read_model(set_vars, run_colitest):
     model_output = set_vars / "wrdata1" / "MODEL_STUDY_DONE"
     data_np = np.fromfile(model_output, dtype=float)
     assert len(data_np) == 2246784
+    # the original file length is 2233856, so if the coli job does not run
+    # the test will fail and the model file length will be 2233856
     assert np.allclose(data_np[256138:256149], MODEL_DATA_REF)

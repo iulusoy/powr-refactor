@@ -12,8 +12,8 @@ linkuser=$(shell whoami)
 linkhost=$(shell hostname)
 
 FC = ifort -i8 -r8
-FFLAGS     = -assume byterecl -save -extend-source  -O1 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
-FFLAGS_OPT = -assume byterecl -save -extend-source  -O2 -fpe0 -traceback -mcmodel medium -g -axCORE-AVX2 -ipo -unroll -fpconstant -fp-model strict
+FFLAGS     = -assume byterecl -save -extend-source  -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -fp-stack-check 
+FFLAGS_OPT = -assume byterecl -save -extend-source  -O3 -fpe0 -traceback -mcmodel medium -g -axCORE-AVX2 -ipo -unroll -fpconstant -fp-model strict
 
 MKLPATH    = ${MKLROOT}/lib/intel64
 MKLINCLUDE = ${MKLROOT}/include
@@ -178,5 +178,5 @@ $(BINDIR)/wrstart.exe.opt : mainwrstart.for $(addprefix $(SRCDIR),$(WRSTARTOBJEC
 clean :
 	rm -f *.o
 	rm -f *.for
-	rm -f *.exe
-	rm -f *.exe.opt
+	rm -f $(BINDIR_DEV)/*.exe
+	rm -f $(BINDIR)/*.exe.opt
