@@ -31,6 +31,7 @@ path=$POWR_WORK/wrdata$kn
 # and path where the non-optimized version has been linked (for debugger!)
 if [[ $HOSTTYPE == *x86_64* ]] ; then
     exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
+    exedevpath=${POWREXEDEBUGPATH:-$POWR_WORK/exe_dev.dir}
     if [ _$POWR_INSTTYPE == _local ] ; then
         export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
     elif [ _$POWR_INSTTYPE == _potsdam ] ; then
@@ -73,15 +74,20 @@ fi
 wait=false
 vstop=false
 dbx=false
+nonopt=false
 if [ $# -eq 2 ] ; then
   if [ "_$2" == '_dbx' ] ; then
     dbx=true
+  elif [ "_$2" == '_nonopt' ] ; then
+   nonopt=true
+   echo "Job wruniq${kn} in DEBUG NONOPT mode !!!!!"
   else
     echo "$0: Abort: unknown option: $2" >> $POWR_WORK/output/wrstart$kn.cpr
     exit
   fi
 else
   dbx=false
+  nonopt=false
 fi
 
 mkdir -p $path1
@@ -168,14 +174,25 @@ chmod u+w $pathscratch/*
 echo '... all files have been fetched' >> $POWR_WORK/output/wrstart"$kn".cpr
 
 # exe files
-cp $exepath/wrstart.exe.opt "$kn"_wrstart.exe
-cp $exepath/steal.exe.opt   "$kn"_steal.exe
-cp $exepath/adapter.exe.opt "$kn"_adapter.exe
-
+if [ "$dbx" == 'false' ] ; then
+  if [ "$nonopt" == 'false' ] ; then
+    cp $exepath/wrstart.exe.opt "$kn"_wrstart.exe
+    cp $exepath/steal.exe.opt   "$kn"_steal.exe
+    cp $exepath/adapter.exe.opt "$kn"_adapter.exe
+  fi
+fi
 # Debugger dbx -- provide here the non-optimized exe file to be debugged!
 if [ "$dbx" == 'true' ] ; then
   echo '--------  Debugger dbx is on'
   cp $DBXPATH/wrstart.exe      "$kn"_wrstart.exe
+fi
+# use nonoptimized binaries for computing
+if [ "$nonopt" == 'true' ] ; then
+  echo '--------  Debugger nonopt is on' 
+  cp ${exedevpath}/wrcont.exe    "${kn}"_wrcont.exe       
+  cp ${exedevpath}/como.exe      "${kn}"_como.exe           
+  cp ${exedevpath}/coli.exe      "${kn}"_coli.exe
+  cp ${exedevpath}/steal.exe     "${kn}"_steal.exe    
 fi
 
 #

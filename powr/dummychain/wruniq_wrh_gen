@@ -30,6 +30,7 @@ lom=${lom:-$POWR_WORK/wrjobs/list-of-machines}
 # and path where the non-optimized version has been linked (for debugger!)
 if [[ $HOSTTYPE == *x86_64* ]] ; then
     exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
+    exedevpath=${POWREXEDEBUGPATH:-$POWR_WORK/exe_dev.dir}
     if [ _$POWR_INSTTYPE == _local ] ; then
         export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
     elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
@@ -71,12 +72,17 @@ fi
 #------------- end of settings ----------------------------
 
 dbx=false
+nonopt=false
 if [ $# -eq 2 ] ; then
  if [ "_$2" == '_dbx' ] ; then
    dbx=true
    echo "Job wruniq${kn} in DEBUG mode !!!!!"
+ elif [ "_$2" == '_nonopt' ] ; then
+   nonopt=true
+   echo "Job wruniq${kn} in DEBUG NONOPT mode !!!!!"
  else
    dbx=false
+   nonopt=false
  fi
 fi
 
@@ -147,12 +153,16 @@ chmod u+w ${pathscratch}/*
 echo '... all files have been fetched' >> $POWR_WORK/output/wruniq"${kn}".cpr
 
 #  optimized exe files
-cp ${exepath}/wrcont.exe.opt "${kn}"_wrcont.exe       
-cp ${exepath}/como.exe.opt   "${kn}"_como.exe           
-cp ${exepath}/coli.exe.opt   "${kn}"_coli.exe          
-cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
-cp ${exepath}/extrap.exe.opt "${kn}"_extrap.exe
-cp ${exepath}/modify.exe.opt "${kn}"_modify.exe
+if [ "$dbx" == 'false' ] ; then
+  if [ "$nonopt" == 'false' ] ; then
+    cp ${exepath}/wrcont.exe.opt "${kn}"_wrcont.exe       
+    cp ${exepath}/como.exe.opt   "${kn}"_como.exe           
+    cp ${exepath}/coli.exe.opt   "${kn}"_coli.exe          
+    cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
+    cp ${exepath}/extrap.exe.opt "${kn}"_extrap.exe
+    cp ${exepath}/modify.exe.opt "${kn}"_modify.exe
+  fi
+fi
 
 # Debugger dbx -- provide here the non-optimized exe file to be debugged!
 if [ "$dbx" == 'true' ] ; then
@@ -160,6 +170,15 @@ if [ "$dbx" == 'true' ] ; then
   cp ${DBXPATH}/coli.exe      "${kn}"_coli.exe
 #  cp $DBXPATH/steal.exe      "${kn}"_steal.exe
 fi
+# use nonoptimized binaries for computing
+if [ "$nonopt" == 'true' ] ; then
+  echo '--------  Debugger nonopt is on' 
+  cp ${exedevpath}/wrcont.exe    "${kn}"_wrcont.exe       
+  cp ${exedevpath}/como.exe      "${kn}"_como.exe           
+  cp ${exedevpath}/coli.exe      "${kn}"_coli.exe
+  cp ${exedevpath}/steal.exe     "${kn}"_steal.exe    
+fi
+
 
 : ------- CONTENT OF FILE G1 = NAME OF NEXT JOB ---------
 # SAFETY CHECK OF ALLOWED CONTENT:

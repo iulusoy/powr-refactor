@@ -181,7 +181,7 @@ fi
 # Debugger dbx -- provide here the non-optimized exe file to be debugged!
 if [ "$dbx" == 'true' ] ; then
   echo '--------  Debugger dbx is on' 
-#  cp $DBXPATH/steal.exe      "${kn}"_steal.exe
+  cp $DBXPATH/steal.exe      "${kn}"_steal.exe
 fi
 
 # use nonoptimized binaries for computing
