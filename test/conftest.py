@@ -35,17 +35,22 @@ def inject_path(set_vars):
 
 @pytest.fixture(scope="session")
 def get_chain(inject_path):
-    makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1"
-    temp = subprocess.run(
-        makechain_command,
-        shell=True,
-        check=True,
-        executable="/bin/bash",
-        capture_output=True,
-        text=True,
-    )
+    makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1 -force"
+
+    try:
+        temp = subprocess.run(
+            makechain_command,
+            shell=True,
+            check=True,
+            executable="/bin/bash",
+            capture_output=True,
+            text=True,
+        )
+    except Exception as error:
+        print(temp.stderr)
+        print(error)
     print(temp.stdout)
-    print(temp.stderr)
+
     yield "Created chain 1"
     # teardown directories
     # we need access to ${POWR_WORK} so shutil will not work

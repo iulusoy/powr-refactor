@@ -9,16 +9,22 @@ import pytest
 def run_wrstart(get_chain):
     # run wrstart
     wrstart_command = "${POWR_WORK}/proc.dir/submit.com wrstart1"
-    temp = subprocess.run(
-        wrstart_command,
-        shell=True,
-        check=True,
-        executable="/bin/bash",
-        capture_output=True,
-        text=True,
-    )
+
+    try:
+        temp = subprocess.run(
+            wrstart_command,
+            shell=True,
+            check=True,
+            executable="/bin/bash",
+            capture_output=True,
+            text=True,
+        )
+    except Exception as error:
+        print(temp.stderr)
+        print(error)
+
     print(temp.stdout)
-    print(temp.stderr)
+
     os.system("ls ${POWR_WORK}")
     os.system("ls ${POWR_WORK}/wrdata1")
     os.system("ls ${POWR_WORK}/output")

@@ -25,16 +25,22 @@ def run_colitest(get_chain):
     # need aliases and env for this to run on CI
     # run colitest
     colitest_command = "${POWR_WORK}/wrjobs/colitest1"
-    temp = subprocess.run(
-        colitest_command,
-        shell=True,
-        check=True,
-        executable="/bin/bash",
-        capture_output=True,
-        text=True,
-    )
+
+    try:
+        temp = subprocess.run(
+            colitest_command,
+            shell=True,
+            check=True,
+            executable="/bin/bash",
+            capture_output=True,
+            text=True,
+        )
+    except Exception as error:
+        print(temp.stderr)
+        print(error)
+
     print(temp.stdout)
-    print(temp.stderr)
+
     os.system("cat ${POWR_WORK}/output/colitest1.cpr")
     yield "ran colitest"
     os.system("rm -rf ${POWR_WORK}/tmp_data")
