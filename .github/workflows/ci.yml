@@ -40,7 +40,7 @@ jobs:
     - name: compile powr
       run: |
         cd src
-        make -j2
+        make
     - name: create folder structure
       run: |
         mkdir powr/exe_dev.dir
