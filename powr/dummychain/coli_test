@@ -31,7 +31,8 @@ lom=${lom:-$POWR_WORK/wrjobs/list-of-machines}
 # path to exe-files
 # and path where the non-optimized version has been linked (for debugger!)
 if [[ $HOSTTYPE == *x86_64* ]] ; then
-    exepath=${POWRVDEVPATH:-$POWR_WORK/exe_dev.dir}
+    exepath=${POWREXEPATH:-$POWR_WORK/exe_dev.dir}
+    exedevpath=${POWREXEDEBUGPATH:-$POWR_WORK/exe_dev.dir}
     if [ _$POWR_INSTTYPE == _local ] ; then
         export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
     elif [ _$POWR_INSTTYPE == _potsdam -o _$POWR_INSTTYPE == _niscluster ] ; then
@@ -43,7 +44,6 @@ else
     echo "Could not determine HOSTTYPE"
     exit
 fi
-
 # Path of the Ass. files (EDDI, DMFILE) --- ATTENTION! Needs big space!!
 TMPHOST=$(grep "^kette${kn}" $POWR_WORK/wrjobs/tmphosts | awk '{print $2}')
 if [ "_$TMPHOST" == '_' ] ; then
@@ -73,12 +73,17 @@ fi
 #------------- end of settings ----------------------------
 
 dbx=false
+nonopt=false
 if [ $# -eq 2 ] ; then
  if [ "_$2" == '_dbx' ] ; then
    dbx=true
-   echo "Job wruniq${kn} in DEBUG mode !!!!!"
+   echo "Job wruniq${kn} in DEBUG DBX mode !!!!!"
+ elif [ "_$2" == '_nonopt' ] ; then
+   nonopt=true
+   echo "Job wruniq${kn} in DEBUG NONOPT mode !!!!!"
  else
    dbx=false
+   nonopt=false
  fi
 fi
 
@@ -165,20 +170,27 @@ echo '... all files have been fetched' >> $POWR_WORK/output/colitest"${kn}".cpr
 
 #  optimized exe files
 if [ "$dbx" == 'false' ] ; then
-  cp ${exepath}/wrcont.exe.opt "${kn}"_wrcont.exe       
-  cp ${exepath}/como.exe.opt   "${kn}"_como.exe           
-  cp ${exepath}/coli.exe.opt   "${kn}"_coli.exe          
-  cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
+  if [ "$nonopt" == 'false' ] ; then
+    cp ${exepath}/wrcont.exe.opt "${kn}"_wrcont.exe       
+    cp ${exepath}/como.exe.opt   "${kn}"_como.exe           
+    cp ${exepath}/coli.exe.opt   "${kn}"_coli.exe          
+    cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
+  fi
 fi
 
 # Debugger dbx -- provide here the non-optimized exe file to be debugged!
 if [ "$dbx" == 'true' ] ; then
   echo '--------  Debugger dbx is on' 
-  cp ${exepath}/wrcont.exe    "${kn}"_wrcont.exe       
-  cp ${exepath}/como.exe      "${kn}"_como.exe           
-  cp ${exepath}/coli.exe      "${kn}"_coli.exe
-  cp ${exepath}/steal.exe     "${kn}"_steal.exe    
 #  cp $DBXPATH/steal.exe      "${kn}"_steal.exe
+fi
+
+# use nonoptimized binaries for computing
+if [ "$nonopt" == 'true' ] ; then
+  echo '--------  Debugger nonopt is on' 
+  cp ${exedevpath}/wrcont.exe    "${kn}"_wrcont.exe       
+  cp ${exedevpath}/como.exe      "${kn}"_como.exe           
+  cp ${exedevpath}/coli.exe      "${kn}"_coli.exe
+  cp ${exedevpath}/steal.exe     "${kn}"_steal.exe    
 fi
 
 # ------- LOOP: EXECUTION OF PROGRAMS ---------------------------- 
@@ -225,8 +237,7 @@ fi
      echo 'now     COLI     ' $(date)
      echo '1' > G0 
      if [ "$dbx" == 'true' ] ; then
-        $nice -$vnice ./"${kn}"_coli.exe > coli.out
-        # eval "$DBX -I $DBXPATH/routines/ ${kn}_coli.exe"
+        eval "$DBX -I $DBXPATH/routines/ ${kn}_coli.exe"
      else
         $nice -$vnice ./"${kn}"_coli.exe > coli.out
      fi
@@ -252,8 +263,7 @@ fi
         cp -f steal.plot steal_last.plot
      fi
      if [ "$dbx" == 'true' ] ; then
-        $nice -$vnice ./"${kn}"_steal.exe > steal.out
-        # eval "$DBX -I $DBXPATH/routines/ ${kn}_steal.exe"
+        eval "$DBX -I $DBXPATH/routines/ ${kn}_steal.exe"
      else
         $nice -$vnice ./"${kn}"_steal.exe > steal.out
      fi
