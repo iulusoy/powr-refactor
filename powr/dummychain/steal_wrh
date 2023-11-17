@@ -7,8 +7,9 @@ path=$POWR_WORK/wrdata$kn
 # path to exe-files
 # and path where the non-optimized version has been linked (for debugger!)
 if [[ $HOSTTYPE == *x86_64* ]] ; then
-    # exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
-    exepath=${POWRVD20PATH:-$POWR_WORK/exe_vd20.dir}    
+    exepath=${POWREXEPATH:-$POWR_WORK/exe.dir}
+    exedevpath=${POWREXEDEBUGPATH:-$POWR_WORK/exe_dev.dir}
+    # exepath=${POWRVD20PATH:-$POWR_WORK/exe_vd20.dir}
     # exepath=${POWRVXXLPATH:-$POWR_WORK/exe_xxl.dir}
     if [ _$POWR_INSTTYPE == _local ] ; then
         export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs
@@ -52,6 +53,9 @@ NAME=MODEL
 if [ $# -eq 1 ] ; then
   if [ $1 == 'dbx' ] ; then
     dbx=true
+  elif [ "_$2" == 'nonopt' ] ; then
+   nonopt=true
+   echo "Job steal${kn} in DEBUG NONOPT mode !!!!!"
   else
     echo unknown option
     exit
@@ -76,11 +80,21 @@ echo 'active' > status
 #
 
 # optimized exe files
-cp $exepath/steal.exe.opt            "$kn"_steal.exe
+if [ "$dbx" == 'false' ] ; then
+  if [ "$nonopt" == 'false' ] ; then
+    cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
+  fi
+fi
 
 if [ $dbx == 'true' ] ; then
   echo '--------  Debugger dbx is on'
   cp $DBXPATH/steal.exe      "$kn"_steal.exe
+fi
+
+# use nonoptimized binaries for computing
+if [ "$nonopt" == 'true' ] ; then
+  echo '--------  Debugger nonopt is on' 
+  cp ${exedevpath}/steal.exe     "${kn}"_steal.exe    
 fi
 
 # FETCH AND ASSIGN THE NECESSARY FILES: --------------------
