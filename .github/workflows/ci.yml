@@ -1,4 +1,4 @@
-name: CI
+name: compile and run colitest
 
 on:
   push:
