@@ -176,3 +176,6 @@ testmodels/
 
 # modified .powrconfig
 powr/.powrconfig
+
+# but include Makefile in build
+!build/Makefile

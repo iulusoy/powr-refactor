@@ -12,7 +12,7 @@ linkuser=$(shell whoami)
 linkhost=$(shell hostname)
 
 FC = ifort -i8 -r8
-FFLAGS     = -assume byterecl -save -extend-source  -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -fp-stack-check 
+FFLAGS     = -assume byterecl -save -extend-source  -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict 
 FFLAGS_OPT = -assume byterecl -save -extend-source  -O3 -fpe0 -traceback -mcmodel medium -g -axCORE-AVX2 -ipo -unroll -fpconstant -fp-model strict
 
 MKLPATH    = ${MKLROOT}/lib/intel64
