@@ -25,6 +25,7 @@ jobs:
       with:
         sparse-checkout: |
           src
+          build
           powr
           test
     - name: get fortran compiler
@@ -39,12 +40,8 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        cd src
+        cd build
         make
-    - name: create folder structure
-      run: |
-        mkdir powr/exe_dev.dir
-        cp src/*.opt powr/exe_dev.dir/.
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
