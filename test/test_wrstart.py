@@ -9,6 +9,10 @@ import pytest
 def run_wrstart(get_chain, submit_options):
     if submit_options is None:
         submit_options = ""
+    # we actually need to wait for submit to finish
+    # wrstart finishes first then wruniq
+    # for wruniq, in wruniq1.log there appears a line
+    # ""
     submit_path = "${POWR_WORK}/proc.dir/submit.com wrstart1"
     submit_command = submit_path + submit_options
     # run wrstart

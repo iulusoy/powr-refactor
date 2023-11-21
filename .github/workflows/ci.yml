@@ -40,7 +40,6 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        cd build
         make
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
