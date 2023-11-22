@@ -128,21 +128,6 @@ wrcont.exe: $(WRCONTOBJ)
 wrstart.exe: $(WRSTARTOBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
 
-# for each program a file main${progam}.for is required in which ${progam}.f is called
-%.for :
-	@printf "      PROGRAM MAIN$(patsubst main%.for,%,$(@)) \n"                > main$(patsubst main%.for,%,$(@)).for
-	@printf "C***  Provide Link data for possible use in the programm\n"      >> main$(patsubst main%.for,%,$(@)).for
-	@printf "      CHARACTER LINK_DATE*30, LINK_USER*10, LINK_HOST*60\n"      >> main$(patsubst main%.for,%,$(@)).for
-	@printf "      COMMON / COM_LINKINFO / LINK_DATE, LINK_USER, LINK_HOST\n" >> main$(patsubst main%.for,%,$(@)).for
-	@printf "      LINK_DATE = '$(linkdate)'\n"                               >> main$(patsubst main%.for,%,$(@)).for
-	@printf "      LINK_USER = '$(linkuser)'\n"                               >> main$(patsubst main%.for,%,$(@)).for
-	@printf "      LINK_HOST = '$(linkhost)'\n"                               >> main$(patsubst main%.for,%,$(@)).for
-	@printf "                               \n"                               >> main$(patsubst main%.for,%,$(@)).for
-	@printf "      CALL $(patsubst main%.for,%,$(@)) \n"                      >> main$(patsubst main%.for,%,$(@)).for
-	@printf "      END\n"                                                     >> main$(patsubst main%.for,%,$(@)).for
-
-
-
 # rules to compile
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.f
 	$(FC) $(FFLAGS) -c $< -o $@
