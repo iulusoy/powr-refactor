@@ -15,6 +15,9 @@ MKLINCLUDE = ${MKLROOT}/include
 LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium 
 LINKER_DYNAMIC = -shared-intel
 
+# debug options and rules
+
+
 # relevant source files for the different programs
 ADAPTERSRC = adapop.f adapter.f adatrans.f addhistentry.f append_autolevels.f chrinstr.f clock.f closms.f cmsstore.f count.f datom.f decadp.f fedat.f findcharge.f idx.f install.f isrcheq.f jsymset.f lengthms.f lipo.f openms.f priadp.f readms.f remark.f rmodadp.f sargc.f sargp.f sargrest.f sargv.f second.f splinpox.f stamp.f storage.f trbk.f writms.f mainadapter.f
 SRC = $(addprefix $(SRC_DIR)/,$(ADAPTERSRC))
@@ -69,6 +72,8 @@ SRC = $(addprefix $(SRC_DIR)/,$(WRSTARTSRC))
 WRSTARTOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(SRC))
 
 # the different targets
+all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+
 adapter: adapter.exe
 coli: coli.exe
 como: como.exe
@@ -83,7 +88,6 @@ steal: steal.exe
 wrcont: wrcont.exe
 wrstart: wrstart.exe
 
-all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
 
 adapter.exe: $(ADAPTEROBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
