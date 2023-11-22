@@ -4,19 +4,17 @@
 # necessary directories
 SRC_DIR = src
 OBJ_DIR = build
-BIN_DIR = powr/exe_dev.dir
+BIN_DIR = powr/exe.dir
+BIN_DIR_DEBUG = powr/exe_dev.dir
 LIB_DIR = lib
 
 # compiler and linking options
 FC = ifort
-FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source  -O1 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
 MKLPATH    = ${MKLROOT}/lib/intel64
 MKLINCLUDE = ${MKLROOT}/include
 LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium 
 LINKER_DYNAMIC = -shared-intel
-
-# debug options and rules
-
 
 # relevant source files for the different programs
 ADAPTERSRC = adapop.f adapter.f adatrans.f addhistentry.f append_autolevels.f chrinstr.f clock.f closms.f cmsstore.f count.f datom.f decadp.f fedat.f findcharge.f idx.f install.f isrcheq.f jsymset.f lengthms.f lipo.f openms.f priadp.f readms.f remark.f rmodadp.f sargc.f sargp.f sargrest.f sargv.f second.f splinpox.f stamp.f storage.f trbk.f writms.f mainadapter.f
@@ -88,6 +86,11 @@ steal: steal.exe
 wrcont: wrcont.exe
 wrstart: wrstart.exe
 
+# debug options and rules
+# debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -traceback -fp-stack-check
+debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -traceback -fp-stack-check
+debug: coli steal
+debug: BIN_DIR = $(BIN_DIR_DEBUG)
 
 adapter.exe: $(ADAPTEROBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
@@ -137,4 +140,4 @@ print_info:
 	$(info COLIOBJ: $(COLIOBJ))
 
 clean:
-	rm -f build/*.o $(BIN_DIR)/*.exe
+	rm -f build/*.o $(BIN_DIR)/*.exe $(BIN_DIR_DEBUG)/*.exe

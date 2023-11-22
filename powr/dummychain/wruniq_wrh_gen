@@ -155,12 +155,12 @@ echo '... all files have been fetched' >> $POWR_WORK/output/wruniq"${kn}".cpr
 #  optimized exe files
 if [ "$dbx" == 'false' ] ; then
   if [ "$nonopt" == 'false' ] ; then
-    cp ${exepath}/wrcont.exe.opt "${kn}"_wrcont.exe       
-    cp ${exepath}/como.exe.opt   "${kn}"_como.exe           
-    cp ${exepath}/coli.exe.opt   "${kn}"_coli.exe          
-    cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
-    cp ${exepath}/extrap.exe.opt "${kn}"_extrap.exe
-    cp ${exepath}/modify.exe.opt "${kn}"_modify.exe
+    cp ${exepath}/wrcont.exe "${kn}"_wrcont.exe       
+    cp ${exepath}/como.exe   "${kn}"_como.exe           
+    cp ${exepath}/coli.exe   "${kn}"_coli.exe          
+    cp ${exepath}/steal.exe  "${kn}"_steal.exe    
+    cp ${exepath}/extrap.exe "${kn}"_extrap.exe
+    cp ${exepath}/modify.exe "${kn}"_modify.exe
   fi
 fi
 

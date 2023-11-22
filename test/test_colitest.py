@@ -130,7 +130,7 @@ def test_makechain(set_vars, get_chain):
 
 
 # check that colitest run produces correct output
-@pytest.mark.parametrize("colitest_options", [" nonopt"])
+@pytest.mark.parametrize("colitest_options", ["", " nonopt"])
 def test_colitest_run(set_vars, run_colitest):
     # check that output/colitest1.cpr is there
     # check that wrdata1/MODEL_STUDY_DONE is there

@@ -171,10 +171,10 @@ echo '... all files have been fetched' >> $POWR_WORK/output/colitest"${kn}".cpr
 #  optimized exe files
 if [ "$dbx" == 'false' ] ; then
   if [ "$nonopt" == 'false' ] ; then
-    cp ${exepath}/wrcont.exe.opt "${kn}"_wrcont.exe       
-    cp ${exepath}/como.exe.opt   "${kn}"_como.exe           
-    cp ${exepath}/coli.exe.opt   "${kn}"_coli.exe          
-    cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
+    cp ${exepath}/wrcont.exe "${kn}"_wrcont.exe       
+    cp ${exepath}/como.exe   "${kn}"_como.exe           
+    cp ${exepath}/coli.exe   "${kn}"_coli.exe          
+    cp ${exepath}/steal.exe  "${kn}"_steal.exe    
   fi
 fi
 

@@ -176,9 +176,9 @@ echo '... all files have been fetched' >> $POWR_WORK/output/wrstart"$kn".cpr
 # exe files
 if [ "$dbx" == 'false' ] ; then
   if [ "$nonopt" == 'false' ] ; then
-    cp $exepath/wrstart.exe.opt "$kn"_wrstart.exe
-    cp $exepath/steal.exe.opt   "$kn"_steal.exe
-    cp $exepath/adapter.exe.opt "$kn"_adapter.exe
+    cp $exepath/wrstart.exe "$kn"_wrstart.exe
+    cp $exepath/steal.exe   "$kn"_steal.exe
+    cp $exepath/adapter.exe "$kn"_adapter.exe
   fi
 fi
 # Debugger dbx -- provide here the non-optimized exe file to be debugged!

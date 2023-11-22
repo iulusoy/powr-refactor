@@ -82,7 +82,7 @@ echo 'active' > status
 # optimized exe files
 if [ "$dbx" == 'false' ] ; then
   if [ "$nonopt" == 'false' ] ; then
-    cp ${exepath}/steal.exe.opt  "${kn}"_steal.exe    
+    cp ${exepath}/steal.exe  "${kn}"_steal.exe    
   fi
 fi
 
