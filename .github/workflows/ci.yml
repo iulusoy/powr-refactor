@@ -41,7 +41,7 @@ jobs:
     - name: compile powr
       run: |
         make coli; make steal
-        rm -rf build/*.o
+        rm build/*.o
         make debug
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4

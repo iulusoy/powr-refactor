@@ -92,6 +92,11 @@ debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -
 debug: coli steal
 debug: BIN_DIR = $(BIN_DIR_DEBUG)
 
+# debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O1 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+debug_all: BIN_DIR = $(BIN_DIR_DEBUG)
+debug_all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+
 adapter.exe: $(ADAPTEROBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
 
