@@ -40,6 +40,7 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
+        mkdir build
         make coli; make steal
         rm build/*.o
         make debug
