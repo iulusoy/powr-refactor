@@ -37,7 +37,6 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        mkdir build
         make
         rm build/*.o
         make debug_all
