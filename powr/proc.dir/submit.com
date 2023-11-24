@@ -51,7 +51,8 @@ if [ $# -ge 2 ]; then
     $job dbx
     echo $1 with dbx gestartet >> $logfile
     exit
-
+  elif [ $2 = 'nonopt' ]; then
+    echo 'submit.com: with nonopt exe files'
 # ---- to-machine ------------------------------
   elif [ `echo $2 | cut -c1-3` = 'to-' ]; then
 ###################################################

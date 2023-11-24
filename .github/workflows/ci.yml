@@ -1,4 +1,4 @@
-name: CI
+name: compile and run colitest
 
 on:
   push:
@@ -25,6 +25,7 @@ jobs:
       with:
         sparse-checkout: |
           src
+          build
           powr
           test
     - name: get fortran compiler
@@ -39,12 +40,9 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        cd src
-        make
-    - name: create folder structure
-      run: |
-        mkdir powr/exe_dev.dir
-        cp src/*.opt powr/exe_dev.dir/.
+        make coli; make steal
+        rm build/*.o
+        make debug
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
