@@ -3,6 +3,8 @@ import subprocess
 import pytest
 import numpy as np
 
+import re
+
 MODEL_DATA_REF = np.array(
     [
         200.48528618028934,
@@ -147,3 +149,65 @@ def test_read_model(set_vars, run_colitest):
     data_np = np.fromfile(model_output, dtype=float)
     assert len(data_np) == 2246784
     assert np.allclose(data_np[256138:256149], MODEL_DATA_REF)
+
+
+    colitest_file_test = set_vars / "../test/data/colitest1.out"
+    colitest_file = set_vars / "output/colitest1.out"
+
+    with open(colitest_file_test, "r") as f:
+        output = f.read()
+
+    with open(colitest_file, "r") as f:
+        output_for_test = f.read()
+
+    out1 = output.find("Maximum Opacity at Depth 1: K= 41042;")
+    out2 = output_for_test.find("Maximum Opacity at Depth 1: K= 41042;")
+    assert out1 == out2
+
+    out1 = output.find("Lambda=     303.771;")
+    out2 = output_for_test.find("Lambda=     303.771;")
+    assert out1 == out2
+
+    out1 = output.find("Opacity= 0.15260E+05;")
+    out2 = output_for_test.find("Opacity= 0.15260E+05;")
+    assert out1 == out2
+
+    out1 = output.find("Opacities set to 0.01 * Background Opacity at    198 frequencies")
+    out2 = output_for_test.find("Opacities set to 0.01 * Background Opacity at    198 frequencies")
+    assert out1 == out2
+
+    out1 = output.find("SMALLPOP=   0.100E-07 chosen different from recommended default   0.100E-11")
+    out2 = output_for_test.find("SMALLPOP=   0.100E-07 chosen different from recommended default   0.100E-11")
+    assert out1 == out2
+
+    out1 = output.find("NEGATIVE BOUND-BOUND COLLISIONAL CROSS SECTION DETECTED (LEVELS: UP=   5, LOW=   2)")
+    out2 = output_for_test.find("NEGATIVE BOUND-BOUND COLLISIONAL CROSS SECTION DETECTED (LEVELS: UP=   5, LOW=   2)")
+    assert out1 == out2
+
+    out1 = output.find("MODEL START 21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17")
+    out2 = output_for_test.find("MODEL START 21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17")
+    assert out1 == out2
+
+    out1 = output.find("MAX: 67.1896  (G  4....1e  L=  7)       2ND: 65.5906  (G  4....1e  L=  8)")
+    out2 = output_for_test.find("MAX: 67.1896  (G  4....1e  L=  7)       2ND: 65.5906  (G  4....1e  L=  8)")
+    assert out1 == out2
+
+    out1 = output.find("MIN:  0.5000  (G  5....6e  L=  7)       2ND:  0.5000  (G  5....6e  L=  8)")
+    out2 = output_for_test.find("MIN:  0.5000  (G  5....6e  L=  7)       2ND:  0.5000  (G  5....6e  L=  8)")
+    assert out1 == out2
+
+    out1 = output.find("DEPTH POINTS CONSIDERED:    7  TO   50               CORMAX=66.1896     LOG=  1.82")
+    out2 = output_for_test.find("DEPTH POINTS CONSIDERED:    7  TO   50               CORMAX=66.1896     LOG=  1.82")
+    assert out1 == out2
+
+    out1 = output.find("GAMMAC=     80.0   GAMMAL=    800.0")
+    out2 = output_for_test.find("GAMMAC=     80.0   GAMMAL=    800.0")
+    assert out1 == out2
+
+    out1 = output.find("DELTAC=     -1.0   GAMMAR=    800.0   GAMMAD=      0.0")
+    out2 = output_for_test.find("DELTAC=     -1.0   GAMMAR=    800.0   GAMMAD=      0.0")
+    assert out1 == out2
+
+    out1 = output.find("CORRECTIONS REDUCED BY FACTOR 0.50")
+    out2 = output_for_test.find("CORRECTIONS REDUCED BY FACTOR 0.50")
+    assert out1 == out2

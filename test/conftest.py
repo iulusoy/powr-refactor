@@ -35,7 +35,8 @@ def inject_path(set_vars):
 
 @pytest.fixture(scope="session")
 def get_chain(inject_path):
-    makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1 -force"
+    #makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1 -force"
+    makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1"
 
     try:
         temp = subprocess.run(
