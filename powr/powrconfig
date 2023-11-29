@@ -13,6 +13,7 @@ export POWR_TMP_HOSTS_FILE=${POWR_WORK}/wrjobs/tmphosts
 # --------- local installation on single computer -----------------
 if [ _"${POWR_INSTTYPE}" == _"local" ] ; then
   export POWREXEPATH=${POWR_WORK}/exe.dir/
+  export POWREXEDEBUGPATH=${POWR_WORK}/exe_dev.dir/
   export POWRVD20PATH=${POWR_WORK}/exe_vd20.dir/
   export POWRVXXLPATH=${POWR_WORK}/exe_xxl.dir/
   export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${POWR_WORK}/intellibs/

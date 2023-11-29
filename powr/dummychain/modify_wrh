@@ -94,7 +94,7 @@ if [ $dbx == 'true' ] ; then
    eval "$DBX -I $DBXPATH/routines/ $DBXPATH/modify.exe"
    exit
 else
-   $exepath/modify.exe.opt > modify.out
+   $exepath/modify.exe > modify.out
 fi
 cat modify.out >> out
 

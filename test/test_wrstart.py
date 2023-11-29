@@ -5,14 +5,21 @@ import pytest
 # import numpy as np
 
 
-@pytest.fixture(scope="module")
-def run_wrstart(get_chain):
+@pytest.fixture()
+def run_wrstart(get_chain, submit_options):
+    if submit_options is None:
+        submit_options = ""
+    # we actually need to wait for submit to finish
+    # wrstart finishes first then wruniq
+    # for wruniq, in wruniq1.log there appears a line
+    # ""
+    submit_path = "${POWR_WORK}/proc.dir/submit.com wrstart1"
+    submit_command = submit_path + submit_options
     # run wrstart
-    wrstart_command = "${POWR_WORK}/proc.dir/submit.com wrstart1"
 
     try:
         temp = subprocess.run(
-            wrstart_command,
+            submit_command,
             shell=True,
             check=True,
             executable="/bin/bash",
@@ -34,5 +41,6 @@ def run_wrstart(get_chain):
     return "Cleaned powr tmp data"
 
 
+@pytest.mark.parametrize("submit_options", ["", " nonopt"])
 def test_run_wrstart(run_wrstart):
     print("done")

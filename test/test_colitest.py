@@ -3,8 +3,6 @@ import subprocess
 import pytest
 import numpy as np
 
-import re
-
 MODEL_DATA_REF = np.array(
     [
         200.48528618028934,
@@ -22,12 +20,16 @@ MODEL_DATA_REF = np.array(
 )
 
 
-@pytest.fixture(scope="module")
-def run_colitest(get_chain):
+@pytest.fixture()
+def run_colitest(get_chain, colitest_options):
     # need aliases and env for this to run on CI
     # run colitest
-    colitest_command = "${POWR_WORK}/wrjobs/colitest1"
 
+    # here we need to run with and without nonopt
+    if colitest_options is None:
+        colitest_options = ""
+    colitest_path = "${POWR_WORK}/wrjobs/colitest1"
+    colitest_command = colitest_path + colitest_options
     try:
         temp = subprocess.run(
             colitest_command,
@@ -134,6 +136,7 @@ def test_makechain(set_vars, get_chain):
 
 
 # check that colitest run produces correct output
+@pytest.mark.parametrize("colitest_options", ["", " nonopt"])
 def test_colitest_run(set_vars, run_colitest):
     # check that output/colitest1.cpr is there
     # check that wrdata1/MODEL_STUDY_DONE is there
@@ -141,13 +144,12 @@ def test_colitest_run(set_vars, run_colitest):
     model_output = set_vars / "wrdata1" / "MODEL_STUDY_DONE"
     assert colitest_output.is_file()
     assert model_output.is_file()
-
-
-# compare the output from the colitest job
-def test_read_model(set_vars, run_colitest):
+    # compare the output from the colitest job
     model_output = set_vars / "wrdata1" / "MODEL_STUDY_DONE"
     data_np = np.fromfile(model_output, dtype=float)
     assert len(data_np) == 2246784
+    # the original file length is 2233856, so if the coli job does not run
+    # the test will fail and the model file length will be 2233856
     assert np.allclose(data_np[256138:256149], MODEL_DATA_REF)
 
 
@@ -160,7 +162,7 @@ def test_read_model(set_vars, run_colitest):
     with open(colitest_file, "r") as f:
         output_for_test = f.read()
 
-    out1 = output.find("Maximum Opacity at Depth 1: K= 41042;")
+    out1 = output.find("Maximum Opacity at submit_commandDepth 1: K= 41042;")
     out2 = output_for_test.find("Maximum Opacity at Depth 1: K= 41042;")
     assert out1 == out2
 

@@ -10,13 +10,13 @@ This is a development repository for refactoring and improving the numerical sta
 
 ## Workflow
 
-The source code is a collection of >400 Fortran77 files with >500 subroutines. For a complete PoWR cycle, different programs are called consecutively. The execution is handled by bash scripts.
+The source code is a collection of >400 Fortran77 files with >500 subroutines. For a complete PoWR cycle, different programs are called consecutively. The execution is handled by bash scripts that call each other. These bash scripts are placed in `powr/dummychain` and `powr/proc.dir`.
 
 In this repository, the development focuses on the coli part of the execution cycle, in particular the [colimo](src/colimo.f) subroutine.
 
-Testing needs to include one and several coli cycles, as well as integration into the PoWR execution cycle.
+Testing needs to include one and several coli cycles, as well as integration into the PoWR execution cycle. For this, we run `colitest` and `wrstart`. The integration tests are only run before merging into the main branch, as they are quite costly in terms of compute time.
 
-It also includes compilation of the source code on MacOS and Ubuntu OS with different intel and gnu compilers. The results from different compilers and different optimizations need to be consistent.
+Testing also also includes compilation of the source code on MacOS and Ubuntu OS with different intel and gnu compilers. The results from different compilers and different optimizations need to be consistent.
 
 ## Tasks
 - initial set-up of the CI to ensure valid output
@@ -28,15 +28,17 @@ It also includes compilation of the source code on MacOS and Ubuntu OS with diff
 
 
 ## Detailed description of the tests
-To run all the commands, you need to source `.powrconfig` and `powr/proc.dir/bash_setup` to set the environment. 
 
-The testmodel files can be downloaded using
+The tests are driven by pytest. The configuration of the tests exports all the necessary variables and sets the stage for the bash scripts, that are then called in subprocesses. The output of the different jobs is compared to reference output in assert statements.
+
+There are also testmodel files included in the repository. These include runs that are numerically unstable and need to be debugged. The testmodel files can be downloaded using
 ```
 wget -O testmodels.tgz https://heibox.uni-heidelberg.de/f/a62c7ae5559d43a0a8b2/?dl=1
 ```
 
 ### `coli` test
-Create a new chain, ie 1, by `makechain 1`. This copies some scripts and executables into different folders:
+The coli test runs follow this workflow:
+- Create a new chain, ie 1, by `makechain 1`. This copies some scripts and executables into different folders:
 
 | Folder      | Purpose |
 | ----------- | ----------- |
@@ -50,12 +52,15 @@ Create a new chain, ie 1, by `makechain 1`. This copies some scripts and executa
 The most important files are in the `wrdata1` directory: `CARDS, DATOM, FEDAT, FEDAT_FORMAL, FGRID, FORMAL_CARDS, MODEL, MODEL_STUDY, NEWDATOM_INPUT, NEWFORMAL_CARDS_INPUT, next_job, next_jobz`  
 Most of these are input files, some control the job execution.
 
-The test is then run by `sub colitest1`. This creates the run log in `output` (`colitest1.log` and `colitest1.cpr`) - these are checked if the run are successful (`COLITEST  finished` in `log`). The results in `cpr` are compared to the reference file.
+- The test is then run by `sub colitest1` (or directly by calling colitest1). This creates the run log in `output` (`colitest1.log` and `colitest1.cpr`) - these are checked if the run are successful (`COLITEST  finished` in `log`). The results in `cpr` are compared to the reference file.
 
 The output that is generated in `wrdata1` is also compared: `MODEL_STUDY_DONE, MODEL_STUDY_DONE_STEAL`
 
 
 ### Integration test
+
+- First, a new chain is generated using `makechain 1`.
+- The integration test calls `wrstart` through `submit`. `wrstart` then calls `wruniq` which handles the COMO / COLI / STEAL program cycles. Since all of these processes are detached from the initial submit process, we need to check for completion by regularly parsing the log files.
 
 ### Unit tests
 TBD

@@ -10,7 +10,7 @@ def set_vars():
     filedir = Path(__file__).parents[0]
     powrdir = filedir.parents[0] / "powr"
     os.environ["POWR_WORK"] = powrdir.as_posix()
-    os.environ["POWREXEPATH"] = (powrdir / "exe.dir").as_posix()
+    os.environ["POWREXEPATH"] = (powrdir / "exe_dev.dir").as_posix()
     # create the tmp_2day folder if not exists
     tmp_2day = powrdir / "tmp_2day"
     if not os.path.exists(tmp_2day):
@@ -35,8 +35,8 @@ def inject_path(set_vars):
 
 @pytest.fixture(scope="session")
 def get_chain(inject_path):
-    #makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1 -force"
-    makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1"
+
+    makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1 -force"
 
     try:
         temp = subprocess.run(
@@ -50,6 +50,7 @@ def get_chain(inject_path):
     except Exception as error:
         print(temp.stderr)
         print(error)
+
     print(temp.stdout)
 
     yield "Created chain 1"

@@ -1,4 +1,4 @@
-name: coli integration test
+name: compile and run coli integation test
 
 on:
   push:
@@ -11,6 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        python-version: [3.9]
         os: [ubuntu-latest]
         # os: [ubuntu-latest, macos-latest]
         toolchain:
@@ -21,6 +22,7 @@ jobs:
       with:
         sparse-checkout: |
           src
+          build
           powr
           test
     - name: get fortran compiler
@@ -35,19 +37,13 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        cd src
         make
-    - name: create folder structure
-      run: |
-        mkdir powr/exe.dir
-        mkdir powr/exe_dev.dir
-        cp src/*.opt powr/exe.dir/.
-        cp src/*.opt powr/exe_dev.dir/.
-        cp powr/powrconfig ~/.powrconfig
-    - name: get the test models
-      run: | 
-        wget -O testmodels.tgz https://heibox.uni-heidelberg.de/f/a62c7ae5559d43a0a8b2/?dl=1
-        tar -xzf testmodels.tgz
+        rm build/*.o
+        make debug_all
+    # - name: get the test models
+      # run: | 
+        # wget -O testmodels.tgz https://heibox.uni-heidelberg.de/f/a62c7ae5559d43a0a8b2/?dl=1
+        # tar -xzf testmodels.tgz
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
