@@ -151,10 +151,10 @@ def test_read_model(set_vars, run_colitest):
     assert np.allclose(data_np[256138:256149], MODEL_DATA_REF)
 
 
-    colitest_file_test = set_vars / "../test/data/colitest1.out"
+    colitest_file_reference = set_vars / "../test/data/colitest1.out"
     colitest_file = set_vars / "output/colitest1.out"
 
-    with open(colitest_file_test, "r") as f:
+    with open(colitest_file_reference, "r") as f:
         output = f.read()
 
     with open(colitest_file, "r") as f:
@@ -210,4 +210,39 @@ def test_read_model(set_vars, run_colitest):
 
     out1 = output.find("CORRECTIONS REDUCED BY FACTOR 0.50")
     out2 = output_for_test.find("CORRECTIONS REDUCED BY FACTOR 0.50")
+    assert out1 == out2
+
+    #######################################################################
+
+    colitest_plot_reference = set_vars / "../test/data/colitest1.plot"
+    colitest_plot = set_vars / "output/colitest1.plot"
+
+    with open(colitest_plot_reference, "r") as f:
+        output = f.read()
+
+    with open(colitest_plot, "r") as f:
+        output_for_test = f.read()
+
+    out1 = output.find("0.69897000      0.72478278      0.74914704      0.77221675      0.79412257")
+    out2 = output_for_test.find("0.69897000      0.72478278      0.74914704      0.77221675      0.79412257")
+    assert out1 == out2
+
+    out1 = output.find("-21.832692      -22.997487      -24.157987")
+    out2 = output_for_test.find("-21.832692      -22.997487      -24.157987")
+    assert out1 == out2
+
+    out1 = output.find("0.69897000      0.72478278      0.74914704      0.77221675      0.79412257 ")
+    out2 = output_for_test.find("0.69897000      0.72478278      0.74914704      0.77221675      0.79412257 ")
+    assert out1 == out2
+
+    out1 = output.find("PLOT: HSUM: M21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17 JOB No.     54")
+    out2 = output_for_test.find("PLOT: HSUM: M21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17 JOB No.     54")
+    assert out1 == out2
+
+    out1 = output.find("PLOT   :HSUM: M21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17 JOB No.     54")
+    out2 = output_for_test.find("PLOT   :HSUM: M21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17 JOB No.     54")
+    assert out1 == out2
+
+    out1 = output.find("PLOT   :HSUM: M21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17 JOB No.     54")
+    out2 = output_for_test.find("PLOT   :HSUM: M21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17 JOB No.     54")
     assert out1 == out2
