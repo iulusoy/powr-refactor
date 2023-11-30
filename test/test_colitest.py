@@ -30,18 +30,18 @@ def run_colitest(get_chain, colitest_options):
         colitest_options = ""
     colitest_path = "${POWR_WORK}/wrjobs/colitest1"
     colitest_command = colitest_path + colitest_options
-    try:
-        temp = subprocess.run(
-            colitest_command,
-            shell=True,
-            check=True,
-            executable="/bin/bash",
-            capture_output=True,
-            text=True,
-        )
-    except Exception as error:
-        print(temp.stderr)
-        print(error)
+#    try:
+    temp = subprocess.run(
+        colitest_command,
+        shell=True,
+        check=True,
+        executable="/bin/bash",
+        capture_output=True,
+        text=True,
+    )
+#    except Exception as error:
+    print(temp.stderr)
+    #print(error)
 
     print(temp.stdout)
 
@@ -162,7 +162,7 @@ def test_colitest_run(set_vars, run_colitest):
     with open(colitest_file, "r") as f:
         output_for_test = f.read()
 
-    out1 = output.find("Maximum Opacity at submit_commandDepth 1: K= 41042;")
+    out1 = output.find("Maximum Opacity at  1: K= 41042;")
     out2 = output_for_test.find("Maximum Opacity at Depth 1: K= 41042;")
     assert out1 == out2
 
