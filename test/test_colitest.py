@@ -163,7 +163,7 @@ def test_colitest_run(set_vars, run_colitest):
         output_for_test = f.read()
 
     out1 = output.find("Maximum Opacity at  1: K= 41042;")
-    out2 = output_for_test.find("Maximum Opacity at Depth 1: K= 41042;")
+    out2 = output_for_test.find("Maximum Opacity at  1: K= 41042;")
     assert out1 == out2
 
     out1 = output.find("Lambda=     303.771;")
