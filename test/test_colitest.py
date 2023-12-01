@@ -180,15 +180,15 @@ def test_colitest_run(set_vars, run_colitest):
 
     out1 = output.find("SMALLPOP=   0.100E-07 chosen different from recommended default   0.100E-11")
     out2 = output_for_test.find("SMALLPOP=   0.100E-07 chosen different from recommended default   0.100E-11")
-    assert out1 == out2
+    assert out1!=-1 and out2!=-1
 
     out1 = output.find("NEGATIVE BOUND-BOUND COLLISIONAL CROSS SECTION DETECTED (LEVELS: UP=   5, LOW=   2)")
     out2 = output_for_test.find("NEGATIVE BOUND-BOUND COLLISIONAL CROSS SECTION DETECTED (LEVELS: UP=   5, LOW=   2)")
-    assert out1 == out2
+    assert out1!=-1 and out2!=-1
 
     out1 = output.find("MODEL START 21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17")
     out2 = output_for_test.find("MODEL START 21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17")
-    assert out1 == out2
+    assert out1!=-1 and out2!=-1
 
     # out1 = output.find("MAX: 67.1896  (G  4....1e  L=  7)       2ND: 65.5906  (G  4....1e  L=  8)")
     # out2 = output_for_test.find("MAX: 67.1896  (G  4....1e  L=  7)       2ND: 65.5906  (G  4....1e  L=  8)")
@@ -204,15 +204,15 @@ def test_colitest_run(set_vars, run_colitest):
 
     out1 = output.find("GAMMAC=     80.0   GAMMAL=    800.0")
     out2 = output_for_test.find("GAMMAC=     80.0   GAMMAL=    800.0")
-    assert out1 == out2
+    assert out1!=-1 and out2!=-1
 
     out1 = output.find("DELTAC=     -1.0   GAMMAR=    800.0   GAMMAD=      0.0")
     out2 = output_for_test.find("DELTAC=     -1.0   GAMMAR=    800.0   GAMMAD=      0.0")
-    assert out1 == out2
+    assert out1!=-1 and out2!=-1
 
     out1 = output.find("CORRECTIONS REDUCED BY FACTOR 0.50")
     out2 = output_for_test.find("CORRECTIONS REDUCED BY FACTOR 0.50")
-    assert out1 == out2
+    assert out1!=-1 and out2!=-1
 
     #######################################################################
 
