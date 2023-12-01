@@ -176,7 +176,7 @@ def test_colitest_run(set_vars, run_colitest):
 
     out1 = output.find("Opacities set to 0.01 * Background Opacity at    198 frequencies")
     out2 = output_for_test.find("Opacities set to 0.01 * Background Opacity at    198 frequencies")
-    assert out1 == out2
+    assert out1 !=-1 and out2 !=-1
 
     out1 = output.find("SMALLPOP=   0.100E-07 chosen different from recommended default   0.100E-11")
     out2 = output_for_test.find("SMALLPOP=   0.100E-07 chosen different from recommended default   0.100E-11")
