@@ -54,6 +54,7 @@ jobs:
     - name: set up the job and run base tests
       run: |
         python -m pytest -svv test/test_colitest.py
-
-
-
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
