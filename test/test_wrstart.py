@@ -18,7 +18,7 @@ def run_wrstart(get_chain, submit_options):
     # run wrstart
 
     try:
-        temp = subprocess.run(
+        subprocess.run(
             submit_command,
             shell=True,
             check=True,
@@ -26,11 +26,9 @@ def run_wrstart(get_chain, submit_options):
             capture_output=True,
             text=True,
         )
-    except Exception as error:
-        print(temp.stderr)
-        print(error)
-
-    print(temp.stdout)
+    except subprocess.CalledProcessError as error:
+        print(error.stderr)
+        print(error.stdout)
 
     os.system("ls ${POWR_WORK}")
     os.system("ls ${POWR_WORK}/wrdata1")
