@@ -42,6 +42,7 @@ def run_colitest(get_chain, colitest_options):
     except subprocess.CalledProcessError as error:
         print(error.stderr)
         print(error.stdout)
+        assert False, "CalledProcessError error"
 
     os.system("cat ${POWR_WORK}/output/colitest1.cpr")
     yield "ran colitest"
@@ -135,7 +136,7 @@ def test_makechain(set_vars, get_chain):
 
 # check that colitest run produces correct output
 @pytest.mark.parametrize("colitest_options", ["", " nonopt"])
-def test_colitest_run(set_vars, run_colitest):
+def test_colitest_run(set_vars, set_vars_data, run_colitest):
     # check that output/colitest1.cpr is there
     # check that wrdata1/MODEL_STUDY_DONE is there
     colitest_output = set_vars / "output" / "colitest1.cpr"
@@ -151,7 +152,7 @@ def test_colitest_run(set_vars, run_colitest):
     assert np.allclose(data_np[256138:256149], MODEL_DATA_REF)
 
 
-    colitest_file_reference = set_vars / "../test/data/colitest1.out"
+    colitest_file_reference =  set_vars_data / "colitest1.out"
     colitest_file = set_vars / "output/colitest1.out"
 
     with open(colitest_file_reference, "r") as f:

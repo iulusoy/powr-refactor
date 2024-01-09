@@ -29,6 +29,7 @@ def run_wrstart(get_chain, submit_options):
     except subprocess.CalledProcessError as error:
         print(error.stderr)
         print(error.stdout)
+        assert False, "CalledProcessError error"
 
     os.system("ls ${POWR_WORK}")
     os.system("ls ${POWR_WORK}/wrdata1")

@@ -17,6 +17,13 @@ def set_vars():
         os.mkdir(tmp_2day)
     return powrdir
 
+# get the path of 'data' folder and export variables accordingly
+@pytest.fixture(scope="session")
+def set_vars_data():
+    filedir = Path(__file__).parents[0]
+    data = filedir.parents[0] / "test/data"
+    os.environ["POWR_DATA"] = data.as_posix()
+    return data
 
 # inject path into powrconfig
 @pytest.fixture(scope="session")
@@ -50,6 +57,8 @@ def get_chain(inject_path):
     except subprocess.CalledProcessError as error:
         print(error.stderr)
         print(error.stdout)
+        assert False, "CalledProcessError error"
+
 
     yield "Created chain 1"
     # teardown directories
