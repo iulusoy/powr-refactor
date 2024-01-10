@@ -134,7 +134,7 @@ def test_makechain(set_vars, get_chain):
     assert sorted(temp) == sorted(wrjobs_content)
 
 
-def extract_string_between(str, start, end):
+def extract_np_between(str, start, end):
 
     partition = str.partition(start)
     plot = partition[2].partition(end)[0]
@@ -189,35 +189,35 @@ def test_colitest(set_vars, get_plot_to_match, run_colitest):
     with open(colitest_plot, "r") as f:
         plot_for_test = f.read()
 
-    plot_np0 = extract_string_between(plot_for_test, 'N= 1388   PLOTSYMBOL=  5', 'N=   1388 COLOR=2')
+    plot_np0 = extract_np_between(plot_for_test, 'N= 1388   PLOTSYMBOL=  5', 'N=   1388 COLOR=2')
     plot_values0 = np.fromstring(get_plot_to_match[0], sep=' ')
     assert np.allclose(plot_np0, plot_values0, atol=1e-06)
 
-    plot_np1 = extract_string_between(plot_for_test, ' N=   1388 COLOR=2', 'ENDE')
+    plot_np1 = extract_np_between(plot_for_test, ' N=   1388 COLOR=2', 'ENDE')
     plot_values1 = np.fromstring(get_plot_to_match[1], sep=' ')
     assert np.allclose(plot_np1, plot_values1, atol=1e-06)
 
-    plot_np2 = extract_string_between(plot_for_test, 'N=     51 COLOR= 2 PEN = 3', 'N=      2 COLOR=3')
+    plot_np2 = extract_np_between(plot_for_test, 'N=     51 COLOR= 2 PEN = 3', 'N=      2 COLOR=3')
     plot_values2 = np.fromstring(get_plot_to_match[2], sep=' ')
     assert np.allclose(plot_np2, plot_values2, atol=1e-06)
 
-    plot_np3 = extract_string_between(plot_for_test, 'N=     50 PEN=4 COLOR=2', 'N=     50 SYMBOL=5 COLOR=4')
+    plot_np3 = extract_np_between(plot_for_test, 'N=     50 PEN=4 COLOR=2', 'N=     50 SYMBOL=5 COLOR=4')
     plot_values3 = np.fromstring(get_plot_to_match[3], sep=' ')
     assert np.allclose(plot_np3, plot_values3, atol=1e-06)
 
-    plot_np4 = extract_string_between(plot_for_test, ' N=     50 SYMBOL=5 COLOR=4', 'N=     50 SYMBOL=5 COLOR=9')
+    plot_np4 = extract_np_between(plot_for_test, ' N=     50 SYMBOL=5 COLOR=4', 'N=     50 SYMBOL=5 COLOR=9')
     plot_values4 = np.fromstring(get_plot_to_match[4], sep=' ')
     assert np.allclose(plot_np4, plot_values4, atol=1e-06)
 
-    plot_np5 = extract_string_between(plot_for_test, 'N=     50 SYMBOL=5 COLOR=9', 'N=     50 SYMBOL=9 SIZE=0.2')
+    plot_np5 = extract_np_between(plot_for_test, 'N=     50 SYMBOL=5 COLOR=9', 'N=     50 SYMBOL=9 SIZE=0.2')
     plot_values5 = np.fromstring(get_plot_to_match[5], sep=' ')
     assert np.allclose(plot_np5, plot_values5, atol=1e-06)
 
-    plot_np6 = extract_string_between(plot_for_test, 'N=     50 SYMBOL=9 SIZE=0.2', 'N=     50 SYMBOL=10 SIZE=0.2')
+    plot_np6 = extract_np_between(plot_for_test, 'N=     50 SYMBOL=9 SIZE=0.2', 'N=     50 SYMBOL=10 SIZE=0.2')
     plot_values6 = np.fromstring(get_plot_to_match[6], sep=' ')
     assert np.allclose(plot_np6, plot_values6, atol=1e-06)
 
-    plot_np7 = extract_string_between(plot_for_test, 'N=     50 SYMBOL=10 SIZE=0.2', 'ENDE')
+    plot_np7 = extract_np_between(plot_for_test, 'N=     50 SYMBOL=10 SIZE=0.2', 'ENDE')
     plot_values7 = np.fromstring(get_plot_to_match[7], sep=' ')
     assert np.allclose(plot_np7, plot_values7, atol=1e-06)
 
@@ -237,6 +237,6 @@ def test_colitest(set_vars, get_plot_to_match, run_colitest):
     # plot_values11 = np.fromstring(get_plot_to_match[11], sep=' ')
     # assert np.allclose(plot_np11, plot_values11, atol=1e-06)
 
-    plot_np12 = extract_string_between(plot_for_test, 'N=   49   PLOTSYMBOL=  1', 'ENDE')
+    plot_np12 = extract_np_between(plot_for_test, 'N=   49   PLOTSYMBOL=  1', 'ENDE')
     plot_values12 = np.fromstring(get_plot_to_match[12], sep=' ')
     assert np.allclose(plot_np12, plot_values12, atol=1e-06)
