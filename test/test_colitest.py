@@ -233,22 +233,6 @@ def test_colitest(set_vars, get_plot_to_match, run_colitest):
     plot_values7 = np.fromstring(get_plot_to_match[7], sep=" ")
     assert np.allclose(plot_np7, plot_values7, atol=1e-06)
 
-    # plot_np8 = extract_np_between(plot_for_test, 'N=   50   PLOTSYMBOL= 11', 'KASDEF LUN')
-    # plot_values8 = np.fromstring(get_plot_to_match[8], sep='DE ')
-    # assert np.allclose(plot_np8, plot_values8, atol=1e-06)
-
-    # plot_np9 = extract_np_between(plot_for_test, 'N=   50   PLOTSYMBOL= 15', 'KASDEF LUN')
-    # plot_values9 = np.fromstring(get_plot_to_match[9], sep=' ')
-    # assert np.allclose(plot_np9, plot_values9, atol=1e-06)
-
-    # plot_np10 = extract_np_between(plot_for_test, 'N=   50   PLOTSYMBOL= 21', 'KASDEF LUN')
-    # plot_values10 = np.fromstring(get_plot_to_match[10], sep=' ')
-    # assert np.allclose(plot_np10, plot_values10, atol=1e-06)
-
-    # plot_np11 = extract_np_between(plot_for_test, "N=   50   PLOTSYMBOL= 22", "KASDEF LUN")
-    # plot_values11 = np.fromstring(get_plot_to_match[11], sep=" ")
-    # assert np.allclose(plot_np11, plot_values11, atol=1e-06)
-
     plot_np12 = extract_np_between(plot_for_test, "N=   49   PLOTSYMBOL=  1", "ENDE")
     plot_values12 = np.fromstring(get_plot_to_match[12], sep=" ")
     assert np.allclose(plot_np12, plot_values12, atol=1e-06)
