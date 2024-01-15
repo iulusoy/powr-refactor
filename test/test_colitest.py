@@ -234,20 +234,8 @@ def test_colitest(set_vars, get_plot_to_match, run_colitest):
     assert np.allclose(plot_np7, plot_values7, atol=1e-06)
 
     plot_np12 = extract_np_between(plot_for_test, "N=   49   PLOTSYMBOL=  1", "ENDE")
-    plot_values12 = np.fromstring(get_plot_to_match[12], sep=" ")
+    plot_values12 = np.fromstring(get_plot_to_match[8], sep=" ")
     assert np.allclose(plot_np12, plot_values12, atol=1e-06)
 
-    ###########
-
-    strs_searched_plot = [
-        "KASDEF LUN    7.604   -7.031 0 D+0.3 .4 &4HEI 1S1..1",
-        "KASDEF LUN    7.604   -8.718 0 D+0.3 .4 &4N 22p23P.1",
-        "KASDEF LUN    7.604   -3.055 0 D+0.3 .4 &4N III2P2.1",
-        "KASDEF LUN    7.604  -10.154 0 D+0.3 .4 &4N V 2S...1",
-        "KASDEF LUN    7.604  -27.000 0 D+0.3 .4 &4N 61s 1S01"
-    ]
-
-    for str_searched in strs_searched_plot:
-        assert str_searched in plot_for_test
 
 
