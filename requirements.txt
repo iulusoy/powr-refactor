@@ -1,6 +1,7 @@
 ford
 fortran-language-server
 pytest
+pytest-cov
 pre-commit
 numpy
 flake8
