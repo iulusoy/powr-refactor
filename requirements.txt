@@ -3,3 +3,5 @@ fortran-language-server
 pytest
 pre-commit
 numpy
+flake8
+black
