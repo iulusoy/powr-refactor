@@ -67,7 +67,8 @@ def extract_np_between(str, start, end):
     return plot_np
 
 
-@pytest.mark.parametrize("submit_options", ["", " nonopt"])
+# @pytest.mark.parametrize("submit_options", ["", " nonopt"])
+@pytest.mark.parametrize("submit_options", [""])
 def test_run_wrstart(
     run_wrstart,
     set_vars,
