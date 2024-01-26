@@ -1,0 +1,50 @@
+ ----------------------------------
+ USER: hcaramizaru                     
+ HOST:                      
+ JOBNAME: colitest1            
+ Time: 05:49:51   Date: 28-Nov-2023  
+ ----------------------------------
+                                   
+WARNING: No specific file MODEL_STUDY found. Using MODEL file instead.
+  COLI: CLOPENE> File EDDI not present -> COLI++
+  COLI: CLOPENE> File EDDI from wrong model -> COLI++
+  COLI: CLOPENE> EDDI created with different COLI version -> COLI++
+COLI> Maximum Opacity at Depth 1: K= 41042;  Lambda=     303.771;  Opacity= 0.15260E+05;  Delta-Tau (Opa*Delta_R)=111458.87774
+COLI> Opacities set to 0.01 * Background Opacity at    198 frequencies
+ COLI> CPU TIME:    16.4 sec
+STEAL/DECSTE: WARNING: SMALLPOP=   0.100E-07 chosen different from recommended default   0.100E-11
+ STEAL> WARNING: NEGATIVE BOUND-BOUND COLLISIONAL CROSS SECTION DETECTED (LEVELS: UP=   5, LOW=   2)
+
+ STEAL> ZERO LINE CORE FOR     45 LINES (LASER CONDITION FROM >>>COLI<<<)
+
+ MODEL START 21/07/02    16:50:14    70795/0.4D/1600 L=5.3 N=1.5% C=1E-4 Fe=1.4E-3 D4 WNE 10-17                     JOB NO.     54
+
+          RATIO OF POPULATION NUMBERS TO THOSE OF THE LAST ITERATION:
+
+               MAX: 67.1896  (G  4....1e  L=  7)       2ND: 65.5906  (G  4....1e  L=  8)
+               MIN:  0.5000  (G  5....6e  L=  7)       2ND:  0.5000  (G  5....6e  L=  8)
+               DEPTH POINTS CONSIDERED:    7  TO   50               CORMAX=66.1896     LOG=  1.82
+
+
+               MAX.REL.TEMP.CORR.=  0.0001  AT L= 33    (UNLU SCALINGS LOC, INT, RMAX, TB=0.100 0.300 0.300 0.050 )
+               Thermal Balance term suppressed for tau_Ross > 0.10000E-01
+ 
+               TEMPERATURE GRADIENT AT INNER BOUNDARY CORRECTED FOR FLUX CONSISTENCY : REL.CORR.= -0.451E-03
+
+          SCHARMER-PARAMETERS:          GAMMAC=     80.0   GAMMAL=    800.0
+                                        DELTAC=     -1.0   GAMMAR=    800.0   GAMMAD=      0.0
+
+
+          CORRECTIONS REDUCED BY FACTOR 0.50
+
+
+         14638 WARNINGS: POP. NUMBERS .LT. 1.0E-08 NOT ACCOUNTED FOR IN THE MAX. CORRECTIONS
+          1818 WARNINGS: NEGATIVE CONT INTENSITIES REPLACED BY ZERO  --     1 <  K  < 807;    1 < L < 50
+           553 WARNINGS: POP. NUMBERS .LT. 1.0E-27 SET TO THIS VALUE
+             4 WARNINGS: NEGATIVE POP. NUMBERS ARE SET TO  1.0E-27
+ STEAL> AVERAGE NUMBER OF N.-R. ITERATIONS:  6.56
+ STEAL> BROYDEN UPDATE FROM ITERATION  2  -  CANCELLED AT  4 ITERATIONS  -  BRRESET =         0.1E+02
+ STEAL: EDDIES TOO OLD
+ STEAL: NEXTJOB=WRCONT
+ STEAL> CPU TIME:     5.7 sec
+ Job ended at: 05:50:13   28-Nov-2023

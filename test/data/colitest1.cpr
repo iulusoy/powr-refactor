@@ -1,0 +1,9 @@
+Copy files now (forward)
+... all files have been fetched
+debug NEXTJOB  REPEAT
+debug NEXTJOBZ REPEAT
+debug NEXTJOB  REPEAT
+debug NEXTJOBZ STEAL
+Copy/move files now (back)
+... all files saved
+-------  COLITEST  finished --------   Tue Nov 28 05:50:13 AM CET 2023
