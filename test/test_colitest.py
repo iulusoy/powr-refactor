@@ -31,7 +31,7 @@ def run_colitest(get_chain, colitest_options):
     colitest_path = "${POWR_WORK}/wrjobs/colitest1"
     colitest_command = colitest_path + colitest_options
     try:
-        subprocess.run(
+        colitest_subprocess = subprocess.run(
             colitest_command,
             shell=True,
             check=True,
@@ -39,11 +39,15 @@ def run_colitest(get_chain, colitest_options):
             capture_output=True,
             text=True,
         )
-    except subprocess.CalledProcessError as error:
+    except colitest_subprocess.CalledProcessError as error:
         print(error.stderr)
         print(error.stdout)
         assert False, "CalledProcessError error"
-
+    print("colitest stdout")
+    print(colitest_subprocess.stdout)
+    print("colitest stderr")
+    print(colitest_subprocess.stderr)
+    print("done with colitest run")
     os.system("cat ${POWR_WORK}/output/colitest1.cpr")
     yield "ran colitest"
     os.system("rm -rf ${POWR_WORK}/tmp_data")
