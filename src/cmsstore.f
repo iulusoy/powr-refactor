@@ -1,4 +1,4 @@
-      SUBROUTINE CMSSTORE (ICHANNEL, IADRDUMMY, MAXADRDUMMY, 
+      SUBROUTINE CMSSTORE (ICHANNEL, IADRDUMMY, MAXADRDUMMY,
      >                     NAME, NAME2, X, NDIM, ACTION, IERR)
 C*******************************************************************
 C***
@@ -27,8 +27,8 @@ C*******************************************************************
 C***  NOTE: MAXADR MUST BE A MULTIPLE OF 128
 C***        (I.E. IADRL IN ROUTINE STORAGE)
       PARAMETER (MAXADR = 2000 * 128)
-
-      CHARACTER*8 STATUS, ACTION
+      INTEGER ICHANNEL, IADRDUMMY, MAXADRDUMMY, NDIM, IERR, NFILE, X
+      CHARACTER*8 STATUS, ACTION, NAME, NAME2
       DIMENSION IFILE(MSMAXCH), IADR(MAXADR,MSMAXCH)
 
 C      SAVE LASTCH, IFILE, NFILE, STATUS, ITRANS
@@ -53,14 +53,14 @@ C***  SEARCH FOR FILE NUMBER
    10   CONTINUE
 C***  CLOSE THE FILE USED LAST. This is now (Vers 3) done by SCLOSE
         IF (LASTCH .GT. 0) THEN
-          CALL STORAGE (LASTCH, IADR(1,ITRANSLAST), 
-     >                  MAXADR, 'DUMMY', 'DUMMY', X, NDIM, 
+          CALL STORAGE (LASTCH, IADR(1,ITRANSLAST),
+     >                  MAXADR, 'DUMMY', 'DUMMY', X, NDIM,
      >                  'SCLOSE', 'CRAY', IERR)
         ENDIF
 C***  OPEN THE ACTUAL FILE. This is now (Vers 3) done by SOPEN
         IF (STATUS .EQ. 'KNOWN') THEN
-          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), 
-     >                  MAXADR, 'DUMMY', 'DUMMY', 
+          CALL STORAGE (ICHANNEL, IADR(1,ITRANS),
+     >                  MAXADR, 'DUMMY', 'DUMMY',
      >                  X, NDIM, 'SOPEN', 'CRAY', IERR)
         ENDIF
       ENDIF
@@ -76,27 +76,27 @@ C***  OPEN THE ACTUAL FILE. This is now (Vers 3) done by SOPEN
           WRITE (0,*) 'DO NOT OPEN MORE FILES THAN MSMAXCH'
           STOP 'ERROR IN CMSSTORE'
         ENDIF
-        CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR, 
-     >                NAME, NAME2, X, NDIM, 
-     >                'OPEN', 'CRAY', IERR)
+        CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
+     >                NAME, NAME2, X, NDIM,
+     >                'OPEN    ', 'CRAY    ', IERR)
         IFILE(NFILE) = ICHANNEL
         STATUS = 'KNOWN'
 
       ELSE IF (ACTION(1:4) .EQ. 'READ') THEN
         IF (STATUS .EQ. 'KNOWN') THEN
-          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR, 
-     >                  NAME, NAME2, X, NDIM, 
-     >                  'READ', 'CRAY', IERR)
+          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
+     >                  NAME, NAME2, X, NDIM,
+     >                  'READ    ', 'CRAY    ', IERR)
         ELSE
-          WRITE (0,'(A,I3)') 
+          WRITE (0,'(A,I3)')
      >        'DO NOT READ IN A CLOSED FILE, CHANNEL=', ICHANNEL
           STOP 'ERROR IN CMSSTORE'
         ENDIF
 
       ELSE IF (ACTION(1:6) .EQ. 'LENGTH') THEN
         IF (STATUS .EQ. 'KNOWN') THEN
-          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR, 
-     >                  NAME, NAME2, X, NDIM, 
+          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
+     >                  NAME, NAME2, X, NDIM,
      >                  'LENGTH', 'CRAY', IERR)
         ELSE
           WRITE (0,*) 'DO NOT READ (LENGTH) IN A CLOSED FILE'
@@ -105,8 +105,8 @@ C***  OPEN THE ACTUAL FILE. This is now (Vers 3) done by SOPEN
 
       ELSE IF (ACTION(1:5) .EQ. 'WRITE') THEN
         IF (STATUS .EQ. 'KNOWN') THEN
-          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR, 
-     >                  NAME, NAME2, X, NDIM, 
+          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
+     >                  NAME, NAME2, X, NDIM,
      >                  'WRITE', 'CRAY', IERR)
         ELSE
           WRITE (0,*) 'DO NOT WRITE IN A CLOSED FILE'
@@ -117,8 +117,8 @@ C***  OPEN THE ACTUAL FILE. This is now (Vers 3) done by SOPEN
 
       ELSE IF (ACTION(1:5) .EQ. 'CLOSE') THEN
         IF (STATUS .EQ. 'KNOWN') THEN
-          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR, 
-     >                  NAME, NAME2, X, NDIM, 
+          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
+     >                  NAME, NAME2, X, NDIM,
      >                  'CLOSE', 'CRAY', IERR)
           STATUS = 'UNKNOWN'
           NFILE = NFILE - 1
@@ -135,8 +135,8 @@ C***  OPEN THE ACTUAL FILE. This is now (Vers 3) done by SOPEN
 
       ELSE IF (ACTION(1:6) .EQ. 'CHANGE') THEN
         IF (STATUS .EQ. 'KNOWN') THEN
-          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR, 
-     >                  NAME, NAME2, X, NDIM, 
+          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
+     >                  NAME, NAME2, X, NDIM,
      >                  'CHANGE', 'CRAY', IERR)
         ELSE
           WRITE (0,*) 'DO NOT CHANGE IN A CLOSED FILE'
@@ -148,8 +148,8 @@ C***  OPEN THE ACTUAL FILE. This is now (Vers 3) done by SOPEN
 
       ELSE IF (ACTION(1:4) .EQ. 'INFO') THEN
         IF (STATUS .EQ. 'OPEN') THEN
-          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR, 
-     >                  NAME, NAME2, X, NDIM, 
+          CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
+     >                  NAME, NAME2, X, NDIM,
      >                  ACTION, 'CRAY', IERR)
         ELSE
           WRITE (0,*) 'DO NOT DO INFO ON A CLOSED FILE'

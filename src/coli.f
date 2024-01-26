@@ -10,32 +10,32 @@ C*******************************************************************************
 
 C***  SET ARRAY DIMENSIONS  ********************************************
 C***  IRON: ADD GENERIC ION TO MAXATOM
-      INTEGER, PARAMETER :: MAXATOM   =             30 
-      INTEGER, PARAMETER :: NDIM      =           2560 
-      INTEGER, PARAMETER :: NFDIM     =   2*NDIM + 400 
-      INTEGER, PARAMETER :: MAXAUTO   =           3200 
+      INTEGER, PARAMETER :: MAXATOM   =             30
+      INTEGER, PARAMETER :: NDIM      =           2560
+      INTEGER, PARAMETER :: NFDIM     =   2*NDIM + 400
+      INTEGER, PARAMETER :: MAXAUTO   =           3200
       INTEGER, PARAMETER :: MAXIND    =          45000      !in COLI, MAXIND does NOT contain Fe transitions
-      INTEGER, PARAMETER :: MAXKONT   =       NFDIM/2 
-      INTEGER, PARAMETER :: NDDIM     =            89 
-      INTEGER, PARAMETER :: NPDIM     =            94 
+      INTEGER, PARAMETER :: MAXKONT   =       NFDIM/2
+      INTEGER, PARAMETER :: NDDIM     =            89
+      INTEGER, PARAMETER :: NPDIM     =            94
       INTEGER, PARAMETER :: NFLDIM    =           500
 C***  FOR ARRAYS WHICH ARE STORED OVER THE WHOLE REDISTRIBUTION WIDTH
-      INTEGER, PARAMETER :: NFRI      =          1000 
-      INTEGER, PARAMETER :: NFRO      =           100 
-      INTEGER, PARAMETER :: MAXHIST   =          4000 
-      INTEGER, PARAMETER :: MAXPLOT   =            25 
-ccc      INTEGER, PARAMETER :: MAXLIN    =            40 
-      INTEGER, PARAMETER :: MAXLIN    =           100 
-      INTEGER, PARAMETER :: MAXEXT    =            10 
+      INTEGER, PARAMETER :: NFRI      =          1000
+      INTEGER, PARAMETER :: NFRO      =           100
+      INTEGER, PARAMETER :: MAXHIST   =          4000
+      INTEGER, PARAMETER :: MAXPLOT   =            25
+ccc      INTEGER, PARAMETER :: MAXLIN    =            40
+      INTEGER, PARAMETER :: MAXLIN    =           100
+      INTEGER, PARAMETER :: MAXEXT    =            10
       INTEGER, PARAMETER :: NDIMEDDIA = 2*NDDIM + 3 + 2 + 4
-      INTEGER, PARAMETER :: NREDMAX   =           500 
-      INTEGER, PARAMETER :: NIT       =             3 
-      INTEGER, PARAMETER :: MAXXDAT =              10 
+      INTEGER, PARAMETER :: NREDMAX   =           500
+      INTEGER, PARAMETER :: NIT       =             3
+      INTEGER, PARAMETER :: MAXXDAT =              10
 
 C***  MAX. NUMBER OF IRON SUPERLINES
-      INTEGER, PARAMETER :: MAXFEIND  =           2500 
-C***  MAXIMUM ION CHARGE WHICH MAY OCCUR 
-      INTEGER, PARAMETER :: MAXION = 27 
+      INTEGER, PARAMETER :: MAXFEIND  =           2500
+C***  MAXIMUM ION CHARGE WHICH MAY OCCUR
+      INTEGER, PARAMETER :: MAXION = 27
 
 C***  IRON: COMMON BLOCK FOR IRON-SPECIFIC DATA
 C***  include "dimblock"
@@ -48,17 +48,17 @@ C***  Fine Integration in STEALCL
 C      INTEGER, PARAMETER :: IFF_MAX =   80000      !std
 c      INTEGER, PARAMETER :: IFF_MAX =  200000      !vd20
       INTEGER, PARAMETER :: IFF_MAX =  300000      !xxl
-      
+
       INTEGER, PARAMETER :: TINYINT = SELECTED_INT_KIND(2)
 
 C***  IFF_MAX_MS must be 1/8 * IFF_MAX !!!
-C      INTEGER, PARAMETER :: IFF_MAX_MS =   IFF_MAX / 8 
+C      INTEGER, PARAMETER :: IFF_MAX_MS =   IFF_MAX / 8
 
       INTEGER :: ND, J, N, NF, NP, JOBNUM, NATOM, NAUTO, NCOLIP, NF2,
      >           LASTIND, LASTINDAUTO, LASTKON, LASTFE, NLINE,
-     >           LASTINDALL, N_WITH_DRLEVELS, 
+     >           LASTINDALL, N_WITH_DRLEVELS,
      >           LSOPA, LSINT, LEVDEBUG, LASERV, NEXTHYDRO, NEWWRC,
-     >           L, NL, IPLOT, LPLOT, IVERS, LPLOT_WCHARM,  
+     >           L, NL, IPLOT, LPLOT, IVERS, LPLOT_WCHARM,
      >           KWORDS, KBLOCKS, ISTATS, IDUMMY, IERR, IFRO, NXJO, NXK,
      >           NDEDDIA, ITMAX, ITSTART, IT, NZE1, NZE2,
      >           IW_COLIMO_F, IW_COLIMO_G, IW_COLIMO_G2, IW_COLIMO_J,
@@ -80,21 +80,21 @@ C      INTEGER, PARAMETER :: IFF_MAX_MS =   IFF_MAX / 8
       INTEGER, DIMENSION(NDIM) :: NCHARG, MAINQN, NOM
       REAL, DIMENSION(NDIM) :: WEIGHT, ELEVEL, EION, EN
       INTEGER, DIMENSION(MAXKONT) :: KONTHLP
-      CHARACTER(8), DIMENSION(MAXKONT) :: IGAUNT, KEYCBF      
-      REAL, DIMENSION(MAXKONT) :: ALPHA, SEXPO, SIGMA1I, 
+      CHARACTER(8), DIMENSION(MAXKONT) :: IGAUNT, KEYCBF
+      REAL, DIMENSION(MAXKONT) :: ALPHA, SEXPO, SIGMA1I,
      >                            ADDCON1, ADDCON2, ADDCON3
       REAL, DIMENSION(NDIM, NDIM) :: EINST
       REAL, DIMENSION(4, NDIM) :: ALTESUM
       REAL, DIMENSION(4, MAXIND) :: COCO
-      
+
       CHARACTER(MAXHIST*8) :: MODHIST
 
       REAL, DIMENSION(NFDIM) :: FWEIGHT, HWRCEDDI, XLAMBDA, XLAMBDA2
-      REAL, DIMENSION(NDDIM) :: RADIUS, RADIUS2, RADIUSH, RADIUSH2, 
+      REAL, DIMENSION(NDDIM) :: RADIUS, RADIUS2, RADIUSH, RADIUSH2,
      >                          OPA, ETA, THOMSON, ETANOTH, VMIC,
      >                          VELO, GRADI, ENTOT, T, RNE, PP, W0,
-     >                          TA, TB, TC, UB, GA, H, QQ, S, VA, VB, 
-     >                          OPAK, ETAK, ETAKNOTH, OPAKNOTH, 
+     >                          TA, TB, TC, UB, GA, H, QQ, S, VA, VB,
+     >                          OPAK, ETAK, ETAKNOTH, OPAKNOTH,
      >                          XHBFSKIP, XLAMLASTOSKIP
       REAL, DIMENSION(NPDIM) :: P
       REAL, DIMENSION(NDDIM, NDIM) :: POPNUM
@@ -106,14 +106,14 @@ C      INTEGER, PARAMETER :: IFF_MAX_MS =   IFF_MAX / 8
       REAL, DIMENSION(NDDIM, NPDIM) :: V, U, Z, PPP
       REAL, DIMENSION(NFLDIM) :: XJNUED
       REAL, DIMENSION(NDDIM) :: XJCIND
-     
+
       REAL, DIMENSION(3, NDDIM) :: EDDI
       INTEGER, DIMENSION(MAXIND) :: LINE, INDNUP, INDLOW
       INTEGER, DIMENSION(MAXKONT) :: KONTNUP, KONTLOW
-     
+
       LOGICAL, DIMENSION(NDIM, NDDIM) :: ZERO_RATES
       LOGICAL, DIMENSION(NDDIM) :: bFELASER, bOSKIPLAST
-     
+
       REAL :: OPAMAX1_LAMBDA, OPAMAX1, HTOTOUTMINUS, EDDIHOUTJMEAN,
      >        DBDTOPAINT_M, DBDTINT_M, DBDTOPAINT, DBDTINT, CMFBAND,
      >        DXMAX, VDOPFE, DXFE, XLAM0FE, TEFF, RSTAR, VDOP, OPARND,
@@ -123,24 +123,24 @@ C      INTEGER, PARAMETER :: IFF_MAX_MS =   IFF_MAX / 8
      >        UNLU_TAUMAX, UNLU_TAUMAX2, DFEINDR, DTDR, XLAM0, XLAM0LN,
      >        ALN, CMFBANDR, XKCMAX, BANDP, BANDM, DKR, XK, XLAMK, XNK,
      >        XLAMKOLD, DFKONT, EDDIHOUT, EDDIHIN, EDDINOUT, EDDININ,
-     >        XHI, XHO, XHOM, XNOM, EDDIHOUTP, EDDINOUTP, BCORE, DELTAX, 
-     >        FWEIGHTL, DBDR, XHID, XNO, XNI, XHOP, XNOP, SK1, SK2, 
+     >        XHI, XHO, XHOM, XNOM, EDDIHOUTP, EDDINOUTP, BCORE, DELTAX,
+     >        FWEIGHTL, DBDR, XHID, XNO, XNI, XHOP, XNOP, SK1, SK2,
      >        XNL_MID, XHL_MID, XJL_MID, XNENN, EDDIHOUTOLD, EDDIHINOLD,
      >        XNUEK, XNUEKOLD, XNUEKOLDOLD, SL, SLNOTH, ATMEAN, DELTA,
      >        TOTOUT, POPMIN, HTOTMINUSND, HTOTND, HTOTNDCOR,
      >        EDDIHINM, EDDIHINMOLD, EDDIHINT, EDDIHINTOLD,
      >        HTOTNDS, DELTAR, ARADTOT, ARADTESTTOT,
      >        DTDRIN, VDOPUNIT, CUTOPAMEANTHRES
-     
+
 CC***  NO MORE CONTINUATION LINES ALLOWED IN BERLIN
- 
+
       !INITIALIZE GAUNTFF common block (just in case)
       INTEGER :: NTUP, NTLOW, NFUP, NFLOW, NHELP
-      COMMON /GIIIERR/  NTUP,NTLOW,NFUP,NFLOW,NHELP      
+      COMMON /GIIIERR/  NTUP,NTLOW,NFUP,NFLOW,NHELP
 
       REAL, DIMENSION(NDDIM) :: VMACH, VELORAW
 
-      REAL, DIMENSION(NDDIM) :: WNUE, HTOTL, HTOTLlast, HTOTLTEST, 
+      REAL, DIMENSION(NDDIM) :: WNUE, HTOTL, HTOTLlast, HTOTLTEST,
      >                          UCONT, VCONT, HTOTCUT
       REAL, DIMENSION(MAXXDAT) :: XDATA
       REAL, DIMENSION(MAXATOM) :: ABXYZ
@@ -160,7 +160,7 @@ CC***  NO MORE CONTINUATION LINES ALLOWED IN BERLIN
       CHARACTER(2), DIMENSION(MAXATOM) :: SYMBOL
       CHARACTER(2) :: CPPLABEL
       LOGICAL :: LASER, NOLAP, NEWV, DRNORUD, bALOTri,
-     >           BLLIST, BFORMAL, BLFERR, bPLOTRTAU1, 
+     >           BLLIST, BFORMAL, BLFERR, bPLOTRTAU1,
      >           bNoIronLaser, bDDVDOP
 
 C***  ARRAYS USED FOR THE COMPLETE REDISTRIBUTION OF LINE PHOTONS
@@ -178,7 +178,7 @@ C***  ARRAYS USED FOR PLOT FACILITIES
      >                               LPSNUE, LPSNUED
       REAL, DIMENSION(MAXIND) :: XLAMSOR, XLAMMAX, XLAMMIN
       INTEGER, DIMENSION(MAXIND) :: LINFO
-      
+
 C***  Arrays for storing the relative blend complex:
       REAL, DIMENSION(NDDIM, MAXLIN) :: WS
       REAL, DIMENSION(MAXLIN) :: XLAM
@@ -206,8 +206,8 @@ C***  New Dimension for COLI
 c      dimension exlam1(maxlin), exlam2(maxlin)
       REAL, DIMENSION(0:NREDMAX, NDDIM) :: WREDI
       INTEGER, DIMENSION(NDDIM) :: NREDI, iIgnoreK
-      REAL, DIMENSION(NDDIM) :: WRED1, WRED2, WREDISUM, FULFIL0, 
-     >                          FULFIL1, OPAKNOTHO, ETAKNOTHO, 
+      REAL, DIMENSION(NDDIM) :: WRED1, WRED2, WREDISUM, FULFIL0,
+     >                          FULFIL1, OPAKNOTHO, ETAKNOTHO,
      >                          CLMOETA, CLMOOPA
       REAL, DIMENSION(NDDIM,NPDIM,NIT) :: U_OLD, V_OLD
       REAL, DIMENSION(NIT) :: EDDIHOUTO, EDDIHINO, XHIO,
@@ -219,20 +219,20 @@ C***  Interpolation of continuum opacities
       REAL, DIMENSION(NDDIM) :: OPACL, OPACU, ETACL, ETACU
       REAL, DIMENSION(MAXATOM) :: OPALEL, ETALEL
       REAL, DIMENSION(NDDIM, MAXATOM) :: OPALION, ETALION
-      REAL, DIMENSION(MAXATOM, NDDIM) :: OPACLEL, OPACUEL, 
+      REAL, DIMENSION(MAXATOM, NDDIM) :: OPACLEL, OPACUEL,
      >                                   ETACLEL, ETACUEL
-      REAL, DIMENSION(NDDIM, MAXATOM, MAXION) :: OPACLION, OPACUION, 
+      REAL, DIMENSION(NDDIM, MAXATOM, MAXION) :: OPACLION, OPACUION,
      >                                           ETACLION, ETACUION
-     
-C***  Depth- and element-dependent VDOP     
+
+C***  Depth- and element-dependent VDOP
       REAL, DIMENSION(NDDIM, MAXATOM) :: VDOPDD
 
 C***  Unsoeld-Lucy
       REAL, DIMENSION(NDDIM) :: OPASMEAN, SMEAN, QFJMEAN, OPAJMEAN,
-     >                          QOPAHMEAN, HMEAN, 
+     >                          QOPAHMEAN, HMEAN,
      >                          OPASMEANTC, OPAPMEAN,
      >                          OPAJMEANTC, OPAROSS, OPALAMBDAMEAN,
-     >                          QLFOLD, QLHOLD, OPAKHOLD, 
+     >                          QLFOLD, QLHOLD, OPAKHOLD,
      >                          TAUROSS, TAULAST
 
 C***  New Dimensions for Short Characteristics
@@ -241,17 +241,17 @@ C***  New Dimensions for Short Characteristics
       REAL, DIMENSION(NDDIM,NIT) :: S_OLD, OPAK_OLD, EPSG, EPSGO
       REAL, DIMENSION(NDDIM) :: EPSGMAX, GEPSB, GEPSBO
       REAL, DIMENSION(NIT) :: EPSGITMAX
-      
+
       LOGICAL :: BKONCHECK, BKONCHECK2, BPLOT, BPLOT2, BPDONE, BPSTART,
      >           BCOLIP, BCLEERR, BSTATIC, BUSEMO, BCOLIRAY, BSMALLJ,
-     >           CLHLP, BXJCE, BSHORT, BITCONT, 
+     >           CLHLP, BXJCE, BSHORT, BITCONT,
      >           BKUDRITZKI, BCOLIPP, bDEBUG,
      >           BSHORT_CHAR, BEPSGMAXERR, BEMIX, BEMIXFIX,
      >           bWARNK, bMAXEMIX, bNoNEGEDDIG
 
-C***  Array to handle Laser Condition output 
+C***  Array to handle Laser Condition output
       LOGICAL, DIMENSION(MAXIND) :: BLASERL
-      
+
 C***  Variables to handle Fine Integration in Steal
 C***  FF_INFO : Information on the Frequency grid
 C***         (1) : XLAM0
@@ -284,10 +284,10 @@ C      INTEGER, DIMENSION(IFF_MAX,NDDIM) :: IFF_WCHARM
 
       REAL, DIMENSION(NFEREADMAX) :: FEDUMMY
       REAL, DIMENSION(NDDIM) :: OPAFE, ETAFE, OPAROSSCONT,
-     >                          OPAKFE, OPAKFEOLD, 
-     >                          OPAFEFT, ETAFEFT, OPAKFEFT, ETAKFEFT, 
+     >                          OPAKFE, OPAKFEOLD,
+     >                          OPAFEFT, ETAFEFT, OPAKFEFT, ETAKFEFT,
      >                          OPAKFEFTOLD, ETAKFEFTOLD
-      REAL, DIMENSION(NDDIM, MAXION) :: OPAFEION, ETAFEION      
+      REAL, DIMENSION(NDDIM, MAXION) :: OPAFEION, ETAFEION
 C      REAL, DIMENSION(NDDIM, MAXIND) :: WFELOW, WFENUP      <--- ist das vielleicht richtig?
 C!!! Dimensionierungsfehler, entdeckt am 16-Sep-2002 14:07:15 goetz/wrh
 ccc     >              WFELOW(NDDIM,MAXFEIND), WFENUP(NDDIM,MAXFEIND)
@@ -301,10 +301,10 @@ ccc     >              WFELOW(NDDIM,MAXFEIND), WFENUP(NDDIM,MAXFEIND)
 
 C***  Calculation of Radiative Accelleration
       REAL, DIMENSION(NDDIM,NIT) :: XJLOLD, XHLOLD
-      REAL, DIMENSION(NDDIM) :: OPAKOLD, ETAKOLD, 
-     >                          OPAKNOFENOTH, OPAKNOFENOTHO, 
+      REAL, DIMENSION(NDDIM) :: OPAKOLD, ETAKOLD,
+     >                          OPAKNOFENOTH, OPAKNOFENOTHO,
      >                          ETAKNOFENOTH, ETAKNOFENOTHO
-      REAL, DIMENSION(NDDIM) :: FTCOLI, FTCOLIB, 
+      REAL, DIMENSION(NDDIM) :: FTCOLI, FTCOLIB,
      >                          ARAD, ACONT, ATHOM
 C***  Calculation of corrected Flux
       REAL, DIMENSION(NDDIM,NIT) :: XKLOLD, XNLOLD
@@ -323,7 +323,7 @@ C***  New for determining the Minimum of 1-EXP(-Tau)
       REAL, DIMENSION(NDDIM) :: DJDSC,DJDSCOLD,ETANOTHO,OPAO,THOMSONO
 C***  Temporary storage vectors for FREQUINT
       REAL, DIMENSION(NDDIM) :: SUMJ, SUMJW, SUMDJDSC, SUMDJDSCW,
-     >                          SUMOPA, SUMOPAW, SUMETA, SUMETAW, 
+     >                          SUMOPA, SUMOPAW, SUMETA, SUMETAW,
      >                          SC, SCO
 
 C***  Depth dependent Clumping
@@ -337,14 +337,14 @@ C***  Force Multipliers for STEAL->HYDROSOLVE
       LOGICAL :: bKALPHA, bHYDROSOLVE, bKATEST, bKADONE, bNewLoop,
      >           bPrintAlpha
       REAL, DIMENSION(NDDIM) :: HTOTTEST, ARADTEST, ATHOMTEST,
-     >                          ALPHAF, ALPHAALT, RHO, XMU, 
+     >                          ALPHAF, ALPHAALT, RHO, XMU,
      >                          GAMMATHIN, CK, ARMDRESP,
      >                          ACONTTEST, ALINETEST,
      >                          ALINEMDRESP, ACONTMDRESP
-      REAL, DIMENSION(MAXATOM, NDDIM) :: OPAKELEM, OPAKOLDELEM, 
-     >                                   OPACELEM, OPACOLDELEM, 
-     >                                   ETAKELEM, ETAKOLDELEM, 
-     >                                   ETACELEM, ETACOLDELEM, 
+      REAL, DIMENSION(MAXATOM, NDDIM) :: OPAKELEM, OPAKOLDELEM,
+     >                                   OPACELEM, OPACOLDELEM,
+     >                                   ETAKELEM, ETAKOLDELEM,
+     >                                   ETACELEM, ETACOLDELEM,
      >                                   ARADELEM, ACONTELEM,
      >                                   OPAROSSELEM, OPATOTELEM
       REAL, DIMENSION(NDDIM, MAXATOM, MAXION) :: OPAKION, OPAKOLDION,
@@ -354,12 +354,12 @@ C***  Force Multipliers for STEAL->HYDROSOLVE
      >                                           ARADION, ACONTION
 
       INTEGER :: iTypeAlpha, LPRDH
-      REAL :: PARALAS, VINF, VELOMODFAK, DOTM4P, 
+      REAL :: PARALAS, VINF, VELOMODFAK, DOTM4P,
      >        XMG, XMSTAR, GAMMAPOWR, ACONTTOT, ACONTTESTTOT
 
 C***  Operating system:
       COMMON / COMOS / OPSYS
-      CHARACTER(8) :: OPSYS       
+      CHARACTER(8) :: OPSYS
 
       CHARACTER(10) :: TIM1
 
@@ -396,11 +396,12 @@ C***  Link data to identify program version
       INTEGER, EXTERNAL :: IDX
 
 C***  Write Link Data (Program Version) tp CPR file
-      WRITE (hCPR,'(2A)') 
+      WRITE (hCPR,'(2A)')
      >      '>>> COLI started: Program Version from ', LINK_DATE
-      WRITE (hCPR,'(4A)') 
+      WRITE (hCPR,'(4A)')
      >      '>>> created by ', LINK_USER(:IDX(LINK_USER)),
      >      ' at host ', LINK_HOST(:IDX(LINK_HOST))
+
 
 C***  Preparations for Multi-COLI Option
       bForceCOLIP = .FALSE. !Force Coli+ instead of Coli
@@ -411,8 +412,8 @@ C***  Preparations for Multi-COLI Option
       bWARNK = .FALSE.
 
 C***  If no Generic Element (Fe) is accounted for:
-      LASTFE = 0 
-      
+      LASTFE = 0
+
 C***  Entry Point for multiple COLI
  1    CONTINUE
       bFELASER = .FALSE.
@@ -428,23 +429,23 @@ c      ENDIF
 
       CALL COLI_SETZERO(ND, NDDIM, NIT, NPDIM, NFDIM, MAXATOM, MAXFEIND,
      >                  MAXLIN, MAXIND, MAXION,
-     >                  DBDTINT, DBDTOPAINT, EDDIHOUTJMEAN, 
+     >                  DBDTINT, DBDTOPAINT, EDDIHOUTJMEAN,
      >             HTOTOUTMINUS, DBDTINT_M, DBDTOPAINT_M,
 C***  with ND
      >             OPA, ETA,
      >             XJTOTL, HTOTL, XKTOTL, XNTOTL, ARAD, ACONT, ATHOM,
-     >             FTCOLI, FTCOLIB, OPAKOLD, ETAKOLD, OPAKNOTHO, 
-     >             ETAKNOTHO, OPAO, THOMSONO, ETANOTHO, 
-     >             DJDSMOD_OLD, 
+     >             FTCOLI, FTCOLIB, OPAKOLD, ETAKOLD, OPAKNOTHO,
+     >             ETAKNOTHO, OPAO, THOMSONO, ETANOTHO,
+     >             DJDSMOD_OLD,
      >             OPASMEAN, QFJMEAN, OPAJMEAN, OPASMEANTC, OPAJMEANTC,
-     >             OPAPMEAN, SMEAN, QLFOLD, EPSGMAX, OPAROSS, 
+     >             OPAPMEAN, SMEAN, QLFOLD, EPSGMAX, OPAROSS,
      >             OPALAMBDAMEAN,
-     >             OPAROSSELEM, OPAROSSCONT, 
+     >             OPAROSSELEM, OPAROSSCONT,
      >             OPAKFEOLD, iIgnoreK, OPAKFEFTOLD, ETAKFEFTOLD,
-     >             OPAKNOFENOTHO, ETAKNOFENOTHO, 
+     >             OPAKNOFENOTHO, ETAKNOFENOTHO,
      >             bOSKIPLAST, XLAMLASTOSKIP, XJLMO, XJLMOR2,
 C***  with ND-1
-     >             QOPAHMEAN, HMEAN, QLHOLD, OPAKHOLD, 
+     >             QOPAHMEAN, HMEAN, QLHOLD, OPAKHOLD,
      >             HTOTLTEST, HTOTCUT,
 C***  with NDDIM,NIT
      >             XJLOLD, XJLMO_OLD, EDDIFO, S_OLD, OPAK_OLD, EPSG,
@@ -470,21 +471,21 @@ C***  with ND, MAXATOM, MAXION
 C***  with ND-1, MAXATOM, MAXION
      >             ARADION, ACONTION,
 C***  with MAXLIN
-     >             LIND, LINDS, 
-C***  with NDDIM, MAXLIN     
-     >             WS, 
-C***  with MAXIND  
-     >             BLASERL, 
-C***  with NFDIM 
-     >             EMCOLI, 
+     >             LIND, LINDS,
+C***  with NDDIM, MAXLIN
+     >             WS,
+C***  with MAXIND
+     >             BLASERL,
+C***  with NFDIM
+     >             EMCOLI,
 C***  no Arrays
      >             HTOTMINUSND, HTOTND, HTOTNDS, HTOTNDCOR,
      >             OPAMAX1, OPAMAX1_LAMBDA, IOPAMAX1_K)
 
-      
+
 C***  -------------------------------------------------------------
 C***  MAXIMUM HALF-BANDWIDTH FOR CMF LINE TRANSFER IN DOPPLER UNITS
-      CMFBAND = 4.5 
+      CMFBAND = 4.5
 C***  -------------------------------------------------------------
 C***  MAXIMUM SPACING OF LINE-FREQUENCY POINTS
       DXMAX = 0.3
@@ -505,10 +506,13 @@ C***  Switch for the Kudritzki boundary condition
 C!!!  test: call with routine name 'STEAL' instead of 'COLI' --> crash
 ccc   wrh 31-Mar-2023
 
+        write(*,*) "this is inga"
+
+
 C***  READ ATOMIC DATA
        CALL DATOM (NDIM,N,LEVEL,NCHARG,WEIGHT,ELEVEL,EION,MAINQN,
      $             EINST, ALPHA, SEXPO,
-     $             ADDCON1, ADDCON2, ADDCON3, 
+     $             ADDCON1, ADDCON2, ADDCON3,
      $             IGAUNT, COCO, KEYCBB, ALTESUM,
      $             INDNUP, INDLOW, LASTIND, MAXIND, MAXATOM, NATOM,
      $             ELEMENT, SYMBOL, NOM, KODAT, ATMASS, STAGE,
@@ -517,26 +521,26 @@ C***  READ ATOMIC DATA
      $             IONAUTO, KRUDAUT, KONTNUP, KONTLOW, LASTKON, MAXKONT,
      $             IONGRND, KEYCBF,
 C***  IRON: ADDITIONAL PARAMETERS FOR IRON-GROUP LINE BLANKETING
-     >             'COLI', INDEXMAX, NFEREADMAX, MAXFEIND,
+     >             'COLI  ', INDEXMAX, NFEREADMAX, MAXFEIND,
      >             LASTFE, SIGMAFE, INDRB, INDRF,
      >             IFENUP, IFELOW, IFRBSTA, IFRBEND, FEDUMMY,
-     >             VDOPFE, DXFE, XLAM0FE, SIGMAINT, BFEMODEL, 
+     >             VDOPFE, DXFE, XLAM0FE, SIGMAINT, BFEMODEL,
      >             LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS, MAXION)
 
       LASTINDAUTO = LASTIND + NAUTO
       LASTINDALL  = LASTIND + NAUTO + LASTFE
 
 C***  READ THE MODEL FILE
-      CALL       RMODCOLI (RADIUS,ENTOT,RNE,T,VELO,GRADI,XLAMBDA, 
+      CALL       RMODCOLI (RADIUS,ENTOT,RNE,T,VELO,GRADI,XLAMBDA,
      >                     FWEIGHT, POPNUM, POPMIN,
      >                     RSTAR, VDOP, MODHEAD, JOBNUM, XJC,
      >                     P,ND,NDDIM,NF,NFDIM,N,NDIM,NP,NPDIM,Z,
-     >                     TEFF,HWRCEDDI,EDDI,MODHIST,MAXHIST, 
-     >                     DENSCON, FILLFAC, ABXYZ, NATOM, 
-     >                     LASTREDISMODE, NCOLIP, NF2, XLAMBDA2, 
-     >                     OPARND, EPSGMAX, BEPSGMAXERR, MAXXDAT, 
-     >                     XDATA,XMSTAR, ZERO_RATES, HTOTMINUSND, 
-     >                     HTOTNDCOR, HTOTLlast, TAULAST, 
+     >                     TEFF,HWRCEDDI,EDDI,MODHIST,MAXHIST,
+     >                     DENSCON, FILLFAC, ABXYZ, NATOM,
+     >                     LASTREDISMODE, NCOLIP, NF2, XLAMBDA2,
+     >                     OPARND, EPSGMAX, BEPSGMAXERR, MAXXDAT,
+     >                     XDATA,XMSTAR, ZERO_RATES, HTOTMINUSND,
+     >                     HTOTNDCOR, HTOTLlast, TAULAST,
      >                     NEXTHYDRO, DTDRIN, VMIC)
       WRITE(hCPR,'(A,I7)') '>>> This is job number ', JOBNUM
       XMG = GCONST * XMSTAR * XMSUN
@@ -547,9 +551,9 @@ C***  ALOs are only used in the next STEAL, so always create new ALO file
 C***  Set popnumbers at POPMIN to zero to avoid any effect on the
 C***  radiative transfer calculations:
       CALL POPMIN_NULLING(ZERO_RATES, POPNUM, POPMIN, ND, N)
-      
+
       !Determine if force multipliers are calculated
-      ! this is either done if the next STEAL job 
+      ! this is either done if the next STEAL job
       ! performs a hydro calculation (NEXTHYDRO = 1) or if
       ! forced by the special CARDS option FORCEMULTIPLIERS
       bKALPHA = .FALSE.
@@ -564,14 +568,14 @@ C***  DECODE INPUT CARDS
      $       MAXPLOT, RANGE1, RANGE2, EXLAM1, EXLAM2, MAXEXT,
      $       BLLIST,
      >       REDISMODE, NEWWRC, BCOLIRAY, BKUDRITZKI,
-     >       CLHLP, BITCONT, BPLOT,  
+     >       CLHLP, BITCONT, BPLOT,
      >       IPLOT, LPLOT, ND, OPC,
-     >       IVERS, BEMIX, EMIXSTART, BEMIXFIX, EMIXFIX, 
+     >       IVERS, BEMIX, EMIXSTART, BEMIXFIX, EMIXFIX,
      >       IVERS_FE_EXPFAC, BPLOTALPHA, ALPOPT, POPMIN,
      >       XLAM_FINE_START, XLAM_FINE_END, LPLOT_WCHARM, XLP1,
-     >       XLP2, GAMMACOLI, GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2, 
-     >       bKALPHA, bHYDROSOLVE, VELOMODFAK, iTypeAlpha, 
-     >       bForceCOLIP, bTDIFFUS, bPLOTRTAU1, bNoIronLaser, 
+     >       XLP2, GAMMACOLI, GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2,
+     >       bKALPHA, bHYDROSOLVE, VELOMODFAK, iTypeAlpha,
+     >       bForceCOLIP, bTDIFFUS, bPLOTRTAU1, bNoIronLaser,
      >       iHTOTCUT, bMAXEMIX, bALOTri,
      >       bNoNEGEDDIG, bDDVDOP, LPRDH,
      >       bDEBUG, CUTOPAMEANTHRES, DRLINES_CARD)
@@ -579,13 +583,13 @@ C***  DECODE INPUT CARDS
       DO LINEINDEX = 1, LASTIND+NAUTO
          LINE(LINEINDEX) = LINEINDEX
       ENDDO
-     
-C***  Setup VDOPDD array (for line profiles) and VDOPUNIT (grid spacing) variable      
+
+C***  Setup VDOPDD array (for line profiles) and VDOPUNIT (grid spacing) variable
       VDOPUNIT = VDOP
       CALL VDOPDD_SETUP(bDDVDOP, VDOPDD, VDOPUNIT, DXMAX,
-     >                  T, VMIC, ATMASS, ND, NATOM)    
-     
-      IF ((.NOT. bKALPHA) 
+     >                  T, VMIC, ATMASS, ND, NATOM)
+
+      IF ((.NOT. bKALPHA)
      >      .AND. (bHYDROSOLVE) .AND. (NEXTHYDRO == 1)) THEN
         bKALPHA = .TRUE.
       ENDIF
@@ -595,21 +599,21 @@ C***  Setup VDOPDD array (for line profiles) and VDOPUNIT (grid spacing) variabl
         bAdjVINF = .TRUE.
       ENDIF
       IF (iTypeAlpha == 0) THEN
-        !Switch off alpha/response calculation if not used in HYDRO step 
+        !Switch off alpha/response calculation if not used in HYDRO step
         bKALPHA = .FALSE.
       ELSE
         WRITE (hCPR,*) ' Requested Alpha-Type', iTypeAlpha
       ENDIF
-      
+
 
 C***  Open special Plot file wcharm.dat
       IF (LPLOT_WCHARM .GT. 0) THEN
         OPEN (UNIT=105, FILE='wcharm.dat', STATUS='UNKNOWN')
-        WRITE (105,'(A,I3)') 
+        WRITE (105,'(A,I3)')
      >    'KASDEF LUN XMAX YMAX 0.5 0.0 0.3 L = ', LPLOT_WCHARM
         WRITE (105,'(A)') '* Fine Information: Lambda, WJC'
         WRITE (105,'(A)') 'N=?'
-      ENDIF      
+      ENDIF
 
 
       EXLAM1 = XLAMBDA(1)
@@ -631,17 +635,17 @@ C***  prepare the rudimental settings for DRTRANSIT lines
 
 C***  INSERT UPPER DR-LEVELS
         CALL DRLEVEL (N, NDIM, MAXIND, MAXAUTO, NAUTO, KRUDAUT,
-     $                LOWAUTO, IONGRND, AAUTO, ELEVEL, 
-     $                LEVEL, EINST, EION, WEIGHT, INDLOW, 
-     $                INDNUP, LASTIND,  
-     $                ND, T, ENTOT, RNE, POPNUM, DENSCON, 
+     $                LOWAUTO, IONGRND, AAUTO, ELEVEL,
+     $                LEVEL, EINST, EION, WEIGHT, INDLOW,
+     $                INDNUP, LASTIND,
+     $                ND, T, ENTOT, RNE, POPNUM, DENSCON,
      >                LEVUPAUTO, LEVAUTO, WAUTO, N_WITH_DRLEVELS)
       ENDIF
 
 ccc   test output
 c         do iline= 1, LASTIND+LASTFE+NAUTO, 100
-c           write (0,'(2I6,x,A,x,I6,x,A,x,3F10.2)') 
-c     >      iline, indlow(iline), LEVEL(indlow(iline)), 
+c           write (0,'(2I6,x,A,x,I6,x,A,x,3F10.2)')
+c     >      iline, indlow(iline), LEVEL(indlow(iline)),
 c     >             indnup(iline), LEVEL(indnup(iline)),
 c     >             elevel(indlow(iline)), elevel(indnup(iline)),
 c     >             1.E8/(elevel(indnup(iline))-elevel(indlow(iline)))
@@ -659,7 +663,7 @@ C***      BY ONE HALF BANDWIDTH, MULTIPLIED WITH THE FOLLOWING FACTORS:
       BWEXRED = 2.
       BWEXBLU = 1.5
 
-      !Fixed value for VINF (even if velocity field is modified later)      
+      !Fixed value for VINF (even if velocity field is modified later)
       VINF = VELO(1)/VDOPUNIT
 
 C***  IRON: WIDTH OF RED LINE WING IN IRON-DELTAX-UNITS
@@ -672,13 +676,13 @@ C      ENDIF
         ATMEAN = ATMEAN + ABXYZ(NA) * ATMASS(NA)
       ENDDO
 
-C***  INTRODUCING DIMENSIONLESS VELOCITY UNITS : 
+C***  INTRODUCING DIMENSIONLESS VELOCITY UNITS :
       DO L=1,ND
         VELO(L)=VELO(L)/VDOPUNIT
         GRADI(L)=GRADI(L)/VDOPUNIT
         RHO(L) = AMU*ATMEAN*ENTOT(L)
       ENDDO
- 
+
 C***  MASS STORAGE ON FILE 7 FOR THE FEAUTRIER MATRICES (WRCONT)
 C***  ARRAY SIZE: SUM OVER 'LL' (SEE SUBR. ELIMIN) FROM L=1 TO ND-1
 C***  NUMBER OF WORDS:
@@ -701,7 +705,7 @@ C***  INITIALIZE XJLLOAD
       LACTION = 'LOAD'
 
 C***  Dimension for EDDIA
-C***    Note : XHI and XHO are also stored 
+C***    Note : XHI and XHO are also stored
 C***           XHI for the inner boundary in COLIMO
 C***           XHO for Unsoeld-Lucy
 C***           XHOM and EDDIHOUTP for special treatment of the outer boundary
@@ -716,7 +720,7 @@ C***  Counter for Number of EDDI Resets in COLIMO
       IW_COLIRAY_IPLUS = 0
       IW_COLIRAY_U     = 0
 
-C***  Decide on wether an COLI (no ray-by-ray) or an 
+C***  Decide on wether an COLI (no ray-by-ray) or an
 C***                      COLI+ (with ray-by-ray) is performed
 C***  Default : COLI, i.e. no calculation of new EDDIEs
       BCOLIP = .FALSE.
@@ -729,9 +733,9 @@ C***  Note: Other branch (COLIRAY) is not longer valid
 C***  Extended spacing at Continuum points which are not due to edges?
       BXJCE = .FALSE.
 
-      IF (JOBNUM .GT. 3 .AND. JOBNUM .LT. 10 .AND. 
+      IF (JOBNUM .GT. 3 .AND. JOBNUM .LT. 10 .AND.
      >    .NOT. CLHLP .AND. BITCONT) THEN
-        BSHORT = .TRUE. 
+        BSHORT = .TRUE.
       ELSE
         BSHORT = .FALSE.
       ENDIF
@@ -747,37 +751,37 @@ C***  Check the jobnumber of last COLI+ (NOT DONE!!!!)
         ! CLOPENE also updates MODEL string in EDDI file, but the MODEL
         ! is always the same in multiple COLI runs, so this should not be a problem
         BCLEERR = .FALSE.
-        CALL CLOPENE (hEDDI, MODHEAD, JOBNUM, 
+        CALL CLOPENE (hEDDI, MODHEAD, JOBNUM,
      >                NCOLIP, NDEDDIA, BCLEERR)
         WRITE (hCPR,*) 'Opening EDDI file...'
 C***    Open ALO file
       ENDIF
-      
+
 C***  Determine type of COLI (normal COLI, COLI+, or COLI++)
 C***  by evaluating the current status of the EDDIs and CARDS options
       IF (BCLEERR .OR. bForceCLEERR) THEN
-C***    EDDI file needs to be created or renewed => COLI++     
+C***    EDDI file needs to be created or renewed => COLI++
         BCOLIP = .TRUE.
         BCOLIPP = .TRUE.
         IF (bForceCLEERR) THEN
-          WRITE (hCPR,'(A,A4)') 
+          WRITE (hCPR,'(A,A4)')
      >      ' Creation of new EDDI file forced: COLI++ required'
         ELSE
-          WRITE (hCPR,'(A,A4)') 
+          WRITE (hCPR,'(A,A4)')
      >      ' No valid EDDI file found: COLI++ required'
         ENDIF
       ELSE
-C***    Check for at least one of the criteria for a COLI+      
+C***    Check for at least one of the criteria for a COLI+
         BCOLIPP = .FALSE.
         IF (BCOLIP) THEN
-          WRITE (hCPR,'(A,I2,A)') 
+          WRITE (hCPR,'(A,I2,A)')
      >      ' COLI+ forced'
         ELSEIF (NCOLIP == 0) THEN
-          WRITE (hCPR,'(A,I2,A)') 
+          WRITE (hCPR,'(A,I2,A)')
      >      ' Previous WRCONT detected: performing COLI+'
           BCOLIP = .TRUE.
         ELSEIF (NCOLIP >= NEWWRC) THEN
-            WRITE (hCPR,'(A)') 
+            WRITE (hCPR,'(A)')
      >      ' EDDIs too old (NCOLIP >= NEWWRC): COLI+ required'
           BCOLIP = .TRUE.
           NCOLIP = 0
@@ -794,15 +798,15 @@ C***  VELOCITY SCALING FOR THE CALCULATION OF FORCE MULTIPLIERS
          ELSE
            CATMOD = 'VELOCITY'
          ENDIF
-         WRITE (hCPR,'(A)') 
+         WRITE (hCPR,'(A)')
      >       ' *********************************************'
          WRITE (hCPR,'(A)')
      >       ' * CALCULATION OF FORCE MULTIPLIERS:         *'
-         WRITE (hCPR,'(A,2X,F14.11,X,A)') 
+         WRITE (hCPR,'(A,2X,F14.11,X,A)')
      >       ' * '// CATMOD //' IS MODIFIED BY ',  VELOMODFAK, ' *'
          WRITE (hCPR,'(A)')
      >       ' *********************************************'
-         IF ((iTypeAlpha /= 3) .AND. 
+         IF ((iTypeAlpha /= 3) .AND.
      >         (VELOMODFAK > 1. .OR. VELOMODFAK <= 0.)) THEN
 c           WRITE (hCPR,'(2A)') 'FATAL ERROR: Velocity modifier must ',
 c     >              'be greater than zero and lower than 1!'
@@ -834,17 +838,17 @@ C            GRADI(L) = GRADI(L)
 
 C***  Reorder lines in sequence of increasing wavelengths
       NLINE = LASTIND + NAUTO
-      CALL SEQLINECL(NLINE, LINE, EINST, INDLOW, 
+      CALL SEQLINECL(NLINE, LINE, EINST, INDLOW,
      >       INDNUP, XLAMSOR, ELEVEL, NDIM, VDOPUNIT,
      >       CMFBAND, CLIGHT, XLAMMIN, XLAMMAX,
-     >       VINF*VDOPUNIT, EXLAM1, EXLAM2, MAXEXT, 
+     >       VINF*VDOPUNIT, EXLAM1, EXLAM2, MAXEXT,
      >       LASTIND, NAUTO, KRUDAUT )
 
 C***  IRON: WIDTH OF RED LINE WING IN IRON-DELTAX-UNITS
       IF (BFEMODEL) THEN
          DFEINDR = 2.*VINF*VDOPUNIT/VDOPFE/DXFE
       ENDIF
-     
+
       IF (BCOLIRAY) THEN
         WRITE (hCPR,*) 'Pure Coliray Branch is not longer valid'
         STOP 'Fatal ERROR in Subr. COLI'
@@ -867,55 +871,55 @@ C         1       1        COLI    (MO)
         ITMAX = 1
       ENDIF
 
-C***  Failsafe check: ITMAX must not be larger than dimensioned arrays      
+C***  Failsafe check: ITMAX must not be larger than dimensioned arrays
       IF (ITMAX > NIT) THEN
         WRITE (hCPR,*) 'ITMAX > NIT : ', ITMAX, NIT
         STOP 'ERROR in Subr. COLI'
       ENDIF
-      
-C***  Increase COLI+ counter (stored in MODEL file)      
+
+C***  Increase COLI+ counter (stored in MODEL file)
       IF (.NOT. bKATEST) THEN
         NCOLIP = NCOLIP + 1
-C***    For COLI++ ensure that next COLI is a COLI+        
+C***    For COLI++ ensure that next COLI is a COLI+
         IF (BCOLIPP) NCOLIP = 0
       ENDIF
 
 
-C***  EDDIMIX factor for new EDDIG (if COLI+) is specified from MODEL-File, 
-C***     or set ZERO, EMIXSTART or EMIXFIX, as requested 
-C***     Note: Modification by wrh 17-Aug-2000 12:12:25 
-C***           EMIXFIX is considered as minimum value, but EPSGMAX is applied  
-C***           if neccessary  
+C***  EDDIMIX factor for new EDDIG (if COLI+) is specified from MODEL-File,
+C***     or set ZERO, EMIXSTART or EMIXFIX, as requested
+C***     Note: Modification by wrh 17-Aug-2000 12:12:25
+C***           EMIXFIX is considered as minimum value, but EPSGMAX is applied
+C***           if neccessary
       EPSGITMAX(1) = 0.
 
       DO IT=2, ITMAX
-        DO L=1, ND-1     
+        DO L=1, ND-1
           IF (.NOT. BEMIX) THEN
-            EPSG(L,IT) = 0.   
+            EPSG(L,IT) = 0.
           ELSE
             IF (BEMIXFIX) THEN
-              EPSG(L,IT) = AMAX1 (EMIXFIX, EPSGMAX(L)) 
+              EPSG(L,IT) = AMAX1 (EMIXFIX, EPSGMAX(L))
             ELSE
-              IF (BEPSGMAXERR) THEN 
+              IF (BEPSGMAXERR) THEN
                 EPSG(L,IT) = EMIXSTART
               ELSE
                 EPSG(L,IT) = EPSGMAX(L)
               ENDIF
             ENDIF
-          ENDIF          
+          ENDIF
           EPSGITMAX(IT) = MAX(EPSGITMAX(IT), EPSG(L,IT))
         ENDDO
         IF (bMAXEMIX) THEN
-C***      New test option: Apply the maximum required EDDIMIX to ALL depth points        
+C***      New test option: Apply the maximum required EDDIMIX to ALL depth points
           DO L=1, ND-1
             EPSG(L,IT) = EPSGITMAX(IT)
           ENDDO
         ENDIF
       ENDDO
 
-      EPSGMAX = 0.  !needed for multiple call of COLI (from Goetz)  
+      EPSGMAX = 0.  !needed for multiple call of COLI (from Goetz)
 
-C***  Initialize Counters for reading and writing the EDDIEs to 
+C***  Initialize Counters for reading and writing the EDDIEs to
 C***    File fort.<hEDDI>
 C***  EDDIA : Array where all eddis are stored
 C***          NFRO frequencies are stored in one entry in the file
@@ -935,28 +939,28 @@ C***     and TDIFFUS artistic is not switched on
      >                ND,EN,POPNUM,POPMIN,RNE(ND),ENTOT(ND),RSTAR,
      >                NDIM,N,LEVEL,NCHARG,WEIGHT,ELEVEL,EION,EINST,
      >                ALPHA,SEXPO,
-     >                ADDCON1, ADDCON2, ADDCON3, 
-     >                IGAUNT,NOM,NF,XLAMBDA,FWEIGHT, 
+     >                ADDCON1, ADDCON2, ADDCON3,
+     >                IGAUNT,NOM,NF,XLAMBDA,FWEIGHT,
      >                MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,
-     >                KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC, 
-     >                BKUDRITZKI, OPARND) 
+     >                KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC,
+     >                BKUDRITZKI, OPARND)
       ENDIF
 
-C***  NEWBGC = COUNTER OF LINES FOR WHICH NEW BACKGROUND CONT. RAD. 
+C***  NEWBGC = COUNTER OF LINES FOR WHICH NEW BACKGROUND CONT. RAD.
 C***           FIELD IS CALCULATED
       NEWBGC = 0
 
-C***  IWARNJ0 = COUNTER OF ZERO BACKGROUND CONTINUUM INTENSITIES 
+C***  IWARNJ0 = COUNTER OF ZERO BACKGROUND CONTINUUM INTENSITIES
 C***            ENCOUNTERED BY SUBR. BACKJCU
       IWARNJ0 = 0
- 
-C***  NLASER = COUNTER OF LINES FOR WHICH THE LASER CONDITION WAS 
+
+C***  NLASER = COUNTER OF LINES FOR WHICH THE LASER CONDITION WAS
 C***           ENCOUNTERED
       NLASER = 0
 
       LBMAX=0
       NBLENDS=0
-      
+
 C**** IWARNJMNEG = Counter for negative XJL values obtained in COLIMO
 C****  (Such values are now [Apr 2015] set to zero! )
       IWARNJMNEG = 0
@@ -966,9 +970,9 @@ C***  Start of new COLI code
 C******************************************************************
 
 C***  Testplots?
-C***  BPLOT  = .TRUE. : Plot from Subroutines 
+C***  BPLOT  = .TRUE. : Plot from Subroutines
 C***                      COLIMOP, PREREDIS, COLIMO
-C***  BPLOT2 = .TRUE. : Plot from Subroutines 
+C***  BPLOT2 = .TRUE. : Plot from Subroutines
 C***                      COLIRAY, CMFCOOP
 C***  Plot of the Lambda-spacing
 C***    The Plotfile is coli_k.plot
@@ -992,7 +996,7 @@ c        LPLOT = 27190
         BPDONE = .FALSE.
         IF (BPLOT) THEN
           WRITE (hCPR,'(A,I3,A)') 'Plot in depth ', IPLOT, ' prepared'
-          WRITE (hCPR,'(A,I6,A)') 
+          WRITE (hCPR,'(A,I6,A)')
      >                          'Plot at frequency ',LPLOT,' prepared'
           WRITE (hCPR,'(A,2(1X,F12.5))') 'Plot-Range [A]: ',XLP1,XLP2
           DO NL=1, MAXLIN
@@ -1019,18 +1023,18 @@ c        LPLOT = 27190
             OPEN (UNIT=92, FILE='cmfcoop.dat')
           ENDIF
           WRITE (37,'(A6,27A16)')
-     >    ' * IND', 'LAMBDA', 'OPA-KONT', 
-     >    'ETA-K', 'ETANOTH-K.', 'S-KONT', 
-     >    'S-KONT(NOTH)', 'OPA-L', 'ETA-L', 'S-L', 'J-KONT', 'J', 
-     >    'J-SCHLANGE', 'H-S', 'K-S', 'N-S', 'EDDIF', 'EDDIG', 
-     >    'XJLMO', 'XJLMOR2', 'XHLMO', 
+     >    ' * IND', 'LAMBDA', 'OPA-KONT',
+     >    'ETA-K', 'ETANOTH-K.', 'S-KONT',
+     >    'S-KONT(NOTH)', 'OPA-L', 'ETA-L', 'S-L', 'J-KONT', 'J',
+     >    'J-SCHLANGE', 'H-S', 'K-S', 'N-S', 'EDDIF', 'EDDIG',
+     >    'XJLMO', 'XJLMOR2', 'XHLMO',
      >    'FULFIL0', 'FULFIL1', 'DJDSMO', 'DJDSMO', 'DJDS', 'SLNOTH'
           WRITE (36,'(A6,26A16)')
-     >    ' * L', 'LAMBDA', 'OPA-KONT', 
-     >    'ETA-K', 'ETANOTH-K.', 'S-KONT', 
-     >    'S-KONT(NOTH)', 'OPA-L', 'ETA-L', 'S-L', 'J-KONT', 'J', 
-     >    'J-SCHLANGE', 'H-S', 'K-S', 'N-S', 
-     >    'EDDIF', 'EDDIG', 'XJLMO', 'XJLMOR2', 'XHLMO', 
+     >    ' * L', 'LAMBDA', 'OPA-KONT',
+     >    'ETA-K', 'ETANOTH-K.', 'S-KONT',
+     >    'S-KONT(NOTH)', 'OPA-L', 'ETA-L', 'S-L', 'J-KONT', 'J',
+     >    'J-SCHLANGE', 'H-S', 'K-S', 'N-S',
+     >    'EDDIF', 'EDDIG', 'XJLMO', 'XJLMOR2', 'XHLMO',
      >    'FULFIL0', 'FULFIL1', 'DJDSMO', 'RADIUS'
           WRITE (35,'(A4,5A16)')
      >    ' * L', 'JTOT', 'HTOT', 'KTOT', 'NTOT', 'RADIUS'
@@ -1048,22 +1052,22 @@ c        LPLOT = 27190
         ENDIF
       ENDIF
 
-      
+
 C***  Preparation of flux integration weights (test purpose only)
       CALL GENWP1 (NP, P, WP1, WP1LAST)
-      CALL COLIWM(Z, P, RADIUS, ND, NP, 
-     >            CWM0, CWM1, CWM2, CWM3, 
+      CALL COLIWM(Z, P, RADIUS, ND, NP,
+     >            CWM0, CWM1, CWM2, CWM3,
      >            BSHORT_CHAR)
 
-C***  The weights could be checked 
+C***  The weights could be checked
 C      IF (.FALSE.) THEN
-C        CALL CHECKWM (CWM0, CWM1, CWM2, CWM3, 
-C     >                CWM1O, CWM1I, CWM3O, CWM3I, 
+C        CALL CHECKWM (CWM0, CWM1, CWM2, CWM3,
+C     >                CWM1O, CWM1I, CWM3O, CWM3I,
 C     >                WP1, WP1LAST, W0, RADIUS, ND, NP, Z, P)
 C      ENDIF
 
 C***  Precalculation of the geometry for COLIMO
-      CALL COLIMOP(ND, RADIUS, GRADI, VELO, 
+      CALL COLIMOP(ND, RADIUS, GRADI, VELO,
      >                   DLF, DLH, GLF2, GLH2, VLF2, VLH2, BPLOT,
      >                   RADIUS2, RADIUSH, RADIUSH2)
 
@@ -1073,17 +1077,17 @@ C     OLD CALL COLI_SETZERO position
 C***  Input
      >    XLAMBDA, NF, XLAMBDA2, NF2, VDOPUNIT, CLIGHT, DXMAX,
      >    VINF, ND, CMFBAND, NLINE, MAXIND, XLAMSOR,
-     >    BPLOT, BXJCE, LINE, 
-C***  Output 
+     >    BPLOT, BXJCE, LINE,
+C***  Output
      >    XLAM0, XLAM0LN, ALN, CMFBANDR,
      >    XKMID, XKMIN, XKRED, XKMAX, XKC, XKC2, XKCMAX,
      >    KSPACE, BANDP, BANDM, KOUT, K, KLAST, NK,
      >    KONCHECK, KONCHECK2, KONTACT, KONTAUP, NLACT,
      >    LINECHECK, ILINECHECK,
-     >    KCL, KCU, KCDMAX, KCDELTA, KCCHECK, BFF_ACT, IFF_N, 
+     >    KCL, KCU, KCDMAX, KCDELTA, KCCHECK, BFF_ACT, IFF_N,
      >    IFF_DK, IFF_MAX)
-      
-      
+
+
       IF (BCOLIPP) THEN
         CPPLABEL = '++'
       ELSE
@@ -1091,27 +1095,27 @@ C***  Output
       ENDIF
       WRITE (hCPR,*)
       WRITE (hCPR,'(13A8)')
-     >  'COLI+', 'BCLEERR', 'EDDIMIX', 
+     >  'COLI+', 'BCLEERR', 'EDDIMIX',
      >  'TDIFFUS', 'OB-VERS', 'KSPACE', 'BXJCE',
      >  'BPLOT', 'BPLOT2', 'BSHORT', 'CLHLP', 'VERS_FE'
       WRITE (hCPR,'(L6,A2,L5,3L8,2I8,5L8,I7)')
-     >  BCOLIP, CPPLABEL, BCLEERR, BEMIX, 
+     >  BCOLIP, CPPLABEL, BCLEERR, BEMIX,
      >  bTDIFFUS, IVERS, KSPACE, BXJCE,
      >  BPLOT, BPLOT2, BSHORT, CLHLP, IVERS_FE_EXPFAC
       WRITE (hCPR,*)
 
 
-      WRITE (hCPR,'(A,I3,1X,I3)') 
+      WRITE (hCPR,'(A,I3,1X,I3)')
      >  'Iteration Scheme : ITSTART, ITMAX = ', ITSTART, ITMAX
 
 cc      WRITE (hCPR,*)
-cc      WRITE (hCPR,'(5A12)') 
+cc      WRITE (hCPR,'(5A12)')
 cc     >  'Operator:   ', 'Continuum', 'Lines', 'R-Lines', 'Fe-Lines'
 cc      WRITE (hCPR,'(2A12,3I12)')
 cc     >  ' ', OPC, NLINE, NUMRUD, LASTFE
 cc      WRITE (hCPR,*)
 
-C***  Prepare the Indices IF1..4 which are controlling the Storage of 
+C***  Prepare the Indices IF1..4 which are controlling the Storage of
 C***    the old Js from the last Iteration
 C***    IF1 : First Index
 C***    IF2 : Number of Elements
@@ -1125,7 +1129,7 @@ C***  Number of frequency-indicees needed for the redistribution
 C***    For CONTINUUM or COHERENCE the default is 1
       DKR = 1.
 
-C***  IRON: SET LOWEST LINE TO '1', NO ACTIVE FE-LINES 
+C***  IRON: SET LOWEST LINE TO '1', NO ACTIVE FE-LINES
       INDFEACT(1) = 1
       MAXFEACT    = 0
       BFECHECK    = .FALSE.
@@ -1167,11 +1171,11 @@ ccc      INDBAK = INDFEACT(1)
       CALL CHECK_CONT(BKONCHECK, BKONCHECK2,
      >             KONCHECK, KONCHECK2, NF, NF2, K, XK,
      >             XLAMKOLD, XKC, XKC2, BANDM, BANDP,
-C***  Parameters for Continuum Interpolation 
+C***  Parameters for Continuum Interpolation
      >             CMFBAND, CMFBANDR, DXMAX,
-     >             KCCHECK, KCL, KCU, KCONT, KCDMAX, KCDELTA, 
+     >             KCCHECK, KCL, KCU, KCONT, KCDMAX, KCDELTA,
      >             XLAMBDA, KONTACT, KONTAUP, DFKONT, BPLOT)
-                 
+
 C***  Explaining Variables :
 C***    XLAMSOR      : Array of sorted wavelengths (1..NLINE)
 C***    XKMIN, XKMAX : Indices where the starts and ends
@@ -1182,13 +1186,13 @@ C***    LIND         : Array of ILINECHECK (1..MAXLIN)
 C***    BLASERL      : Is true for Laser Lines
 
       CALL CHECK_LINES(XK, XKMIN, XKMID, XKMAX,
-     >             LINECHECK, ILINECHECK, NLINE, MAXLIN, LEVEL, 
-     >             LIND, LINDS, WS, BPLOT, RADIUS, NLACT, LINE, 
+     >             LINECHECK, ILINECHECK, NLINE, MAXLIN, LEVEL,
+     >             LIND, LINDS, WS, BPLOT, RADIUS, NLACT, LINE,
 C***  Parameters for PRELINECL
      >             NUP, LOW, N, XLAM, NDIM, ND, XJLMEAN, XLAMAPPMEAN,
      >             bALOTri, XLAMAPPUMEAN, XLAMAPPLMEAN,
      >             ELEVEL, INDNUP, INDLOW, NDDIM,
-C***  Parameters and also for LIOP 
+C***  Parameters and also for LIOP
      >             EINST, WEIGHT, XLAMSOR, ENTOT, POPNUM, RSTAR,
      >             OPAL, ETAL, VDOPUNIT, hMODEL, hALO)
 
@@ -1208,9 +1212,9 @@ C***  Check if actual frequency should be skipped
 C***    Special treatment for Iron-Lines: TEST FOR ACTIVE WING
         IF (.NOT. BKONCHECK .AND. .NOT. BKONCHECK2 .AND.
      >      .NOT. BFEWING
-     >      .AND. NLACT .EQ. 0 .AND. 
-     >      K-KLAST .LT. KSPACE .AND. K .GT. 0 .AND. .NOT. 
-     >      CMODE .EQ. 'F') THEN 
+     >      .AND. NLACT .EQ. 0 .AND.
+     >      K-KLAST .LT. KSPACE .AND. K .GT. 0 .AND. .NOT.
+     >      CMODE .EQ. 'F') THEN
           K = K + 1
           IF (K .GT. KCU) THEN
 C***        New Start Indices for Continuum Interpolation (KCL = KCU)
@@ -1230,7 +1234,7 @@ C***    K, XLAMK                   actual index and its wavelength
 C***    BKONCHECK,  KONCHECK       near kontinuum and index of next kontinuum
 C***    BKONCHECK2, KONCHECK2      near kontinuum and index of next true kontinuum
 C***    NLACT, LIND(NL(1..MAXLIN)) Number of active lines and indices of the lines
-C***    
+C***
 
 C***  Check if actual K is in the Fine Integration Interval
       IF (XLAMK .GE. XLAM_FINE_START .AND.
@@ -1259,13 +1263,13 @@ C***  Read old EDDIEs from file fort.<hEDDI>
       CALL CLLOADE (hEDDI, NZE1, NZE2, NFRO, EDDIA, NDEDDIA,
      >              EDDIF, EDDIG, ND,
      >              EDDIHOUT, EDDIHIN, EDDIHINM, EDDINOUT, EDDININ,
-     >              BCLEERR, BCOLIP, XHI, XHO, EPSG(1,1), 
+     >              BCLEERR, BCOLIP, XHI, XHO, EPSG(1,1),
      >              XHOM, XNOM, EDDIHOUTP, EDDINOUTP, EDDIHINT)
 
 C***  Overview on current EPSG
       IF (K .EQ. 0 .AND. BCOLIP) THEN
-        IF (BEPSGMAXERR .AND. BEMIX) THEN 
-          WRITE (hCPR, '(A,F5.2)') 
+        IF (BEPSGMAXERR .AND. BEMIX) THEN
+          WRITE (hCPR, '(A,F5.2)')
      >        'COLI: EDDIMIX started with EPSG=', EMIXSTART
         ENDIF
         CALL PRI_EPSG(BEMIX, BEMIXFIX, ITMAX, EPSG, NDDIM, ND, NIT,
@@ -1278,7 +1282,7 @@ C***  Overview on current EPSG
      >         EINST,ALPHA,SEXPO,ADDCON1,ADDCON2,ADDCON3,IGAUNT,
      >         SIGMA1I,KONTLOW,KONTNUP,LASTKON,NATOM,KONTHLP,
      >         DENSCON,BPLOT,BPLOT2,IPLOT,K,KCL,KCU,KCDELTA,
-     >         OPACL,OPACU,ETACL,ETACU,XLAM0LN,ALN, MAXXDAT, XDATA, 
+     >         OPACL,OPACU,ETACL,ETACU,XLAM0LN,ALN, MAXXDAT, XDATA,
      >         SIGMATHK,SEXPOK,EDGEK, MAXATOM, NOM, KODAT, RADIUS,
      >         MAINPRO, MAINLEV, IWARN, OPACLEL, OPACUEL, OPACELEM,
      >         ETACLEL, ETACUEL, ETACELEM, OPACLION, OPACUION,
@@ -1290,18 +1294,18 @@ C***  IRON: CALCULATE FE-OPACITY AND EMISSIVITY
            CALL  CMFFEOP (XLAMK, ND, N, INDFEACT, MAXFEACT, LASTFE,
      >                    SIGMAFE, OPAFE, ETAFE, INDEXMAX, INDRB,
      >                    IFRBSTA, IFRBEND, IFENUP, IFELOW,
-     >                    CLIGHT, VDOPFE, DXFE, XLAM0FE, 
-     >                    ELEVEL, WEIGHT, RSTAR, POPNUM, ENTOT, 
-     >                    SIGMAACT, OPAFEI, ETAFEI, 
-     >                    OPAFEION, ETAFEION, T, IVERS_FE_EXPFAC, 
+     >                    CLIGHT, VDOPFE, DXFE, XLAM0FE,
+     >                    ELEVEL, WEIGHT, RSTAR, POPNUM, ENTOT,
+     >                    SIGMAACT, OPAFEI, ETAFEI,
+     >                    OPAFEION, ETAFEION, T, IVERS_FE_EXPFAC,
      >                    TEFF, NCHARG, MAXION, bFELASER, bNoIronLaser)
         ENDIF
 
 C***  ---------------------------------------------------------
-C***  ADD THE THOMSON EMISSIVITY, ACCORDING TO THE ACTIVE MODE: 
-C***  Note: CMFCOOP has stored the true emissivity into ETANOTH 
+C***  ADD THE THOMSON EMISSIVITY, ACCORDING TO THE ACTIVE MODE:
+C***  Note: CMFCOOP has stored the true emissivity into ETANOTH
 C***  ---------------------------------------------------------
-C***    Using the Continuum Radiation Field 
+C***    Using the Continuum Radiation Field
         IF (BCOLIPP) THEN
           DO L=1, ND
             ETA(L) = ETANOTH(L) + OPA(L) * THOMSON(L) * XJCIND(L)
@@ -1320,7 +1324,7 @@ C        DELTAX = FLOAT(K-KLAST) * DXMAX
         ENDIF
 
 c         open (unit=120, file='k_coli.dat', status='unknown')
-c         write (120,'(a,i8,f20.10,3i8)') 
+c         write (120,'(a,i8,f20.10,3i8)')
 c     >     'k=', k, xlamk, klast, ndk, iff_n
 
 C***  Store NDK = K - KLAST in the special array IFF_DK
@@ -1330,16 +1334,16 @@ C***  Store NDK = K - KLAST in the special array IFF_DK
 
         FWEIGHTL = DELTAX * VDOPUNIT * 1.E13 / XLAMK
 C***  Sum up Opacities
-        CALL ADDOPA (ND, NDDIM, MAXLIN, MAXIND, LIND, LINDS, 
+        CALL ADDOPA (ND, NDDIM, MAXLIN, MAXIND, LIND, LINDS,
      >         XK, XKMID, XKRED, DELTAX, FWEIGHTL,
      >         PARALAS, LASER, LASERV, ALN, VDOPUNIT, VDOPDD,
-     >         WS, ETAL, OPAL, ETA, ETANOTH, OPA, ETAK, ETAKNOTH, 
+     >         WS, ETAL, OPAL, ETA, ETANOTH, OPA, ETAK, ETAKNOTH,
      >         OPAK, OPAKNOTH, THOMSON, PWEIGHT, NOM,
-     >         OPAFE, ETAFE, BFECHECK, BLASERL, NUP, LOW, N, LEVEL, 
-     >         OPAKFE, NATOM, MAXATOM, KODAT, OPACELEM, OPAKELEM,     
+     >         OPAFE, ETAFE, BFECHECK, BLASERL, NUP, LOW, N, LEVEL,
+     >         OPAKFE, NATOM, MAXATOM, KODAT, OPACELEM, OPAKELEM,
      >         ETACELEM, ETAKELEM, MAXION, OPACION, OPAKION,
-     >         ETACION, ETAKION, NCHARG, OPAFEION, ETAFEION, 
-     >         OPAKNOFENOTH, ETAKNOFENOTH, 
+     >         ETACION, ETAKION, NCHARG, OPAFEION, ETAFEION,
+     >         OPAKNOFENOTH, ETAKNOFENOTH,
      >         OPAFEFT, ETAFEFT, OPAKFEFT, ETAKFEFT)
 
         IF (LASER) THEN
@@ -1357,11 +1361,11 @@ C***  Beginning of Iteration Loop
         IF ((IT .GT. ITSTART)) THEN
            DO L=1, ND
               IF (XJLMOR2(L) .GT. 1.E-100) THEN
-                 ETAK(L) = ETAKNOTH(L) 
+                 ETAK(L) = ETAKNOTH(L)
      >                     + (OPAK(L) - OPAKNOTH(L)) * XJLMOR2(L)
               ELSEIF (XJCIND(L) > 1.E-50) THEN
                  ETAK(L) = ETAKNOTH(L)
-     >                     + (OPAK(L) - OPAKNOTH(L)) * XJCIND(L)  
+     >                     + (OPAK(L) - OPAKNOTH(L)) * XJCIND(L)
               ELSE
                  ETAK(L) = ETAKNOTH(L)
               ENDIF
@@ -1382,7 +1386,7 @@ C***      In the other Version S is calculated in COLISET
         IF (BSHORT_CHAR) THEN
           CALL CALC_S(S, ETAK, OPAK, ND)
         ENDIF
-        
+
         ITACT = IT
 
 C***   Beginning of COLIRAY-Block
@@ -1399,24 +1403,24 @@ C***  Begin of SHORTRAY Block
 C***  Loop over the impact parameters
             DO JP=1, NP
               IRAY=(JP-1)*ND+1
-              CALL SHORTRAY(K, XIPLUS(1,JP), XIPLUS_OLD(1,JP,ITACT), 
+              CALL SHORTRAY(K, XIPLUS(1,JP), XIPLUS_OLD(1,JP,ITACT),
      >          RADIUS, ND, NP, JP,
-     >          S, S_OLD(1,ITACT), 
+     >          S, S_OLD(1,ITACT),
      >          XIMINUS(1,JP), XIMINUS_OLD(1,JP,ITACT),
      >          BCORE, DBDR, XHID, XLAMK, ENTOT, DELTAX,
-     >          OPAK, ETAK, OPAK_OLD(1,ITACT), 
+     >          OPAK, ETAK, OPAK_OLD(1,ITACT),
      >          XJL, XHL, XKL, XNL,
-     >          CWM0, CWM1, CWM2, CWM3, 
-     >          XHO, XHI, XNO, XNI, 
-     >          Z(IRAY,1), PPP(IRAY,1), 
-     >          IPLOT, BPLOT2, IW_COLIRAY_IPLUS, IVERS, 
+     >          CWM0, CWM1, CWM2, CWM3,
+     >          XHO, XHI, XNO, XNI,
+     >          Z(IRAY,1), PPP(IRAY,1),
+     >          IPLOT, BPLOT2, IW_COLIRAY_IPLUS, IVERS,
      >          XHOM, XHOP, XNOM, XNOP, OPA, bWARNK)
             ENDDO
 C***  For special integration in coliray needed
 C!!!          XHI = XHI + BCORE/2. + DBDR/OPAK(ND)/3.
 
-            XIPLUS_OLD(1:ND,1:NP,IT) = XIPLUS(1:ND,1:NP) 
-            XIMINUS_OLD(1:ND,1:NP,IT) = XIMINUS(1:ND,1:NP) 
+            XIPLUS_OLD(1:ND,1:NP,IT) = XIPLUS(1:ND,1:NP)
+            XIMINUS_OLD(1:ND,1:NP,IT) = XIMINUS(1:ND,1:NP)
 
 C***  Notation   :
 C***       XJL   : R^2 * J from ray-by-ray  Weight : CWM0
@@ -1451,20 +1455,20 @@ C***      COLIRAY (the last, if COLI++) recommends EPSGMAX for the next COLI+
               XHL_MID = XHL(L) + XHL(L+1)
               XJL_MID = XJL(L) + XJL(L+1)
               XNENN = XHL_MID + EPSG(L,IT)*XJL_MID
-              
+
               IF (ABS(XNENN) .GT. EXP(-499.)) THEN
                 EDDIG(L) = XNL_MID / XNENN
-                 
+
 C***            CARDS option: Reset all negative EDDIG to
 C***                          ensure proper momentum equation form
                 IF (bNoNEGEDDIG .AND. EDDIG(L) < 0.) THEN
-                  EDDIG(L) = 1. / (1. + EPSG(L,IT)) 
+                  EDDIG(L) = 1. / (1. + EPSG(L,IT))
                 ENDIF
-                
+
               ELSE
 c***            Changed the fallback to 1 / (1+eps) -- ansander, Aug 2023
 c                EDDIG(L) = 1.
-                EDDIG(L) = 1. / (1. + EPSG(L,IT))              
+                EDDIG(L) = 1. / (1. + EPSG(L,IT))
               ENDIF
             ENDDO
 C***  Calcultate the Eddis (EDDIH and EDDIN)
@@ -1481,7 +1485,7 @@ C***    at outer and inner boundary
               EDDINOUTP = 1.
             ENDIF
             IF (XJL(ND) .GT. 0.) THEN
-C***          Attention: Since 09 Feb 2016  XHI is the special definition 
+C***          Attention: Since 09 Feb 2016  XHI is the special definition
 C***                     of H_spec at the inner boundary, calculated in SHORTRAY
 C***                     Before XHI was identical to XHL(ND) from SHORTRAY
               EDDIHIN  = XHI / XJL(ND)      !special Eddington factor for inner boundary
@@ -1496,45 +1500,45 @@ C***   End of SHORTRAY Block
           IF ( K .EQ. 0) THEN
             WRITE (hCPR,'(A,I2)') 'COLIMO,  IT=', IT
           ENDIF
-          CALL COLIMO(K, ND, RADIUS, OPAK, ETAK, ETAKNOTH, 
-     >              OPAKNOTH, 
+          CALL COLIMO(K, ND, RADIUS, OPAK, ETAK, ETAKNOTH,
+     >              OPAKNOTH,
      >              S, XJLMO, XJLMOR2, XHLMO,
-     >              XJLMO_OLD(1,ITACT), XHLMO_OLD(1,ITACT), 
+     >              XJLMO_OLD(1,ITACT), XHLMO_OLD(1,ITACT),
      >              DLF, DLH, GLF, GLH, VLF, VLH,
-     >              GLF2, GLH2, VLF2, VLH2, 
+     >              GLF2, GLH2, VLF2, VLH2,
      >              QLF, QLH, OPAKH,
-     >              EDDIF, EDDIFO(1,ITACT), EDDIG, EDDIGO(1,ITACT), 
-     >              EDDIHOUT, EDDIHIN, EDDIHOUTO(ITACT), 
-     >              EDDINOUT, EDDININ, EDDINOUTO(ITACT), 
+     >              EDDIF, EDDIFO(1,ITACT), EDDIG, EDDIGO(1,ITACT),
+     >              EDDIHOUT, EDDIHIN, EDDIHOUTO(ITACT),
+     >              EDDINOUT, EDDININ, EDDINOUTO(ITACT),
      >              ALH, BLH, CLH,
-     >              COLIA, COLIB, COLIC, COLIW, DELTAX, 
+     >              COLIA, COLIB, COLIC, COLIW, DELTAX,
      >              BCORE, DBDR, XIMINUS, BPDONE, XLAMK,
      >              DJDSMOD, bALOTri, DJDSMOU, DJDSMOL,
-     >              FULFIL0, FULFIL1, BPLOT, BPLOT2, IPLOT, 
-     >              IW_COLIMO_F, IW_COLIMO_G, IW_COLIMO_G2, BSTATIC, 
-     >              CLMOETA, CLMOOPA, XHID, 
-     >              RADIUS2, EPSG(1,ITACT), GEPSB, GEPSBO,  
+     >              FULFIL0, FULFIL1, BPLOT, BPLOT2, IPLOT,
+     >              IW_COLIMO_F, IW_COLIMO_G, IW_COLIMO_G2, BSTATIC,
+     >              CLMOETA, CLMOOPA, XHID,
+     >              RADIUS2, EPSG(1,ITACT), GEPSB, GEPSBO,
      >              XHOM, XHOMO(ITACT), XNOM, XNOMO(ITACT),
-     >              EDDIHOUTP, EDDINOUTP, 
+     >              EDDIHOUTP, EDDINOUTP,
      >              EDDIHOUTOP(ITACT), EDDINOUTOP(ITACT), IWARNJMNEG)
 
 ***    Calculate Integrals over Frequency
-          IF (IT .EQ. ITMAX) THEN                
-          
+          IF (IT .EQ. ITMAX) THEN
+
             IF (bPLOTRTAU1) THEN
-              CALL PLOTRTAU1COLI (hPLOT, K, XLAMK, XLAMKOLD, CMODE, 
-     >                            ND, RADIUS, OPAK, OPA, FILLFAC, 
+              CALL PLOTRTAU1COLI (hPLOT, K, XLAMK, XLAMKOLD, CMODE,
+     >                            ND, RADIUS, OPAK, OPA, FILLFAC,
      >                            MAINPRO, MAINLEV, MODHEAD)
             ENDIF
-          
+
             IF ( K .EQ. 0) THEN
-              WRITE (hCPR,'(A,I2)') 
+              WRITE (hCPR,'(A,I2)')
      >          'Frequency Integration always from COLIMO'
             ENDIF
             CALL FREQUINT (K, FWEIGHTL, XLAMK, XLAMKOLD,
      >               XLAMBDA, DXMAX, VELO, GRADI,
 C***        Take J and H from COLIMO
-     >               XJLMO, XJLMO_OLD(1,ITMAX), 
+     >               XJLMO, XJLMO_OLD(1,ITMAX),
      >               XHLMO, XHLMO_OLD(1,ITMAX),
      >               OPAKOLD, NF, ND, NDDIM, NATOM,
      >               KONTACT, KONTAUP, DFKONT, LIND, PWEIGHT, MAXLIN,
@@ -1549,40 +1553,40 @@ C***                Take Diagonal Weights from COLIMO
      >               EDDIFO(1,ITMAX), EDDIGO(1,ITMAX),
      >               EPSGO(1,ITMAX), RADIUS, BCOLIRAY,
      >               ETANOTH, OPA, THOMSON, T, ETAKOLD,
-     >               QLFOLD, QLHOLD, OPAKHOLD, 
+     >               QLFOLD, QLHOLD, OPAKHOLD,
      >               EDDIHOUTOLD, EDDIHINOLD, XHID,
      >               FWEIGHT, OPAO, THOMSONO,
-     >               OPAKOLDELEM, OPACOLDELEM, ETAKOLDELEM, 
+     >               OPAKOLDELEM, OPACOLDELEM, ETAKOLDELEM,
      >               ETACOLDELEM, OPAKOLDION, OPACOLDION,
      >               ETAKOLDION, ETACOLDION, OPAFE,
      >               SUMJ, SUMJW, SUMDJDSC, SUMDJDSCW,
      >               SUMOPA, SUMOPAW, SUMETA, SUMETAW, SC, SCO,
-     >               XJCINT, FWTEST, XJLMEAN, XJFEMEAN, 
+     >               XJCINT, FWTEST, XJLMEAN, XJFEMEAN,
      >               XLAMAPPMEAN, HTOTL,
      >               HTOTMINUSND, HTOTND, HTOTNDCOR,
-     >               HTOTNDS, ARAD, ACONT, ATHOM, ARADELEM, ACONTELEM, 
+     >               HTOTNDS, ARAD, ACONT, ATHOM, ARADELEM, ACONTELEM,
      >               ARADION, ACONTION,
-     >               iIgnoreK, XJTOTL, XKTOTL, XNTOTL, WFELOW, WFENUP, 
-     >               FTCOLI, FTCOLIB, DSDFELOW, DSDFENUP, WJC, WJC_MIN, 
+     >               iIgnoreK, XJTOTL, XKTOTL, XNTOTL, WFELOW, WFENUP,
+     >               FTCOLI, FTCOLIB, DSDFELOW, DSDFENUP, WJC, WJC_MIN,
      >               DSDSC, DJDSC, DJDSCOLD, OPAKINT, ETAKINT,
      >               DBDTINT, DBDTOPAINT, DBDTINT_M, DBDTOPAINT_M,
-     >               OPASMEAN, OPASMEANTC, SMEAN, QFJMEAN, OPAJMEAN, 
-     >               OPAJMEANTC, OPAPMEAN, QOPAHMEAN, HMEAN, 
+     >               OPASMEAN, OPASMEANTC, SMEAN, QFJMEAN, OPAJMEAN,
+     >               OPAJMEANTC, OPAPMEAN, QOPAHMEAN, HMEAN,
      >               EDDIHOUTJMEAN, XHOM, HTOTOUTMINUS,
-     >               RADIUS2, OPC, 
+     >               RADIUS2, OPC,
      >               FERATUL, FERATLU, ELEVEL, EMCOLI,
      >               FTFE, IVERS_FE_EXPFAC, LPLOT_WCHARM, GAMMACOLI,
-     >               OPAROSS, OPAROSSCONT, OPALAMBDAMEAN, 
+     >               OPAROSS, OPAROSSCONT, OPALAMBDAMEAN,
      >               GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2, TEFF,
 C*** die folgenden SKALAREN Parameter werden ausgereicht, weil sie sonst
 C*** ueberschrieben werden!!!!???
      >               XNUEK, XNUEKOLD, XNUEKOLDOLD, VDOPUNIT,
      >               IFRBSTA, IFRBEND, VDOPFE, DXFE, XLAM0FE, NCHARG,
-     >               MAXION, POPMIN, TAULAST, 
+     >               MAXION, POPMIN, TAULAST,
      >               XHLOLD(1,ITMAX), HTOTLTEST, iHTOTCUT, HTOTCUT,
      >               bOSKIPLAST, XLAMLASTOSKIP, XHBFSKIP, LPRDH, bDEBUG,
-     >               CUTOPAMEANTHRES)     
-     
+     >               CUTOPAMEANTHRES)
+
           ENDIF
 
 C***   Save old Quantities (Dimensioned with NIT) for next Frequency
@@ -1640,7 +1644,7 @@ C***  Store old quantities which are dimensioned without NIT
         CALL FREQUBAKION(ND, NATOM, MAXION, OPACION, OPACOLDION)
         CALL FREQUBAKION(ND, NATOM, MAXION, ETAKION, ETAKOLDION)
         CALL FREQUBAKION(ND, NATOM, MAXION, ETACION, ETACOLDION)
-        
+
 
 C***  Test-output at given depth for all wavelengths between XLP1 and XLP2
         IF (BPLOT) THEN
@@ -1649,22 +1653,22 @@ C***  Test-output at given depth for all wavelengths between XLP1 and XLP2
             SK2 = ETANOTH(IPLOT)/OPA(IPLOT)
             SL = ETAK(IPLOT)/OPAK(IPLOT) * RADIUS2(IPLOT)
             SLNOTH = ETAKNOTH(IPLOT)/OPAKNOTH(IPLOT)
-            WRITE (37,'(I8,27(1X,E15.7))') 
-     >        K, XLAMK, OPA(IPLOT), ETA(IPLOT), ETANOTH(IPLOT), 
-     >        SK1, SK2, 
-     >        OPAK(IPLOT), ETAK(IPLOT), SL, 
-     >        XJCIND(IPLOT)*RIPL2, XJLO(IPLOT, IFRO), 
-     >        XJL(IPLOT), 
-     >        XHL(IPLOT), XKL(IPLOT), XNL(IPLOT), 
-     >        EDDIF(IPLOT), EDDIG(IPLOT), 
-     >        XJLMO(IPLOT), XJLMOR2(IPLOT), 
-     >        XHLMO(IPLOT), 
+            WRITE (37,'(I8,27(1X,E15.7))')
+     >        K, XLAMK, OPA(IPLOT), ETA(IPLOT), ETANOTH(IPLOT),
+     >        SK1, SK2,
+     >        OPAK(IPLOT), ETAK(IPLOT), SL,
+     >        XJCIND(IPLOT)*RIPL2, XJLO(IPLOT, IFRO),
+     >        XJL(IPLOT),
+     >        XHL(IPLOT), XKL(IPLOT), XNL(IPLOT),
+     >        EDDIF(IPLOT), EDDIG(IPLOT),
+     >        XJLMO(IPLOT), XJLMOR2(IPLOT),
+     >        XHLMO(IPLOT),
      >        FULFIL0(IPLOT), FULFIL1(IPLOT), DJDSMOD(IPLOT),
      >        DJDS(IPLOT), SLNOTH
 C            XHI, XHID
-c            CALL PLOT3D (XLAMK, ND, INDFEACT, MAXFEACT, BPSTART, 
-c     >                   LEVEL, IFELOW, IFENUP, OPAFEI, OPAKH, 
-c     >                   RSTAR, RHO, ENTOT, XHLMO, XJLMO, XNUEK, 
+c            CALL PLOT3D (XLAMK, ND, INDFEACT, MAXFEACT, BPSTART,
+c     >                   LEVEL, IFELOW, IFENUP, OPAFEI, OPAKH,
+c     >                   RSTAR, RHO, ENTOT, XHLMO, XJLMO, XNUEK,
 c     >                   OPAKNOTH, ETAKNOTH, RADIUS2)
             IF (BPSTART) BPSTART = .FALSE.
           ENDIF
@@ -1676,21 +1680,21 @@ C***  Test-output at given wavelentgh over depth
                 SK1 = ETA(L)/OPA(L)
                 SK2 = ETANOTH(L)/OPA(L)
                 SL = ETAK(L)/OPAK(L) * RADIUS2(L)
-                WRITE (36,'(I6,25(1X,E15.7))') 
-     >            L, XLAMK, OPA(L), ETA(L), ETANOTH(L), SK1, SK2, 
-     >            OPAK(L), ETAK(L), SL, 
-     >            XJCIND(L), XJLO(L, IFRO), 
-     >            XJL(L), XHL(L), XKL(L), XNL(L), 
-     >            EDDIF(L), EDDIG(L), XJLMO(L), XJLMOR2(L), XHLMO(L), 
+                WRITE (36,'(I6,25(1X,E15.7))')
+     >            L, XLAMK, OPA(L), ETA(L), ETANOTH(L), SK1, SK2,
+     >            OPAK(L), ETAK(L), SL,
+     >            XJCIND(L), XJLO(L, IFRO),
+     >            XJL(L), XHL(L), XKL(L), XNL(L),
+     >            EDDIF(L), EDDIG(L), XJLMO(L), XJLMOR2(L), XHLMO(L),
      >            FULFIL0(L), FULFIL1(L), DJDSMOD(L), RADIUS(L)
               ENDDO
             ENDIF
-          ENDIF                
+          ENDIF
         ENDIF
 
 C***  Store Wcharm-factors here (Variable = DJDSMOD) in array IFF_WCHARM
         IF (BFF_ACT .AND. (.NOT. bKATEST)) THEN
-          CALL CLSAVEWC (IFF_WCHARM, IFF_MAX, IFF_N, ND, DJDSMOD, 
+          CALL CLSAVEWC (IFF_WCHARM, IFF_MAX, IFF_N, ND, DJDSMOD,
      >                    K, XLAMK)
         ENDIF
 
@@ -1700,13 +1704,13 @@ C***  Store Maximum Opacity
           OPAMAX1_LAMBDA = XLAMK
           IOPAMAX1_K     = K
         ENDIF
- 
+
 C***  Output of K
         IF (K .GT. KOUT) THEN
           WRITE (hCPR,'(A,I7,1X,I7,1X,F15.3)') 'K=', K, NK, XLAMK
           KOUT = KOUT + 20000
         ENDIF
- 
+
 C***  Increase K
         KLAST = K
         K = K + 1
@@ -1716,12 +1720,12 @@ C***  The next line is to skip the first frequency points for test reasons
 C!!!        if (k .eq. 1) k = 100000
 
 C***  Save old EDDIEs to file fort.<hEDDI>
-        IF (BCOLIP .AND. (.NOT. bKATEST)) THEN 
+        IF (BCOLIP .AND. (.NOT. bKATEST)) THEN
           CALL CLSAVEE (hEDDI, NZE1, NZE2, NFRO, EDDIA, NDEDDIA,
      >                EDDIF, EDDIG, ND,
      >                EDDIHOUT, EDDIHIN, EDDIHINM, EDDINOUT, EDDININ,
-     >                BCLEERR, CMODE, XHI, XHO, EPSG(1,ITMAX), 
-     >                XHOM, XNOM, 
+     >                BCLEERR, CMODE, XHI, XHO, EPSG(1,ITMAX),
+     >                XHOM, XNOM,
      >                EDDIHOUTP, EDDINOUTP, EDDIHINT)
         ENDIF
 
@@ -1733,7 +1737,7 @@ C***  Last frequency has been finished : EXIT Main Loop
         IF (CMODE .EQ. 'F') EXIT
 
 C***  End of Main-Loop over all frequencies
-      ENDDO freqloop !- - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+      ENDDO freqloop !- - - - - - - - - - - - - - - - - - - - - - - - - - - -
       WRITE (hCPR,'(A,I7,1X,I7,1X,F15.3)') 'K=', K, NK, XLAMK
       IF (BCOLIP .AND. (.NOT. bKATEST)) THEN
         WRITE (hCPR,*) 'EDDI file has been updated...'
@@ -1749,13 +1753,13 @@ C***  Switching down of EPSG in small steps, not more than -20%
         ENDDO
       ENDIF
 
-      CALL FREQUNORM (ND, MAXION, OPASMEAN, OPASMEANTC, SMEAN, 
-     >                QFJMEAN, XJTOTL, OPAJMEAN, OPAJMEANTC, OPAPMEAN, 
+      CALL FREQUNORM (ND, MAXION, OPASMEAN, OPASMEANTC, SMEAN,
+     >                QFJMEAN, XJTOTL, OPAJMEAN, OPAJMEANTC, OPAPMEAN,
      >                QOPAHMEAN, HMEAN, EDDIHOUTJMEAN,
-     >                RADIUS, RSTAR, DENSCON, 
-     >                  FTCOLI, FTCOLIB, WJC, WJC_MIN, 
-     >                  FWTEST, NF, OPC, FTFE, LASTFE, 
-     >                  LPLOT_WCHARM, XLAMBDA, OPAROSS, OPALAMBDAMEAN, 
+     >                RADIUS, RSTAR, DENSCON,
+     >                  FTCOLI, FTCOLIB, WJC, WJC_MIN,
+     >                  FWTEST, NF, OPC, FTFE, LASTFE,
+     >                  LPLOT_WCHARM, XLAMBDA, OPAROSS, OPALAMBDAMEAN,
      >                  ARAD, ACONT, ATHOM, ENTOT, ABXYZ, ATMASS, NATOM,
      >                  T, GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2,TAUROSS,
      >                  ARADELEM, ACONTELEM, ARADION, ACONTION,
@@ -1764,28 +1768,28 @@ C***  Switching down of EPSG in small steps, not more than -20%
 C***  Output of Maximum Opacity
       WRITE (hCPR,*)
       WRITE (hCPR,'(A, A,I6, A,F10.3, A,E10.3, A,F10.3)')
-     >  'Maximum Opacity at Depth 1: ', 
-     >  'K=', IOPAMAX1_K, 
-     >  ';  Lambda=', OPAMAX1_LAMBDA, 
-     >  ';  Opacity=', OPAMAX1, 
+     >  'Maximum Opacity at Depth 1: ',
+     >  'K=', IOPAMAX1_K,
+     >  ';  Lambda=', OPAMAX1_LAMBDA,
+     >  ';  Opacity=', OPAMAX1,
      >  ';  Delta-Tau (Opa*Delta_R)=', OPAMAX1 * (RADIUS(1)-RADIUS(2))
       WRITE (hCPR,*)
       WRITE (*,'(A, A,I6, A,F12.3, A,E12.5, A,F12.5)')
-     >  'COLI> Maximum Opacity at Depth 1: ', 
-     >  'K=', IOPAMAX1_K, 
-     >  ';  Lambda=', OPAMAX1_LAMBDA, 
-     >  ';  Opacity=', OPAMAX1, 
+     >  'COLI> Maximum Opacity at Depth 1: ',
+     >  'K=', IOPAMAX1_K,
+     >  ';  Lambda=', OPAMAX1_LAMBDA,
+     >  ';  Opacity=', OPAMAX1,
      >  ';  Delta-Tau (Opa*Delta_R)=', OPAMAX1 * (RADIUS(1)-RADIUS(2))
 
 C***  Output of Warnings
-      IF (IW_COLIMO_F > 0) THEN 
-        WRITE (hCPR,'(A,I7,1X,I6)') 
-     >    'EDDIF resets in COLIMO: JOBNUM, All: ', 
+      IF (IW_COLIMO_F > 0) THEN
+        WRITE (hCPR,'(A,I7,1X,I6)')
+     >    'EDDIF resets in COLIMO: JOBNUM, All: ',
      >    JOBNUM, IW_COLIMO_F
       ENDIF
       IF (IW_COLIMO_G > 0) THEN
-        WRITE (hCPR,'(A,I7,1X,I6,A,I6)') 
-     >    'EDDIG resets in COLIMO: JOBNUM, All / Relevant: ', 
+        WRITE (hCPR,'(A,I7,1X,I6,A,I6)')
+     >    'EDDIG resets in COLIMO: JOBNUM, All / Relevant: ',
      >    JOBNUM, IW_COLIMO_G, ' / ', IW_COLIMO_G2
 
       ENDIF
@@ -1796,26 +1800,26 @@ C***  Output of Warnings
         WRITE (hCPR,'(A,I8)') 'XJLMO set to zero : ', IWARNJMNEG
       ENDIF
       IF (IW_COLIRAY_IPLUS .GT. 0) THEN
-        WRITE (hCPR,'(A,I6,A)') 
+        WRITE (hCPR,'(A,I6,A)')
      >    'XIPLUS set to zero for', IW_COLIRAY_IPLUS, ' Rays'
       ENDIF
       IF (IW_COLIRAY_U .GT. 0) THEN
-        WRITE (hCPR,'(A,I6,A)') 
+        WRITE (hCPR,'(A,I6,A)')
      >    'U not accounted for at ', IW_COLIRAY_U, ' Rays and Depths'
       ENDIF
       IF (IW_COLIRAY_IPLUS .GT. 0) THEN
-        WRITE (hCPR,'(A,I6,A)') 
+        WRITE (hCPR,'(A,I6,A)')
      >    'XIPLUS set to zero for', IW_COLIRAY_IPLUS, ' Rays'
       ENDIF
 
-C**** Debug option: print out the number of frequency points with J < 0 
-      IF (bDEBUG) THEN 
+C**** Debug option: print out the number of frequency points with J < 0
+      IF (bDEBUG) THEN
         DO L=1, ND
           WRITE (hCPR, '(A,I3,A,I8)') 'Frequencies ignored'
      >        // ' in FREQUINT at L = ', L,': ', iIgnoreK(L)
         ENDDO
-      ENDIF 
-       
+      ENDIF
+
       bNewLoop = .FALSE.
 
       !Preparations for the Calculation of Force-Multipliers
@@ -1838,13 +1842,13 @@ C**** Debug option: print out the number of frequency points with J < 0
             ATHOMTEST   = ATHOM
             HTOTTEST    = HTOTL
          ENDIF
-         bNewLoop = .TRUE. 
+         bNewLoop = .TRUE.
 
 C***  Calculation of Force-Multipliers:
       ! Following Eq. (4) of GH2005 and ALINES = ARAD - ACONT
       ! alpha can be calulated from ALINES = C/r^2 (dv/dt)^(ALPHAF)
-      ! To avoid calculating C COLI is run two times, first with 
-      ! 0.9 * v and 0.9 * v', then with usual v, v'. 
+      ! To avoid calculating C COLI is run two times, first with
+      ! 0.9 * v and 0.9 * v', then with usual v, v'.
       ! From the first run, ARADTEST is calculated and then the
       ! ratio with the result from the second one is taken. As ALPHAF
       ! should be the same in both runs, we can directly obtain ALPHAF
@@ -1861,11 +1865,11 @@ C      3    - calculation of Response Factor (ARMDRESP)
 C      31   - calculation of Response Factor (ARMDRESP) incl. velo modificiation
       ELSE IF (bKALPHA .AND. bKADONE) THEN
          bPrintAlpha = .TRUE.
-      
+
          !Debug output:
 C         WRITE (hCPR,*)
 C         WRITE (hCPR,*) "Debug output - Force multipliers"
-         WRITE (hCPR,*) 
+         WRITE (hCPR,*)
          WRITE (hCPR,*) ' Alpha-Type:', iTypeAlpha
          WRITE (hCPR,*) ' XMG = ', XMG
          DO L=1, ND
@@ -1885,13 +1889,13 @@ C         WRITE (hCPR,*) "Debug output - Force multipliers"
            ACONTTOT = ACONTTOT + ACONT(L) * DELTAR
            ARADTESTTOT = ARADTESTTOT + ARADTEST(L) * DELTAR
            ACONTTESTTOT = ACONTTESTTOT + ACONTTEST(L) * DELTAR
-           DELTA = 
+           DELTA =
      >           (HTOTL(L)/HTOTTEST(L))*(ARADTEST(L)/(ARAD(L)-ACONT(L)))
             !Additional multiplication with VELOMODFAK from inferred density variation
 C            DELTA = VELOMODFAK *
 C     >           (HTOTL(L)/HTOTTEST(L))*(ARADTEST(L)/(ARAD(L)-ACONT(L)))
            ARMDRESP(L) = 1.
-           
+
            IF (iTypeAlpha == 3) THEN
                ALPHAF(L) = 0.
                ACONTMDRESP(L) = ACONT(L)*VELOMODFAK/ACONTTEST(L)
@@ -1899,25 +1903,25 @@ C     >           (HTOTL(L)/HTOTTEST(L))*(ARADTEST(L)/(ARAD(L)-ACONT(L)))
      >                                 * VELOMODFAK/ALINETEST(L)
                ARMDRESP(L) = ARAD(L)*VELOMODFAK/ARADTEST(L)
 C               ARMDRESP(L) = ARAD(L)*VELOMODFAK/ARADTEST(L)
-     >                           * HTOTTEST(L)/HTOTL(L)         
+     >                           * HTOTTEST(L)/HTOTL(L)
 CC          scale to a 10 percent change
-               ARMDRESP(L) = 1. - (1. - ARMDRESP(L)) 
+               ARMDRESP(L) = 1. - (1. - ARMDRESP(L))
      >                                    * 0.1 / (1./VELOMODFAK - 1.)
-               WRITE (hCPR,'(A,I4,6(2X,G15.8))') ' Mdmod ', L, 
+               WRITE (hCPR,'(A,I4,6(2X,G15.8))') ' Mdmod ', L,
      >            ARAD(L)/XMG * (RADIUS(L)*RSTAR)**(2.),
      >            ARADTEST(L)/XMG * (RADIUS(L)*RSTAR)**(2.),
-     >            ARADTEST(L)/ARAD(L), 
+     >            ARADTEST(L)/ARAD(L),
      >            ARMDRESP(L),      !Response of a_rad on Mdot change
      >            VELOMODFAK/ACONTMDRESP(L), VELOMODFAK/ALINEMDRESP(L)
-           ELSEIF (DELTA > 0.) THEN               
-             IF (iTypeAlpha == 2) THEN          
+           ELSEIF (DELTA > 0.) THEN
+             IF (iTypeAlpha == 2) THEN
                ALPHAF(L) = ALOG10(DELTA*ATHOM(L)/ATHOMTEST(L))
      >                               /ALOG10(VELOMODFAK)/2.
                CK(L) = (ARAD(L)-ACONT(L) -ARADTEST(L))
      >            *(RADIUS(L)*RSTAR)**2 * RHO(L)/(1.-VELOMODFAK**2)
      >             / (GRADI(L)*VDOPUNIT*1.E5/RSTAR)
-               ALPHAALT(L) = 
-     >             LOG10(ARADTEST(L)/(ARAD(L)-ACONT(L))) 
+               ALPHAALT(L) =
+     >             LOG10(ARADTEST(L)/(ARAD(L)-ACONT(L)))
      >                            / LOG10(VELOMODFAK)
              ELSE
                ALPHAF(L) = ALOG10(DELTA)/ALOG10(VELOMODFAK)
@@ -1928,19 +1932,19 @@ CC          scale to a 10 percent change
              GAMMATHIN(L) = 1./XMG*((RADIUS(L)*RSTAR)**(2.)*
      >                                             (ARAD(L)-ACONT(L))
      >          - CK(L)/RHO(L) * GRADI(L)*VDOPUNIT*1.E5/RSTAR)
-             GAMMAPOWR = (RADIUS(L)*RSTAR)**(2.) /XMG * ACONT(L) 
+             GAMMAPOWR = (RADIUS(L)*RSTAR)**(2.) /XMG * ACONT(L)
      >                       + GAMMATHIN(L)
              IF (iTypeAlpha <= 2 .AND. bPrintAlpha) THEN
-               ALPHAALT(L) = 
-     >             LOG10(ARADTEST(L)/(ARAD(L)-ACONT(L))) 
+               ALPHAALT(L) =
+     >             LOG10(ARADTEST(L)/(ARAD(L)-ACONT(L)))
      >                            / LOG10(VELOMODFAK)
                WRITE (hCPR,'(A,I4,10(2X,G15.8))') ' Thomson-corr: ',
-     >           L , ATHOMTEST(L)/ATHOM(L), ALPHAF(L),  
-     >           (CK(L)/(RADIUS(L)*RSTAR)**2 
+     >           L , ATHOMTEST(L)/ATHOM(L), ALPHAF(L),
+     >           (CK(L)/(RADIUS(L)*RSTAR)**2
      >                      /RHO(L)*GRADI(L)*VDOPUNIT*1.E5/RSTAR)/
      >           ( ARAD(L) - ACONT(L) ),
 C     >           ( XMG / (RADIUS(L)*RSTAR)**2 *GAMMATHIN(L) ),
-     >           CK(L), GAMMATHIN(L), GAMMAPOWR, 
+     >           CK(L), GAMMATHIN(L), GAMMAPOWR,
      >            (RADIUS(L)*RSTAR)**2 /XMG * (ARAD(L) * (1.-ALPHAF(L))
      >             + ALPHAF(L) * ACONT(L)),
      >            CK(L)/DOTM4P, ALPHAF(L)*(ARAD(L)-ACONT(L))/
@@ -1950,16 +1954,16 @@ C     >           ( XMG / (RADIUS(L)*RSTAR)**2 *GAMMATHIN(L) ),
            ENDIF
 
          ENDDO
-         WRITE (hCPR,'(A,8(2X,G15.8))') 'TOT: ', ARADTESTTOT/ARADTOT, 
+         WRITE (hCPR,'(A,8(2X,G15.8))') 'TOT: ', ARADTESTTOT/ARADTOT,
      >        ARADTOT/ARADTESTTOT, VELOMODFAK, 1./VELOMODFAK,
-     >       ARADTESTTOT/ARADTOT/VELOMODFAK, 
+     >       ARADTESTTOT/ARADTOT/VELOMODFAK,
      >       ARADTESTTOT/ARADTOT*VELOMODFAK,
-     >       ACONTTESTTOT/ACONTTOT, 
+     >       ACONTTESTTOT/ACONTTOT,
      >       (ARADTESTTOT-ACONTTESTTOT)/(ARADTOT-ACONTTOT)
-         WRITE (hCPR,*) 
-         IF (BPLOTALPHA) THEN         
+         WRITE (hCPR,*)
+         IF (BPLOTALPHA) THEN
            CALL PLOTALPHA(ALPOPT, ND, RADIUS, ALPHAF,
-     >                    VMACH, VELORAW, TAUROSS, ENTOT, ATMEAN, 
+     >                    VMACH, VELORAW, TAUROSS, ENTOT, ATMEAN,
      >                    MODHEAD, JOBNUM, .TRUE.)
          ENDIF
       ENDIF
@@ -1967,15 +1971,15 @@ C     >           ( XMG / (RADIUS(L)*RSTAR)**2 *GAMMATHIN(L) ),
 
 C***  Setup FF_INFO
       CALL SETUP_FF(FF_INFO, XLAM0, ALN,
-     >              XLAM_FINE_START, XLAM_FINE_END, IFF_N, KSPACE, 
+     >              XLAM_FINE_START, XLAM_FINE_END, IFF_N, KSPACE,
      >              IFF_DK, IFF_MAX)
 
 c      open (unit=120, file='iff_dk_coli.dat', status='unknown')
 c      write (120,'(i8)') (iff_dk(ii), ii=1, ff_info(7))
 
 C***  Computation of total flux, TOTOUT, from the line-blanketed flux
-C***  This overwrites on the MODEL file TOTOUT from WRCONT 
-C***  -- new by wrh 28-Jan-2011 
+C***  This overwrites on the MODEL file TOTOUT from WRCONT
+C***  -- new by wrh 28-Jan-2011
       TOTOUT = .0
       DO K=1, NF
          TOTOUT = TOTOUT + EMCOLI(K) * FWEIGHT(K)
@@ -1987,33 +1991,33 @@ C***  -- new by wrh 28-Jan-2011
             IF (K == 1) THEN
               WRITE (hCPR,*) 'COLI> Opacities exported to OUT file'
             ENDIF
-            CALL PRIOPACOLI (XLAMBDA(K), K, ND, LSOPA, RADIUS, 
-     >                       OPAKINT, ETAKINT, THOMSON, FILLFAC, 
+            CALL PRIOPACOLI (XLAMBDA(K), K, ND, LSOPA, RADIUS,
+     >                       OPAKINT, ETAKINT, THOMSON, FILLFAC,
      >                       IWARN, MAINPRO, MAINLEV, JOBNUM, MODHEAD)
-          ENDIF      
+          ENDIF
         ENDDO
-            
+
         CALL WMODCOLI(XJCINT, FWTEST, ARAD, ACONT, ATHOM, ND, NF,
      >              RADIUS, ENTOT, RSTAR,
      >              XJFEMEAN, SIGMAINT, LASTFE, HTOTL, WFELOW,
-     >              WFENUP, FTCOLI, FTCOLIB, REDISMODE, NCOLIP, 
+     >              WFENUP, FTCOLI, FTCOLIB, REDISMODE, NCOLIP,
      >              XJTOTL, XKTOTL, XNTOTL, WJC,
      >              DBDTINT, DBDTOPAINT, DBDTINT_M, DBDTOPAINT_M,
-     >              OPASMEAN, OPASMEANTC, OPAPMEAN, 
+     >              OPASMEAN, OPASMEANTC, OPAPMEAN,
      >              QFJMEAN, SMEAN,
      >              OPAJMEAN, OPAJMEANTC, QOPAHMEAN,
      >              EDDIHOUTJMEAN, HMEAN,
-     >              HTOTOUTMINUS, HTOTMINUSND, HTOTND, 
+     >              HTOTOUTMINUS, HTOTMINUSND, HTOTND,
      >              HTOTNDCOR, HTOTCUT,
      >              LASTIND, FERATUL, FERATLU, BCOLIP, EPSGMAX,
      >              FTFE, EMCOLI, FF_INFO, IFF_DK, IFF_MAX,
      >              IFF_WCHARM, OPALAMBDAMEAN, TOTOUT, bKALPHA,
      >              ALPHAF, ARMDRESP, GAMMATHIN, CK,
-     >              RHO, XMU, TAUROSS, OPAROSS, OPAROSSELEM, 
-     >              OPAROSSCONT, OPATOTELEM, NATOM, 
+     >              RHO, XMU, TAUROSS, OPAROSS, OPAROSSELEM,
+     >              OPAROSSCONT, OPATOTELEM, NATOM,
      >              ARADELEM, ACONTELEM, MAXION, ARADION, ACONTION,
      >              hMODEL, hALO)
-        CALL STORE_FF(MODHEAD, JOBNUM, ND, NDDIM, 
+        CALL STORE_FF(MODHEAD, JOBNUM, ND, NDDIM,
      >                FF_INFO, IFF_DK, IFF_MAX, IFF_WCHARM)
       ENDIF
 
@@ -2025,14 +2029,14 @@ C***    OPEN FILE "LASER_LINES" FOR TRANSFER OF INFORMATION ABOUT LASER LINES
 C***    TO MAIN PROGRAM "STEAL"
         OPEN (11,FILE='LASER_LINES', STATUS='UNKNOWN')
         DO NL=1, LASTIND
-          IF (BLASERL(NL)) WRITE (11,'(A4,I6,2X,3A)') 
-     >        'LINE', NL,LEVEL(INDNUP(NL)), ' - ', LEVEL(INDLOW(NL)) 
+          IF (BLASERL(NL)) WRITE (11,'(A4,I6,2X,3A)')
+     >        'LINE', NL,LEVEL(INDNUP(NL)), ' - ', LEVEL(INDLOW(NL))
         ENDDO
       CLOSE(11)
       ENDIF
 
       IF (NLASER .GT. 0) THEN
-        WRITE (*,'(A,F4.2,A,I6,A)') 'COLI> Opacities set to ', PARALAS, 
+        WRITE (*,'(A,F4.2,A,I6,A)') 'COLI> Opacities set to ', PARALAS,
      >    ' * Background Opacity at ', NLASER, ' frequencies'
       ENDIF
 
@@ -2048,16 +2052,16 @@ C***  Write integrated moments of the intensity into file
       ENDIF
 
 C***  Entry Point for Short Coli
-C***    This is necessary when Model is started with Temperature 
+C***    This is necessary when Model is started with Temperature
 C***    Corrections. The first COLIs and STEALs are omitted
   100 CONTINUE
 
 C***  UPDATING THE MODEL HISTORY
-      CALL COLIHIST (MODHIST, MAXHIST, JOBNUM, BCOLIP, 
-     >               ITSTART, ITMAX, BSHORT, IVERS, 
-     >               BEMIX, BEPSGMAXERR, EMIXSTART, 
+      CALL COLIHIST (MODHIST, MAXHIST, JOBNUM, BCOLIP,
+     >               ITSTART, ITMAX, BSHORT, IVERS,
+     >               BEMIX, BEPSGMAXERR, EMIXSTART,
      >               bNewLoop .AND. bKALPHA)
- 
+
       IF (BELIFI) THEN
         CALL CLOSMS (7, IERR)
       ENDIF
@@ -2089,11 +2093,11 @@ C***  UPDATING THE MODEL HISTORY
       IF (LPRDH > 0) THEN
         CLOSE (140)
       ENDIF
-      
+
 C***  Close WCHARM Plot File
       IF (LPLOT_WCHARM .GT. 0) THEN
         CLOSE (105)
-      ENDIF      
+      ENDIF
 
       !write model history entry into explicit history file
       CALL GETHISTENTRY(HISTENTRY,JOBNUM,MODHIST,MAXHIST)
@@ -2104,7 +2108,7 @@ C***  Close WCHARM Plot File
 
 C***  Multiple Coli
       IF (bNewLoop) THEN
-        WRITE (hCPR,'(A)') 
+        WRITE (hCPR,'(A)')
      >      'COLI> New loop forced: COLI is run another time'
         GOTO 1
       ENDIF

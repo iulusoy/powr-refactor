@@ -1,4 +1,4 @@
-      SUBROUTINE STORAGE (ICHANNEL, IADR, MAXADR, 
+      SUBROUTINE STORAGE (ICHANNEL, IADR, MAXADR,
      >                    CNAME,    !variable name (or file status if opening a file)
      >                    CNAME2,   !used for: 2nd var (CHANGE), format (MSINFO), kind (WRITE), file name (OPEN)
      >                    X, NDIM, ACTION, MODE, IERR)
@@ -8,21 +8,21 @@ C***  MASS-STORAGE EMULATOR FOR DEC/OSF1 BY LARS KOESTERKE
 C***  VERSION 2.0     21-Jul-1997 13:41:16
 C***    New Feautures : INFO-D
 C***  VERSION 3.0     15-May-1998 14:16:39
-C***    IADR is now stored for several MS-Files 
+C***    IADR is now stored for several MS-Files
 C***    SOPEN and SCLOSE are new Actions
 C******************************************************************
 
-C***  IRECL : RECORD LENGTH OF THE FILE OPENENED BY FORTRAN. THE VARIABLE 
+C***  IRECL : RECORD LENGTH OF THE FILE OPENENED BY FORTRAN. THE VARIABLE
 C***                     LENGTH IS 4 BYTE
 C***   => changed with compiler parameter "assume byterecl" to be compartible with gfortran
-C***  IADRL = IRECL / 2, BECAUSE ALL VARIABLES, EVEN THE CHARACTERS, SHOULD 
+C***  IADRL = IRECL / 2, BECAUSE ALL VARIABLES, EVEN THE CHARACTERS, SHOULD
 C***                     HAVE 8 BYTE
 
 C***  Variable-names have 8 Characters. Note that the Character ^ is not valid
 C***    because it is used to transport blanks from the MSFILE plotutility
 C***    mcplot.com to msinfo.com (INFO-D)
 
-C***  For INTEL Compiler, 
+C***  For INTEL Compiler,
 C***    unless the compiler option "-assume byterecl" is set:
 ccc      PARAMETER (IRECL = 256)
 C***  For gfortran compiler:
@@ -64,14 +64,14 @@ C***  Substitute ^ in blanks in CNAME and CNAME2
         ENDDO
 C***  Check for the substring '^' in CNAME and CNAME2. This is not longer
 C***  allowed
-      ELSEIF (ACTION .EQ. 'READ' .OR. 
-     >        ACTION .EQ. 'WRITE' .OR. 
-     >        ACTION .EQ. 'LENGTH' .OR. 
+      ELSEIF (ACTION .EQ. 'READ' .OR.
+     >        ACTION .EQ. 'WRITE' .OR.
+     >        ACTION .EQ. 'LENGTH' .OR.
      >        ACTION .EQ. 'CHANGE') THEN
         DO I=1,8
-          IF (CNAME(I:I)  .EQ. '^' .OR. 
+          IF (CNAME(I:I)  .EQ. '^' .OR.
      >        CNAME2(I:I) .EQ. '^') THEN
-            WRITE (0,*) 'The Substring ^ is not allowed in the Names', 
+            WRITE (0,*) 'The Substring ^ is not allowed in the Names',
      >        CNAME, CNAME2
             STOP 'ERROR in Subr. STORAGE'
           ENDIF
@@ -89,8 +89,8 @@ c    1   FORMAT (A8)
       ENDIF
 
       IF (IWARN .GE. 2) THEN
-        WRITE(0,'(A,A8,A,I2,2X,A,A)') 
-     >        'storage: action=',action,' ICHANNEL=',ICHANNEL, 
+        WRITE(0,'(A,A8,A,I2,2X,A,A)')
+     >        'storage: action=',action,' ICHANNEL=',ICHANNEL,
      >        'NAME=',NAME
       ENDIF
 
@@ -168,7 +168,7 @@ C***          NIND2U   : NUMBER OF INDEX RECORDS USED IN THE EXISTING FILE
 C***          NINDEX   : NUMBER OF INDICES IN INDEX RECORD
 C***          NREC     : TOTAL NUMBER OF RECORDS
 C***          NVAR     : NUMBER OF VARIABLES
-C***          THE INDEX ARRAY (IADR) IS USED FOR THE STORAGE OF THE 
+C***          THE INDEX ARRAY (IADR) IS USED FOR THE STORAGE OF THE
 C***            INFORMATION ABOUT THE ARRAYS STORED IN THE FILE
 C***            FIVE ENTRYS ARE USED FOR EACH ARRAY
 C***          IADR(11) : NAME OF THE ARRAY
@@ -201,7 +201,7 @@ C***    COMPARE NUMBER OF INDEX RECORDS
           IF (NIND .EQ. NIND2) THEN
           ELSE IF (NIND .GT. NIND2) THEN
 cc  message suppressed! wrh 12-Aug-2008 13:58:44
-cc            WRITE (0,*) 'INFO from STORAGE: ' // FN 
+cc            WRITE (0,*) 'INFO from STORAGE: ' // FN
 cc     >       // ' has less Index-Records than dimensioned > expanded'
           ELSE
             WRITE (0,*) 'Number of Index-Records in File is greater'
@@ -243,7 +243,7 @@ C***                        ====
 C***                             =====
       ELSE IF (ACTION( :5) .EQ. 'WRITE') THEN
 C***                             =====
-C***  TRANSFORM SIZE IF KIND IS DIFFERENT 
+C***  TRANSFORM SIZE IF KIND IS DIFFERENT
         NDIMR = NDIM
         IF (IDX(CNAME2) > 0) THEN
           IF ( (CNAME2(1:1) == 'I') .OR.
@@ -287,7 +287,7 @@ c     >    IADR(4+INDEX)
               BNEWKINDINFO = .TRUE.
               IF (IADR(INDEX+5) == -1) THEN
                 !no format set so far
-                BDIMEQ = (NDIMR == INUM)                   
+                BDIMEQ = (NDIMR == INUM)
               ELSE
                 WRITE(UNIT=KSTR, FMT='(A8)') IADR(5+INDEX)  !transform from integer into character
                 KINDSTR = ''
@@ -354,7 +354,7 @@ C          ENDIF
           IADR(INDEX+4) = NDIM
           IADR(INDEX+5) = NAME2
         ENDIF
-        
+
 C!!!  OLD VERSION (MIT UMKOPIEREN DES GESAMTEN ARRAYS)
 C***    AS LONG AS THE ARRAY FILLS THE NEXT RECORD COPY IT TO SCRATCH
 C***    THE LAST RECORD IS, IF NECESSARY, FILLD UP WITH 0.
@@ -367,13 +367,13 @@ C***    THE LAST RECORD IS, IF NECESSARY, FILLD UP WITH 0.
             DO J=NREST+1, IADRL
               SCRATCH(J) = 0.
             ENDDO
-            WRITE(UNIT=ICHANNEL, REC=(IFIRST-1+I), ERR=93, IOSTAT=IOS) 
+            WRITE(UNIT=ICHANNEL, REC=(IFIRST-1+I), ERR=93, IOSTAT=IOS)
      >            SCRATCH
             NREST = NREST - IADRL
           ENDDO
 C!!!          DO I=1, NIND3
 C!!!            INDEX = (I-1) * IADRL
-C!!!            WRITE(UNIT=ICHANNEL, REC=(IFIRST-1+I), ERR=93, IOSTAT=IOS) 
+C!!!            WRITE(UNIT=ICHANNEL, REC=(IFIRST-1+I), ERR=93, IOSTAT=IOS)
 C!!!     >            X(INDEX+1)
 C!!!          ENDDO
 
@@ -450,7 +450,7 @@ C***        EXIT THIS LOOP
    45   CONTINUE
         IF (.NOT. BVARKN) THEN
           IF (IWARN .GE. 1) THEN
-            WRITE (0,'(A,A8,A)') 
+            WRITE (0,'(A,A8,A)')
      >        ' WARNING from STORAGE: Variable ', NAME, 'not found'
           ENDIF
           IERR = -10
@@ -493,18 +493,18 @@ C!!!          ENDDO
 
 
 C***  New option, returns in NDIM the array lenth of the variable
-C***  wrh 10-Aug-2007 
+C***  wrh 10-Aug-2007
 C***                             =====
       ELSE IF (ACTION( :6) .EQ. 'LENGTH') THEN
 C***                             =====
         DO I=1, NVAR
           INDEX = 10 + (I-1)*5
-          IF (IADR(1+INDEX) .EQ. NAME) THEN 
-             NDIM = IADR(4+INDEX) 
+          IF (IADR(1+INDEX) .EQ. NAME) THEN
+             NDIM = IADR(4+INDEX)
              GOTO 14
           ENDIF
         ENDDO
-        WRITE (0,*) 'ERROR: COULD NOT FIND LENGTH OF MS-VARIABLE ', 
+        WRITE (0,*) 'ERROR: COULD NOT FIND LENGTH OF MS-VARIABLE ',
      >              CNAME
         STOP 'FATAL ERROR in subr. STORAGE (action: LENGTH)'
    14   CONTINUE
@@ -544,7 +544,7 @@ C***                             =====
         BVARKN = .FALSE.
         DO I=1, IADR(6)
           INDEX = 10 + (I-1)*5
-c          write (0,'(a,i8,a,a8,a,a8)') 'index=',index, 
+c          write (0,'(a,i8,a,a8,a,a8)') 'index=',index,
 c     >                            'nameold=',IADR(1+INDEX),
 c     >                            'testname=',cname
           IF (IADR(1+INDEX) .EQ. NAME) THEN
@@ -561,7 +561,7 @@ c          WRITE (0,'(A9,A8,1x,a8)') 'VAR1,2',NAME,NAME2
         ENDIF
 
 C***                             =====
-      ELSE IF (ACTION( :4) .EQ. 'INFO' .AND. 
+      ELSE IF (ACTION( :4) .EQ. 'INFO' .AND.
      >         ACTION( :6) .NE. 'INFO-D') THEN
 C***                             ====
 C        write (*,*) 'test---------------'
@@ -587,11 +587,11 @@ C***                          ------
             ELSE
               WRITE(UNIT=KSTR, FMT='(A8)') IADR(5+INDEX)
             ENDIF
-            WRITE (*,50) I, IADR(1+INDEX), 
-     >                   IADR(2+INDEX), 
+            WRITE (*,50) I, IADR(1+INDEX),
+     >                   IADR(2+INDEX),
      >                   IADR(3+INDEX), IADR(4+INDEX), KSTR
-   50       FORMAT (' * Variable Nr.', I6, 2X, 'Name=', A, 2X, 
-     >              'First=', I6, 2X, 'Num-Rec=', I6, 2X, 
+   50       FORMAT (' * Variable Nr.', I6, 2X, 'Name=', A, 2X,
+     >              'First=', I6, 2X, 'Num-Rec=', I6, 2X,
      >              'Num-Var=', I8, 2X, 'Vartype=', A)
 
           ENDDO
@@ -627,13 +627,13 @@ C***    Kurzuebersicht ueber die Variable mit der Nummer I
         ELSE
           WRITE(UNIT=KSTR, FMT='(A8)') IADR(5+INDEX)
           SELECTCASE(KSTR(1:1))
-            CASE ('i','I') 
+            CASE ('i','I')
               CKIND = 'I'
-            CASE ('r','R') 
+            CASE ('r','R')
               CKIND = 'R'
             CASE ('a','A')
               CKIND = 'A'
-            CASE ('c','C') 
+            CASE ('c','C')
               CKIND = 'C'
             CASE DEFAULT
               CKIND = ' '
@@ -651,8 +651,8 @@ C***    Kurzuebersicht ueber die Variable mit der Nummer I
             READ(UNIT=KINDSTR, FMT='(I8)') IKIND       !transform number part from kind string into integer
           ENDIF
         ENDIF
-        WRITE (*,50) I, IADR(1+INDEX), 
-     >               IADR(2+INDEX), 
+        WRITE (*,50) I, IADR(1+INDEX),
+     >               IADR(2+INDEX),
      >               IADR(3+INDEX), IADR(4+INDEX), KSTR
 
 C***    Ausgabe der Variable mit der Nummer I
@@ -678,8 +678,8 @@ C***    Ausgabe der Variable mit der Nummer I
               CASE DEFAULT
                 FMTSTR = '(G16.6)'
             ENDSELECT
-          ENDIF  
-        ELSEIF (       (CNAME2(1:1) /= '(') 
+          ENDIF
+        ELSEIF (       (CNAME2(1:1) /= '(')
      >           .AND. (CNAME2(LFTM:LFTM) /= ')')       ) THEN
           FMTSTR = '(' // TRIM(ADJUSTL(CNAME2)) // ')'
         ELSE
@@ -700,13 +700,13 @@ C***    Ausgabe der Variable mit der Nummer I
             READ(UNIT=ICHANNEL, REC=(IFIRST-1+I), ERR=94, IOSTAT=IOS)
      >              SCRATCH
             INDEX = (I-1) * IADRL
-            DO J=1, MIN(IADRL, NREST)    
+            DO J=1, MIN(IADRL, NREST)
               IF (bWRINT) THEN
                 INTSCRATCH = TRANSFER(SCRATCH(J), INTSCRATCH)
                 WRITE (*,FMT=TRIM(FMTSTR)) INTSCRATCH
-              ELSE 
+              ELSE
                 WRITE (*,FMT=TRIM(FMTSTR)) SCRATCH(J)
-              ENDIF               
+              ENDIF
             ENDDO
           ENDIF
           NREST = NREST - IADRL
