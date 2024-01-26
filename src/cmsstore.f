@@ -27,7 +27,8 @@ C*******************************************************************
 C***  NOTE: MAXADR MUST BE A MULTIPLE OF 128
 C***        (I.E. IADRL IN ROUTINE STORAGE)
       PARAMETER (MAXADR = 2000 * 128)
-      INTEGER ICHANNEL, IADRDUMMY, MAXADRDUMMY, NDIM, IERR, NFILE, X
+      INTEGER ICHANNEL, IADRDUMMY, MAXADRDUMMY, NDIM, IERR, NFILE
+      REAL X
       CHARACTER*8 STATUS, ACTION, NAME, NAME2
       DIMENSION IFILE(MSMAXCH), IADR(MAXADR,MSMAXCH)
 
@@ -107,7 +108,7 @@ C***  OPEN THE ACTUAL FILE. This is now (Vers 3) done by SOPEN
         IF (STATUS .EQ. 'KNOWN') THEN
           CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
      >                  NAME, NAME2, X, NDIM,
-     >                  'WRITE', 'CRAY', IERR)
+     >                  'WRITE   ', 'CRAY    ', IERR)
         ELSE
           WRITE (0,*) 'DO NOT WRITE IN A CLOSED FILE'
           WRITE (0,*) 'ICHANNEL=',ICHANNEL
@@ -119,7 +120,7 @@ C***  OPEN THE ACTUAL FILE. This is now (Vers 3) done by SOPEN
         IF (STATUS .EQ. 'KNOWN') THEN
           CALL STORAGE (ICHANNEL, IADR(1,ITRANS), MAXADR,
      >                  NAME, NAME2, X, NDIM,
-     >                  'CLOSE', 'CRAY', IERR)
+     >                  'CLOSE    ', 'CRAY    ', IERR)
           STATUS = 'UNKNOWN'
           NFILE = NFILE - 1
           DO I=ITRANS, NFILE

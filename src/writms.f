@@ -1,4 +1,4 @@
-      SUBROUTINE WRITMS(ICHANNEL, !file handle 
+      SUBROUTINE WRITMS(ICHANNEL, !file handle
      >                         X, !(fortran) variable that should be saved
      >                      NDIM, !size of variable (length of array)
      >                      NAME, !index name in mass-storage file (must be <= 8 characters)
@@ -24,8 +24,8 @@ C************************************************************
         BUFFER8 = '        '
       ENDIF
 
-      CALL CMSSTORE (ICHANNEL, IDUMMY, IDUMMY, NAME, BUFFER8, X, NDIM, 
-     >              'WRITE', IERR)
+      CALL CMSSTORE (ICHANNEL, IDUMMY, IDUMMY, NAME, BUFFER8, X, NDIM,
+     >              'WRITE   ', IERR)
 
       RETURN
       END
