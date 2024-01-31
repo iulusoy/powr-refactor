@@ -30,7 +30,7 @@ def run_wrstart(get_chain, set_vars, submit_options):
     # run wrstart
 
     try:
-        subprocess.run(
+        result = subprocess.run(
             submit_command,
             shell=True,
             check=True,
@@ -42,6 +42,11 @@ def run_wrstart(get_chain, set_vars, submit_options):
         print(error.stderr)
         print(error.stdout)
         assert False, "CalledProcessError error"
+    print("wrstart stdout")
+    print(result.stdout)
+    print("wrstart stderr")
+    print(result.stderr)
+    print("done with wrstart run")
 
     while True:
         if find_string("WRSTART finished", "wrstart1.log", set_vars) and find_string(

@@ -47,7 +47,7 @@ def get_chain(inject_path):
     makechain_command = "${POWR_WORK}/proc.dir/makechain.com 1 -force"
 
     try:
-        subprocess.run(
+        result = subprocess.run(
             makechain_command,
             shell=True,
             check=True,
@@ -59,6 +59,11 @@ def get_chain(inject_path):
         print(error.stderr)
         print(error.stdout)
         assert False, "CalledProcessError error"
+    print("makechain stdout")
+    print(result.stdout)
+    print("makechain stderr")
+    print(result.stderr)
+    print("done with makechain run")
 
     yield "Created chain 1"
     # teardown directories
