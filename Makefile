@@ -11,6 +11,8 @@ LIB_DIR = lib
 # compiler and linking options
 FC = ifort
 FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+# compiler options for colimo debug
+FFLAGS_DEBUG = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -traceback -fp-stack-check
 MKLPATH    = ${MKLROOT}/lib/intel64
 MKLINCLUDE = ${MKLROOT}/include
 LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium
@@ -139,6 +141,10 @@ wrstart.exe: $(WRSTARTOBJ)
 # rules to compile
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.f
 	$(FC) $(FFLAGS) -c $< -o $@
+
+# rules to compile
+$(OBJ_DIR)/colimo.o: $(SRC_DIR)/colimo.f
+	$(FC) $(FFLAGS_DEBUG) -c $< -o $@
 
 print_info:
 	$(info COLISRC: $(COLISRC))
