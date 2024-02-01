@@ -19,7 +19,11 @@ C*******************************************************************************
       INTEGER, INTENT(OUT) :: NCOLIP, NEXTHYDRO
 
       REAL, DIMENSION(NF) :: HEDDI
-      REAL, DIMENSION(2) :: XJC, EDDI
+C*** ISU
+C array size of EDDI and XJC is actually much larger
+C     REAL, DIMENSION(2) :: XJC, EDDI
+      REAL, DIMENSION(NDDIM*NFDIM) :: XJC
+      REAL, DIMENSION(3*NDDIM) :: EDDI
       REAL, DIMENSION(ND) :: EPSGMAX
       REAL, DIMENSION(NATOM) :: ABXYZ
       REAL, DIMENSION(NDDIM) :: ENTOT, TAULAST, VMIC
@@ -180,16 +184,17 @@ C***  READ ALL CONTINUUM INTENSITIES
 
       CALL READMS (3,EDDI,ND3,NAME, IERR)
 
-      write(0,*) "array exceeded? inga"
-      write(0,*) ND3
-      write(0,*) K
-      write(0,*) EDDI(ND3)
       HEDDI(K)=EDDI(ND3)
    15 CONTINUE
 
 C***  Read REDISMODE and NCOLIP
+C*** ISU
+C here readms is called with character LASTREDISMODE instead of real X
+      write(0,*) LASTREDISMODE
+      write(0,*) NCOLIP
+C     CALL READMS(3, LASTREDISMODE, 1, 'REDISMO ', IERR)
       CALL READMS(3, LASTREDISMODE, 1, 'REDISMO ', IERR)
-      CALL READMS(3, NCOLIP,        1,        'NCOLIP  ', IERR)
+      CALL READMS(3, NCOLIP,        1, 'NCOLIP  ', IERR)
 
 C***  READ 'XDATA' AND CHECK WHETHER THE RECORD EXISTS
       IERR=1

@@ -506,9 +506,6 @@ C***  Switch for the Kudritzki boundary condition
 C!!!  test: call with routine name 'STEAL' instead of 'COLI' --> crash
 ccc   wrh 31-Mar-2023
 
-        write(*,*) "this is inga"
-
-
 C***  READ ATOMIC DATA
        CALL DATOM (NDIM,N,LEVEL,NCHARG,WEIGHT,ELEVEL,EION,MAINQN,
      $             EINST, ALPHA, SEXPO,
