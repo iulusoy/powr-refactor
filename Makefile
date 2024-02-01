@@ -13,7 +13,7 @@ FC = ifort
 FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
 MKLPATH    = ${MKLROOT}/lib/intel64
 MKLINCLUDE = ${MKLROOT}/include
-LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium 
+LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium
 LINKER_DYNAMIC = -shared-intel
 
 # relevant source files for the different programs
@@ -61,7 +61,7 @@ STEALSRC = addhistentry.f addopa.f adjgamma.f aitken.f append_autolevels.f backu
 STEALSRCDIR = $(addprefix $(SRC_DIR)/,$(STEALSRC))
 STEALOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(STEALSRCDIR))
 
-WRCONTSRC = addhistentry.f append_autolevels.f bnue.f clock.f closms.f cmsstore.f coop.f count.f datom.f dbnuedt.f decon.f delpla.f difdtdr.f diffus.f elimin.f equal.f fedat.f filterfunctions.f findcharge.f gauntff.f gethistentry.f horner.f idx.f install.f inv.f isamax.f isrcheq.f jsymset.f ksigma.f lipo.f mdmv.f mdv.f moment0.f moment1.f moment2.f msub.f mvmd.f mvv.f opaross.f openms.f openmsr.f owninv.f photocs.f photon3.f plotanf.f plotcon.f plotcons.f polyfit.f popmin_nulling.f pricolr.f priflux.f priint.f prijost.f priopa.f readms.f regula.f remark.f rmodcon.f sargc.f sargp.f sargv.f second.f setup.f sfit.f sfitplo.f splinpo.f splinpox.f stamp.f storage.f tcolor.f tradfun.f trbk.f tremain.f vadd.f vmf.f wrcont.f writms.f xextinc.f xrudi.f zanstra.f mainwrcont.f
+WRCONTSRC = addhistentry.f append_autolevels.f bnue.f clock.f closms.f cmsstore.f coop.f count.f datom.f dbnuedt.f decon.f delpla.f difdtdr.f diffus.f elimin.f equal.f fedat.f filterfunctions.f findcharge.f gauntff.f gethistentry.f horner.f idx.f install.f inv.f isamax.f isrcheq.f jsymset.f ksigma.f lipo.f mdmv.f mdv.f moment0.f moment1.f moment2.f msub.f mvmd.f mvv.f opaross.f openms.f openmsr.f owninv.f photocs.f photon3.f plotanf.f plotanfs.f plotcon.f plotcons.f polyfit.f popmin_nulling.f pricolr.f priflux.f priint.f prijost.f priopa.f readms.f regula.f remark.f rmodcon.f sargc.f sargp.f sargv.f second.f setup.f sfit.f sfitplo.f splinpo.f splinpox.f stamp.f storage.f tcolor.f tradfun.f trbk.f tremain.f vadd.f vmf.f wrcont.f writms.f xextinc.f xrudi.f zanstra.f mainwrcont.f
 WRCONTSRCDIR = $(addprefix $(SRC_DIR)/,$(WRCONTSRC))
 WRCONTOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(WRCONTSRCDIR))
 
@@ -88,12 +88,12 @@ wrstart: wrstart.exe
 
 # debug options and rules
 # debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -traceback -fp-stack-check
-debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -traceback -fp-stack-check
-debug: coli steal
+debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -check all -traceback -fp-stack-check
+debug: coli steal wrcont como
 debug: BIN_DIR = $(BIN_DIR_DEBUG)
 
 # debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
-debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O1 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
 debug_all: BIN_DIR = $(BIN_DIR_DEBUG)
 debug_all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
 
@@ -146,3 +146,6 @@ print_info:
 
 clean:
 	rm -f build/*.o $(BIN_DIR)/*.exe $(BIN_DIR_DEBUG)/*.exe
+
+clean_build:
+	rm -f build/*.o

@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-  
+
 jobs:
   compile:
     runs-on: ${{ matrix.os }}
@@ -41,7 +41,7 @@ jobs:
     - name: compile powr
       run: |
         make coli; make steal
-        rm build/*.o
+        make clean_build
         make debug
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
