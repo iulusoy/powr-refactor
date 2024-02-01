@@ -1,25 +1,29 @@
       SUBROUTINE RMODCOLI(RADIUS,ENTOT,RNE,T,VELO,GRADI,XLAMBDA,FWEIGHT,
      $                   POPNUM,POPMIN,RSTAR,VDOP,MODHEAD,JOBNUM,XJC,
      $                   P,ND,NDDIM,NF,NFDIM,N,NDIM,NP,NPDIM,Z,
-     $                   TEFF,HEDDI,EDDI,MODHIST,MAXHIST, 
-     >                   DENSCON, FILLFAC, ABXYZ, NATOM, 
+     $                   TEFF,HEDDI,EDDI,MODHIST,MAXHIST,
+     >                   DENSCON, FILLFAC, ABXYZ, NATOM,
      >                   LASTREDISMODE, NCOLIP, NF2, XLAMBDA2,
      >                   OPARND, EPSGMAX, BEPSGMAXERR, MAXXDAT, XDATA,
      >                   XMSTAR, ZERO_RATES, HTOTMINUSND, HTOTNDCOR,
-     >                   HTOTLlast, TAULAST, NEXTHYDRO, DTDRIN, 
+     >                   HTOTLlast, TAULAST, NEXTHYDRO, DTDRIN,
      >                   VMIC)
 C*******************************************************************************
 C***  READING OF THE MODEL FILE FOR MAIN PROGRAM "COLI" ************************
 C*******************************************************************************
 
       !IMPLICIT NONE    !not yet possible - more code rework needed
- 
+
       INTEGER, INTENT(IN) :: MAXHIST
       INTEGER, INTENT(INOUT) :: NF, NP, ND, NF2
       INTEGER, INTENT(OUT) :: NCOLIP, NEXTHYDRO
 
       REAL, DIMENSION(NF) :: HEDDI
-      REAL, DIMENSION(2) :: XJC, EDDI
+C*** ISU
+C array size of EDDI and XJC is actually much larger
+C     REAL, DIMENSION(2) :: XJC, EDDI
+      REAL, DIMENSION(NDDIM*NFDIM) :: XJC
+      REAL, DIMENSION(3*NDDIM) :: EDDI
       REAL, DIMENSION(ND) :: EPSGMAX
       REAL, DIMENSION(NATOM) :: ABXYZ
       REAL, DIMENSION(NDDIM) :: ENTOT, TAULAST, VMIC
@@ -54,18 +58,18 @@ C***  READ ALL RELEVANT DIMENSIONS
       CALL READMS (3, NF   , 1 , 'NF      ', IERR)
       CALL READMS (3, NF2  , 1 , 'NF2     ', IERR)
       CALL READMS (3, LAST , 1 , 'MODHIST ', IERR)
-      OPARND = 0.       
+      OPARND = 0.
       CALL READMS (3, OPARND, 1, 'OPARND  ', IERR)
       HTOTMINUSND = 0.
       CALL READMS(3, HTOTMINUSND, 1, 'HTMND   ', IERR)
       HTOTNDCOR = 0.
       CALL READMS(3, HTOTNDCOR  , 1, 'HTNDCOR ', IERR)
-C***  Read (theoretical) DTDR at inner boundary 
+C***  Read (theoretical) DTDR at inner boundary
 C***  (calculated in STEAL->CALCDTDRIN)
       CALL READMS (3, DTDRIN, 1, 'DTDRIN  ', IERR)
       IF (IERR == -10. .OR. DTDRIN < 0.) THEN
 C***    Fallback if not yet calculated or negative gradient
-        DTDRIN = -99.       
+        DTDRIN = -99.
       ENDIF
 
 C***  CHECK WHETHER DIMENSIONING IS SUFFICIENT
@@ -84,7 +88,7 @@ C***  CHECK WHETHER DIMENSIONING IS SUFFICIENT
       IF (LAST .GT. MAXHIST) THEN
             CALL REMARK ('OLD MODEL HISTORY TOO LONG')
             STOP 'ERROR'
-            ENDIF      
+            ENDIF
 
       CALL READMS (3, RADIUS ,  ND , 'R       ', IERR)
       CALL READMS (3, ENTOT  ,  ND , 'ENTOT   ', IERR)
@@ -106,7 +110,7 @@ C***  CHECK WHETHER DIMENSIONING IS SUFFICIENT
       ENDDO
 c      CALL READMS (3, DENSCON, ND,    'DENSCON ', IERR)
 c      IF (IERR .EQ. -10) DENSCON(1:ND) = 1.
-c      FILLFAC(1:ND) = 1. / DENSCON(1:ND) 
+c      FILLFAC(1:ND) = 1. / DENSCON(1:ND)
       CALL READMS (3, RNE    ,  ND , 'RNE     ', IERR)
       CALL READMS (3, T      ,  ND , 'T       ', IERR)
       CALL READMS (3, VELO   ,  ND , 'VELO    ', IERR)
@@ -120,7 +124,7 @@ c      FILLFAC(1:ND) = 1. / DENSCON(1:ND)
       CALL READMS (3, POPNUM , ND*N, 'POPNUM  ', IERR)
       CALL READMS (3, POPMIN ,   1 , 'POPMIN  ', IERR)
       IF (IERR < 0) THEN
-C***  POPMIN not on MODEL file => read from CARDS      
+C***  POPMIN not on MODEL file => read from CARDS
         POPMIN = 1.E-100
       ENDIF
       CALL READMS (3, RSTAR  ,   1 , 'RSTAR   ', IERR)
@@ -133,8 +137,8 @@ C***  Read EPSGMAX from last COLI+
       BEPSGMAXERR = IERR .EQ. -10
 
       CALL READMS (3, TAULAST,  ND , 'TAUROSS ', IERR)
-      
-C***  READ TEFF FROM MODEL FILE 
+
+C***  READ TEFF FROM MODEL FILE
 C***  -- CAUTION: TEFF RECORD MAY NOT EXIST IN VERY OLD BERLIN MODELS
       IERR=1
       CALL READMS (3,TEFF,1,'TEFF    ',IERR)
@@ -144,19 +148,19 @@ C***  -- CAUTION: TEFF RECORD MAY NOT EXIST IN VERY OLD BERLIN MODELS
          STOP 'ERROR'
          ENDIF
 
-C***  Flags for the POPMIN levels from STEAL 
+C***  Flags for the POPMIN levels from STEAL
       CALL READMS (3,ZERO_RATES,  N*ND, 'ZERO_RAT', IERR)
-C*    Default if variable does not exist yet 
+C*    Default if variable does not exist yet
       IF (IERR .EQ. -10) THEN
         DO I=1, N*ND
           ZERO_RATES(I) = .FALSE.
         ENDDO
       ENDIF
-         
+
 C***  Read (micro-)turbulent velocity
       CALL READMS (3,VMIC, ND,  'VMIC    ', IERR)
       IF (IERR == -10) THEN
-C***    old MODEL file => only one VTURB value 
+C***    old MODEL file => only one VTURB value
         CALL READMS(3,VTURBND,1, 'VTURB   ', IERR)
 C***    update MODEL file: add new variable
         IF (IERR == -10) VTURBND = 0.
@@ -165,8 +169,8 @@ C***    update MODEL file: add new variable
         ENDDO
         CALL WRITMS(3,VMIC, ND, 'VMIC    ',-1, IDUMMY, IERR)
       ENDIF
-         
-         
+
+
 C***  READ ALL CONTINUUM INTENSITIES
       ND3=3*ND
       DO 15 K=1,NF
@@ -177,14 +181,17 @@ C***  READ ALL CONTINUUM INTENSITIES
       ELSE
         WRITE (NAME,'(A4,I4)') 'EDDI', K
       ENDIF
+
       CALL READMS (3,EDDI,ND3,NAME, IERR)
 
       HEDDI(K)=EDDI(ND3)
    15 CONTINUE
 
 C***  Read REDISMODE and NCOLIP
+C*** ISU
+C here readms is called with character LASTREDISMODE instead of real X
       CALL READMS(3, LASTREDISMODE, 1, 'REDISMO ', IERR)
-      CALL READMS(3, NCOLIP,        1,        'NCOLIP  ', IERR)
+      CALL READMS(3, NCOLIP,        1, 'NCOLIP  ', IERR)
 
 C***  READ 'XDATA' AND CHECK WHETHER THE RECORD EXISTS
       IERR=1
