@@ -88,7 +88,7 @@ wrstart: wrstart.exe
 
 # debug options and rules
 # debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -traceback -fp-stack-check
-debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -check all -traceback -fp-stack-check
+debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -traceback -fp-stack-check
 debug: coli steal wrcont como
 debug: BIN_DIR = $(BIN_DIR_DEBUG)
 
