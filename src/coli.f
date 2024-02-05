@@ -1496,27 +1496,33 @@ C***   End of SHORTRAY Block
           IF ( K .EQ. 0) THEN
             WRITE (hCPR,'(A,I2)') 'COLIMO,  IT=', IT
           ENDIF
-          CALL COLIMO(K, ND, RADIUS, OPAK, ETAK, ETAKNOTH, 
+C*** ISU unused variable
+C         CALL COLIMO(K, ND, RADIUS, OPAK, ETAK, ETAKNOTH, 
+          CALL COLIMO(K, ND, RADIUS, OPAK, ETAKNOTH, 
      >              OPAKNOTH, 
-     >              S, XJLMO, XJLMOR2, XHLMO,
+C    >              S, XJLMO, XJLMOR2, XHLMO,
+     >              XJLMO, XJLMOR2, XHLMO,
      >              XJLMO_OLD(1,ITACT), XHLMO_OLD(1,ITACT), 
      >              DLF, DLH, GLF, GLH, VLF, VLH,
      >              GLF2, GLH2, VLF2, VLH2, 
      >              QLF, QLH, OPAKH,
      >              EDDIF, EDDIFO(1,ITACT), EDDIG, EDDIGO(1,ITACT), 
-     >              EDDIHOUT, EDDIHIN, EDDIHOUTO(ITACT), 
-     >              EDDINOUT, EDDININ, EDDINOUTO(ITACT), 
+C    >              EDDIHOUT, EDDIHIN, EDDIHOUTO(ITACT), 
+     >              EDDIHOUT, EDDIHIN,
+C    >              EDDINOUT, EDDININ, EDDINOUTO(ITACT), 
      >              ALH, BLH, CLH,
      >              COLIA, COLIB, COLIC, COLIW, DELTAX, 
-     >              BCORE, DBDR, XIMINUS, BPDONE, XLAMK,
+C    >              BCORE, DBDR, XIMINUS, BPDONE, XLAMK,
+     >              BCORE, XLAMK,
      >              DJDSMOD, bALOTri, DJDSMOU, DJDSMOL,
      >              FULFIL0, FULFIL1, BPLOT, BPLOT2, IPLOT, 
      >              IW_COLIMO_F, IW_COLIMO_G, IW_COLIMO_G2, BSTATIC, 
      >              CLMOETA, CLMOOPA, XHID, 
      >              RADIUS2, EPSG(1,ITACT), GEPSB, GEPSBO,  
-     >              XHOM, XHOMO(ITACT), XNOM, XNOMO(ITACT),
-     >              EDDIHOUTP, EDDINOUTP, 
-     >              EDDIHOUTOP(ITACT), EDDINOUTOP(ITACT), IWARNJMNEG)
+C    >              XHOM, XHOMO(ITACT), XNOM, XNOMO(ITACT),
+C    >              EDDIHOUTP, EDDINOUTP, 
+C    >              EDDIHOUTOP(ITACT), EDDINOUTOP(ITACT), IWARNJMNEG)
+     >              IWARNJMNEG)
 
 ***    Calculate Integrals over Frequency
           IF (IT .EQ. ITMAX) THEN                
