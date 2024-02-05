@@ -35,7 +35,8 @@ C*******************************************************************************
       CHARACTER JOB*7, PRILEVRA*10
       LOGICAL, DIMENSION(N, ND) :: ZERO_RATES
       CHARACTER STRING3*3, STRING15*15, LEVEL(N)*(*)
-      DIMENSION NZERORATES(NDIM), LMINZERORATES(NDIM), LMAXZERORATES(NDIM)
+      DIMENSION NZERORATES(NDIM), LMINZERORATES(NDIM), 
+     >          LMAXZERORATES(NDIM)
 
       COMMON /GIIIERR/  NTUP,NTLOW,NFUP,NFLOW,NHELP
       COMMON / COMNEGI / NEGINTL,INEGMIN,INEGMAX,LNEGMIN,LNEGMAX
@@ -162,8 +163,10 @@ C***********************************************************************
 C***  ENDLOOP  ---------------------------------------------------------
 
 C***  Printout of ZERO_RATES 
-       WRITE (0,'(/,A)') 'Levels for which the equations have been removed'
-      WRITE (0,'(  A)') '------------------------------------------------'
+      WRITE (0,'(/,A)') 'Levels for which the equations '
+     >       //'have been removed'
+      WRITE (0,'(  A)') '-------------------------------'
+     >       //'-----------------'
       DO J=1,N
          IF (NZERORATES(J) .EQ. 0) CYCLE
          IF (NZERORATES(J) .EQ. ND) THEN

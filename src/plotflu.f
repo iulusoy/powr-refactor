@@ -9,18 +9,20 @@ C***********************************************************************
       DIMENSION X(NFMAX), Y(NFMAX)
       CHARACTER MODHEAD*100,HEADER*60, YTEXT*100, CENTER*8, ANG*2
       CHARACTER ACTPAR*10, CFAC*9, KARTE*(*)
-
 C***  SWITCH BETWEEN PLOT OF LOG F-NUE / LOG F-LAMBDA / T-RAD
       CHARACTER(4) :: SWITCH
 C***  SWITCH BETWEEN FLUX AT RSTAR OR AT 10pc distance 
       LOGICAL B10PC, BXMIN, BXMINERR, BXMAX, BXMAXERR
+C*** ISU declare string variable
+      CHARACTER*6 TOTOUT
 
       REAL, PARAMETER :: CLIGHT = 2.9979E18     !CLIGHT = SPEED OF LIGHT (IN ANGSTROEM PER SECOND) 
       REAL, PARAMETER :: PI = 3.14159
 
       REAL, PARAMETER :: PARSEC = 3.08561E18    !1 PARSEC IN CM
-
-      IF (TOTOUT == 6HUNDEF. ) THEN
+C*** ISU get rid of Hollerith constant
+C     IF (TOTOUT == 6HUNDEF. ) THEN
+      IF (TOTOUT == "UNDEF ") THEN
          PRINT 7
     7    FORMAT (//'WARNING: OPTION "PLOT FLUX" IGNORED - ',
      >           'EMERGENT CONT. FLUX NOT YET CALCULATED ',//)

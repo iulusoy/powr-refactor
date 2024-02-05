@@ -98,7 +98,8 @@ C      INTEGER, PARAMETER :: IFF_MAX_MS =   IFF_MAX / 8
      >                          XHBFSKIP, XLAMLASTOSKIP
       REAL, DIMENSION(NPDIM) :: P
       REAL, DIMENSION(NDDIM, NDIM) :: POPNUM
-      REAL, DIMENSION(NDDIM, MAXLIN) :: OPAL, ETAL, XJLMEAN, XLAMAPPMEAN,
+      REAL, DIMENSION(NDDIM, MAXLIN) :: OPAL, ETAL, XJLMEAN, 
+     >                                  XLAMAPPMEAN,
      >                                  XLAMAPPUMEAN, XLAMAPPLMEAN
       REAL, DIMENSION(NDDIM, NFDIM) :: XJC
       REAL, DIMENSION(NFLDIM, MAXLIN) :: PHI
@@ -1452,7 +1453,7 @@ C***      COLIRAY (the last, if COLI++) recommends EPSGMAX for the next COLI+
               XJL_MID = XJL(L) + XJL(L+1)
               XNENN = XHL_MID + EPSG(L,IT)*XJL_MID
               
-              IF (ABS(XNENN) .GT. EXP(-499.)) THEN
+              IF (ABS(XNENN) .GT. EXP(-499.D0)) THEN
                 EDDIG(L) = XNL_MID / XNENN
                  
 C***            CARDS option: Reset all negative EDDIG to
@@ -1880,7 +1881,7 @@ C         WRITE (hCPR,*) "Debug output - Force multipliers"
             VELORAW(L) = VELO(L) * VDOPUNIT
             VMACH(L) = SQRT( RGAS * T(L) / XMU(L) ) / 1.E5      !v_mach in km/s
          ENDDO
-         DOTM4P = RHO(1) * VELO(1)*VDOPUNIT*1.E5 * (RADIUS(1) * RSTAR)**2
+         DOTM4P = RHO(1)*VELO(1)*VDOPUNIT*1.E5*(RADIUS(1)*RSTAR)**2
          ARADTOT = 0.
          ACONTTOT = 0.
          ARADTESTTOT = 0.

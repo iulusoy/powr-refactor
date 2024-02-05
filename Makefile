@@ -18,6 +18,12 @@ MKLINCLUDE = ${MKLROOT}/include
 LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium
 LINKER_DYNAMIC = -shared-intel
 
+# gfortran compiler
+FC_gfortran = gfortran
+FFLAGS_gfortran = -O3 -fdefault-integer-8 -fno-range-check -fallow-argument-mismatch -ffree-line-length-0 -I${LIB_DIR}
+LINKER_OPTIONS_gfortran = -llapack -lblas
+LINKER_DYNAMIC_gfortran =
+
 # relevant source files for the different programs
 ADAPTERSRC = adapop.f adapter.f adatrans.f addhistentry.f append_autolevels.f chrinstr.f clock.f closms.f cmsstore.f count.f datom.f decadp.f fedat.f findcharge.f idx.f install.f isrcheq.f jsymset.f lengthms.f lipo.f openms.f priadp.f readms.f remark.f rmodadp.f sargc.f sargp.f sargrest.f sargv.f second.f splinpox.f stamp.f storage.f trbk.f writms.f mainadapter.f
 ADAPTERSRCDIR = $(addprefix $(SRC_DIR)/,$(ADAPTERSRC))
@@ -99,6 +105,12 @@ debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -
 debug_all: BIN_DIR = $(BIN_DIR_DEBUG)
 debug_all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
 
+gfortran: FC = $(FC_gfortran)
+gfortran: FFLAGS = $(FFLAGS_gfortran)
+gfortran: LINKER_OPTIONS = $(LINKER_OPTIONS_gfortran)
+gfortran: LINKER_DYNAMIC = $(LINKER_DYNAMIC_gfortran)
+gfortran: coli steal wrcont como
+
 adapter.exe: $(ADAPTEROBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
 
@@ -106,7 +118,7 @@ como.exe: $(COMOOBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
 
 coli.exe: $(COLIOBJ)
-	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
+	$(FC) $(FFLAGS) -o $(BIN_DIR)/$@ $^ $(LINKER_OPTIONS) $(LINKER_DYNAMIC) 
 
 extrap.exe: $(EXTRAPOBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
@@ -143,8 +155,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.f
 	$(FC) $(FFLAGS) -c $< -o $@
 
 # rules to compile
-$(OBJ_DIR)/colimo.o: $(SRC_DIR)/colimo.f
-	$(FC) $(FFLAGS_DEBUG) -c $< -o $@
+# $(OBJ_DIR)/colimo.o: $(SRC_DIR)/colimo.f
+# 	$(FC) $(FFLAGS_DEBUG) -c $< -o $@
 
 print_info:
 	$(info COLISRC: $(COLISRC))

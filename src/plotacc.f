@@ -463,7 +463,7 @@ C***    Standard ACC plot colors
         WRITE (hPLOT, '(A,2(F4.1,A))') CHAR(92) // 
      >   'LINREL XMIN YMAX ',XLENGTH, ' 0 ', XLIN, ' -3 SYMBOL=5'
         WRITE (hPLOT, '(A,F4.1,A)') '\LUN ' //
-     >   'XMIN YMAX ', XOFF, ' M-3.0 0.3 (a&Trad&M+a&Tpress&M)/' // CNORM
+     >  'XMIN YMAX ',XOFF,' M-3.0 0.3 (a&Trad&M+a&Tpress&M)/'//CNORM
 
         WRITE (hPLOT, '(A)') CHAR(92) // 'COLOR=5'
         WRITE (hPLOT, '(A,2(F4.1,A))') CHAR(92) // 

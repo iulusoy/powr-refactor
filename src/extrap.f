@@ -221,7 +221,10 @@ C                          ========
             ENDIF
       IF ( KARTE(:9) .EQ. 'PRINT POP' ) THEN
 C                          =========
-            DECODE (80,4,KARTE) XL
+C*** ISU not supported in gfortran and also fortran after f77
+C*** see https://gcc.gnu.org/onlinedocs/gcc-4.5.4/gfortran/ENCODE-and-DECODE-statements.html
+C           DECODE (80,4,KARTE) XL
+            READ (UNIT=KARTE, FMT=4) XL
     4       FORMAT (9X,F10.0)
             LSPOP=IFIX(XL)
             IF (LSPOP.EQ.0) LSPOP=1

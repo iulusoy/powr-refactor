@@ -26,7 +26,8 @@ C*******************************************************************************
       LOGICAL :: NOLAP, LASERSET, DRNORUD, BLLIST, 
      >           BCOLIRAY, CLHLP, BITCONT, 
      >           BPLOT, BKUDRITZKI,
-     >           BEMIX, BEMIXFIX, BPLOTALPHA, bCustomVMOD
+     >           BEMIX, BEMIXFIX, BPLOTALPHA, bCustomVMOD,
+     >           bALOTri
       INTEGER :: IVERS_FE_EXPFAC, iHTOTCUT
       INTEGER, DIMENSION(MAXPLOT) :: LPOPAB, LPOPABD, LPJNUE, LPJNUED,
      >                               LPSNUE, LPSNUED

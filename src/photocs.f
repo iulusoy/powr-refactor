@@ -22,7 +22,8 @@ C***  The calling programms should not call PHOTOCS beyond the ionisation edge,
 C***  althogh this is not a catastrophy. 
 C***  The followong warning might be switched off if annoying.
       IF (WAVENUM .LT. EDGE) THEN
-         WRITE (0,'(a)') '*** WARNING: PHOTOCS CALLED OUTSIDE EDGE FREQUENCY'
+      WRITE (0,'(a)') '*** WARNING: PHOTOCS CALLED '
+      WRITE (0,'(a)') 'OUTSIDE EDGE FREQUENCY'
          SIGMA = .0
          RETURN
       ENDIF

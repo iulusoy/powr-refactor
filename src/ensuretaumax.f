@@ -1601,7 +1601,7 @@ C***  now including all grid updates
 C***  Final calculation of the DENSCON and FILLFAC vectors,
 C***  now including all damping and grid update effects
       CALL CLUMP_STRUCT (DENSCON, FILLFAC, ND, DENSCON_FIX, 
-     >                   VELO, TAUROSScont, DENSCON_LINE, RADIUS, T, XMU)     
+     >     VELO, TAUROSScont, DENSCON_LINE, RADIUS, T, XMU)     
       
 C***  Calculate Tau2/3 (always on Rosseland continuum scale)
       TAU23=0.666666666666

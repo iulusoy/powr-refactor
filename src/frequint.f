@@ -928,8 +928,8 @@ C***   (Ist dieser Fallback schlau oder eher problematisch?)
        IF (OPAKNOTHO(L) <= 1.E-30) THEN
          bKSKIPMEAN = .TRUE.
        ELSE
-         SMEAN(L)    = SMEAN(L)    + ETAKOLD(L)/OPAKOLD(L)   * FWMID
-         IF (ABS(ETAKOLD(L) > 0.)) THEN
+         SMEAN(L) = SMEAN(L) + ETAKOLD(L)/OPAKOLD(L) * FWMID
+         IF (ABS(ETAKOLD(L)) > 0.) THEN
 C***       CUTOPAMEANTHRES is set via CARDS option OPAMEANTHRES
 C***        recommended values between 1.E-5 and 1.E-3
 C***        Setting too high values can lead to a crash in STEAL

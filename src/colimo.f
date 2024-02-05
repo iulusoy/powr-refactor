@@ -295,7 +295,7 @@ C***    Protocol for warnings for negative results in XJL (=W now)
 
 C***    Set J to zero, if small or neg. values
 C***    as recommended by Andreas - wrh  5-Mar-2019
-        IF (W(L) < EXP(-499.)) THEN
+        IF (W(L) < EXP(-499.D0)) THEN
           XJLMO(L) = 0.
           XJLMOR2(L) = 0.
         ELSE
@@ -312,7 +312,7 @@ C***  Calculation of the flux from the moment equation (XHLMO)
 C***  again suppressing neg. values as recommended by Andreas 
 C***  - wrh 5-Mar-2019
       DO L=1, ND-1
-        IF (W(L) < EXP(-499.)) THEN
+        IF (W(L) < EXP(-499.D0)) THEN
           XHLMO(L) = 0.
         ELSE
           XHLMO(L) = ALH(L)/QLH(L)*
