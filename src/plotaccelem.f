@@ -693,12 +693,9 @@ C*** - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         WRITE (hPLOT, '(A)') '      \VAR ylegcur = $ylegcurstart'       
         WRITE (hPLOT, '(A)') '    \ENDIF'       
         WRITE (hPLOT, '(A)') '  \ENDIF'
-        WRITE (hPLOT, '(A)') '  \CALC xlegolcur=$xlegol + '//
-     >'($xlegcol - 1) * $xlegcolstep'
-        WRITE (hPLOT, '(A)') '  \CALC xlegolscur = $xlegols + '
-     >                         //'($xlegcol - 1) * $xlegcolstep' 
-        WRITE (hPLOT, '(A)') '  \CALC xlegotcur = $xlegotval + '
-     >                         //'($xlegcol - 1) * $xlegcolstep' 
+        WRITE (hPLOT, '(A)') '  \CALC xlegolcur = $xlegol + ($xlegcol - 1) * $xlegcolstep' 
+        WRITE (hPLOT, '(A)') '  \CALC xlegolscur = $xlegols + ($xlegcol - 1) * $xlegcolstep' 
+        WRITE (hPLOT, '(A)') '  \CALC xlegotcur = $xlegotval + ($xlegcol - 1) * $xlegcolstep' 
         WRITE (hPLOT, '(A)') '  \EXPR xlegotcur = "L" // $xlegotcur'
         WRITE (hPLOT, '(A)') '  \EXPR ylegcurlab = "M" // $ylegcur'
         WRITE (hPLOT, '(A)') '  \IF $curlin .EQ. ""'
@@ -989,7 +986,7 @@ C***      the contribution is larger than RELCONTRIBMIN
                 IF (bCONT) THEN
                   Y2(LL) = (ACONTION(L,NA,ION))/ANORM(L)
                 ELSEIF (bLINE) THEN
-        Y2(LL) = (ARADION(L,NA,ION)-ACONTION(L,NA,ION))/ANORM(L)
+                  Y2(LL) = (ARADION(L,NA,ION)-ACONTION(L,NA,ION))/ANORM(L)
                 ELSE
                   Y2(LL) = (ARADION(L,NA,ION))/ANORM(L)
                 ENDIF

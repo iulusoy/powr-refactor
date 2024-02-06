@@ -109,7 +109,7 @@ gfortran: FC = $(FC_gfortran)
 gfortran: FFLAGS = $(FFLAGS_gfortran)
 gfortran: LINKER_OPTIONS = $(LINKER_OPTIONS_gfortran)
 gfortran: LINKER_DYNAMIC = $(LINKER_DYNAMIC_gfortran)
-gfortran: coli steal wrcont como
+gfortran: coli
 
 adapter.exe: $(ADAPTEROBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^

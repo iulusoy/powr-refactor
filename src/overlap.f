@@ -17,9 +17,7 @@ C**********************************************************************
       INTEGER, DIMENSION(LASTIND) :: INDNUP, INDLOW, NBLENDS
       REAL, DIMENSION(NDIM) :: ELEVEL, EION
       REAL, DIMENSION(NAUTO) :: EAUTO
-C*** ISU This should be LOGICAL?
-c     INTEGER, DIMENSION(NAUTO) :: KRUDAUT
-      LOGICAL, DIMENSION(NAUTO) :: KRUDAUT
+      INTEGER, DIMENSION(NAUTO) :: KRUDAUT
       LOGICAL :: NOLAP
 
 C***  VELOCITY OF LIGHT (IN KM/SEC)

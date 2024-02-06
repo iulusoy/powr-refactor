@@ -189,8 +189,7 @@ C*******************************************************************************
       CHARACTER(10), DIMENSION(ND) :: MAINPRO, MAINLEV
 
       LOGICAL, DIMENSION(N,ND) :: ZERO_RATES
-      INTEGER, DIMENSION(NDIM) :: NZERORATES, LMINZERORATES, 
-     >                            LMAXZERORATES
+      INTEGER, DIMENSION(NDIM) :: NZERORATES, LMINZERORATES, LMAXZERORATES
 
       REAL, DIMENSION(10) :: FF_INFO
       INTEGER, DIMENSION(IFF_MAX) :: IFF_DK, IFF_WCHARM
@@ -575,7 +574,7 @@ cc            WFENUP(L,IND) = WFENUP(L,IND)*EXP(1.-GAMMAD)
         IF (IND <= LASTINDAUTO .AND. bLAMAPPCOLI) THEN
 C***      NULL ALO TERMS in CASE OF GAMMAR and GAMMAL = 0
           bUSEALO(IND) = .TRUE.
-          IF(GAMMAL<=0.0.AND.GAMMAR<=0.0.AND..NOT.BDIAG(IND)) THEN
+          IF (GAMMAL <= .0 .AND. GAMMAR <= .0 .AND. .NOT. BDIAG(IND)) THEN
 C**         Do not use ALO for line transitions if GAMMAs are switched off        
             bUSEALO(IND) = .FALSE.
             IF (bLAMAPPCOLI) THEN
@@ -1179,10 +1178,8 @@ C***  CLOSE DMFILE and FFASSET
       
 C***  Printout of ZERO_RATES (Option: PRINT ZERORATES) 
       IF (IPRINTZERORATES .GT. 0) THEN
-      WRITE (hCPR,'(/,A)') 'Levels for which the equations '
-      WRITE (hCPR,'(/,A)') 'have been removed' 
-        WRITE (hCPR,'(  A)') '-----------------------------'
-        WRITE (hCPR,'(  A)') '-------------------' 
+        WRITE (hCPR,'(/,A)') 'Levels for which the equations have been removed' 
+        WRITE (hCPR,'(  A)') '------------------------------------------------' 
         DO J=1,N
           IF (NZERORATES(J) .EQ. 0) CYCLE
           IF (NZERORATES(J) .EQ. ND) THEN
