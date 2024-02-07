@@ -7,15 +7,22 @@ OBJ_DIR = build
 BIN_DIR = powr/exe.dir
 BIN_DIR_DEBUG = powr/exe_dev.dir
 LIB_DIR = lib
+MODULE_DIR = modules
 
 # compiler and linking options
-FC = ifort
-FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
-# compiler options for colimo debug
-FFLAGS_DEBUG = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -traceback -fp-stack-check
+FC = ifx
+FC_classic = ifort
+FFLAGS = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -extend-source -O3 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -module ${MODULE_DIR}
+FFLAGS_classic = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+# compiler options for debug
+FFLAGS_DEBUG = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -extend-source -O0 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -fpe:1 -module ${MODULE_DIR}
+FFLAGS_DEBUG_colimo = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -extend-source -O0 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -warn all -check all -fpe:1
+FFLAGS_DEBUG_classic = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -fp-stack-check
+FFLAGS_DEBUG_classic-colimo = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -fp-stack-check
 MKLPATH    = ${MKLROOT}/lib/intel64
 MKLINCLUDE = ${MKLROOT}/include
-LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium
+LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel=medium -Wl,--no-relax
+LINKER_OPTIONS_classic = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium
 LINKER_DYNAMIC = -shared-intel
 
 # gfortran compiler
@@ -96,15 +103,24 @@ wrcont: wrcont.exe
 wrstart: wrstart.exe
 
 # debug options and rules
-# debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -traceback -fp-stack-check
-debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -traceback -fp-stack-check
-debug: coli steal wrcont como
+debug: FFLAGS = $(FFLAGS_DEBUG)
+debug: coli steal
 debug: BIN_DIR = $(BIN_DIR_DEBUG)
 
-# debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
-debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+debug_all: FFLAGS = -$(FFLAGS_DEBUG)
 debug_all: BIN_DIR = $(BIN_DIR_DEBUG)
 debug_all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+
+intel_classic: FC = $(FC_classic)
+intel_classic: FFLAGS = $(FFLAGS_classic)
+intel_classic: LINKER_OPTIONS = $(LINKER_OPTIONS_classic)
+intel_classic: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+
+intel_classic_debug: FC = $(FC_classic)
+intel_classic_debug: FFLAGS = $(FFLAGS_DEBUG_classic)
+intel_classic_debug: LINKER_OPTIONS = $(LINKER_OPTIONS_classic)
+intel_classic_debug: BIN_DIR = $(BIN_DIR_DEBUG)
+intel_classic_debug: coli steal
 
 gfortran: FC = $(FC_gfortran)
 gfortran: FFLAGS = $(FFLAGS_gfortran)
@@ -157,14 +173,14 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.f
 
 # rules to compile
 # $(OBJ_DIR)/colimo.o: $(SRC_DIR)/colimo.f
-# 	$(FC) $(FFLAGS_DEBUG) -c $< -o $@
+# 	$(FC) $(FFLAGS_DEBUG-colimo) -c $< -o $@
 
 print_info:
 	$(info COLISRC: $(COLISRC))
 	$(info COLIOBJ: $(COLIOBJ))
 
 clean:
-	rm -f build/*.o $(BIN_DIR)/*.exe $(BIN_DIR_DEBUG)/*.exe
+	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/*.exe $(BIN_DIR_DEBUG)/*.exe $(MODULE_DIR)/*.f90 $(MODULE_DIR)/*.mod
 
 clean_build:
-	rm -f build/*.o
+	rm -f $(OBJ_DIR)/*.o

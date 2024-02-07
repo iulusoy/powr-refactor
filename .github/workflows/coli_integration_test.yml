@@ -37,9 +37,9 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        make
-        make clean_build
-        make debug_all
+        make intel_classic
+      # make clean_build
+      # make debug_all
     # - name: get the test models
       # run: |
         # wget -O testmodels.tgz https://heibox.uni-heidelberg.de/f/a62c7ae5559d43a0a8b2/?dl=1

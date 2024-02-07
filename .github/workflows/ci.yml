@@ -40,9 +40,9 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        make coli; make steal
+        make intel_classic
         make clean_build
-        make debug
+        make intel_classic_debug
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
