@@ -20,7 +20,8 @@ LINKER_DYNAMIC = -shared-intel
 
 # gfortran compiler
 FC_gfortran = gfortran
-FFLAGS_gfortran = -O3 -fdefault-integer-8 -fno-range-check -fallow-argument-mismatch -ffree-line-length-0 -I${LIB_DIR}
+FFLAGS_gfortran = -O0 -fdefault-integer-8 -fno-range-check -fallow-argument-mismatch -ffree-line-length-0 -I${LIB_DIR} -g
+FFLAGS_gfortran_asan = -O0 -fdefault-integer-8 -fno-range-check -fallow-argument-mismatch -ffree-line-length-0 -I${LIB_DIR} -g -fsanitize=address -fno-omit-frame-pointer
 LINKER_OPTIONS_gfortran = -llapack -lblas
 LINKER_DYNAMIC_gfortran =
 
