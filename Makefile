@@ -12,10 +12,10 @@ MODULE_DIR = modules
 # compiler and linking options
 FC = ifx
 FC_classic = ifort
-FFLAGS = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -extend-source -O3 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -module ${MODULE_DIR}
+FFLAGS = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -module ${MODULE_DIR}
 FFLAGS_classic = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
 # compiler options for debug
-FFLAGS_DEBUG = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -extend-source -O0 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -fpe:1 -module ${MODULE_DIR}
+FFLAGS_DEBUG = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -fpe:1 -module ${MODULE_DIR}
 FFLAGS_DEBUG_colimo = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -extend-source -O0 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -warn all -check all -fpe:1
 FFLAGS_DEBUG_classic = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -fp-stack-check
 FFLAGS_DEBUG_classic-colimo = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -fp-stack-check
