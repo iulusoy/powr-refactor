@@ -69,11 +69,11 @@ def get_chain(inject_path):
     # teardown directories
     # we need access to ${POWR_WORK} so shutil will not work
     # why does sourcing powrconfig in the script not work?
-    os.system("rm -rf ${POWR_WORK}/scratch")
-    os.system("rm -rf ${POWR_WORK}/output")
-    os.system("rm -rf ${POWR_WORK}/wrdata1")
-    os.system("rm -rf ${POWR_WORK}/wrjobs")
-    return "Cleaned working dirs"
+    # os.system("rm -rf ${POWR_WORK}/scratch")
+    # os.system("rm -rf ${POWR_WORK}/output")
+    # os.system("rm -rf ${POWR_WORK}/wrdata1")
+    # os.system("rm -rf ${POWR_WORK}/wrjobs")
+    # return "Cleaned working dirs"
 
 
 @pytest.fixture()

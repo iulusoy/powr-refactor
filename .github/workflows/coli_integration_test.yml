@@ -1,4 +1,4 @@
-name: compile and run coli integation test
+name: full integation test
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   
 jobs:
-  compile:
+  compile-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -52,17 +52,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
-    # - name: Setup tmate session
-    #   uses: mxschmitt/action-tmate@v3
-    # - name: run integration tests
-    #   run: |
-    #     python -m pytest -svv test/test_wrstart.py
-    - name: create outputs
+    - name: run integration tests
       run: |
-        cd powr
-        cp powrconfig ~/.powrconfig
-        ./proc.dir/makechain.com 1
-        ./wrjobs/wrstart1
+        python -m pytest -svv test/test_wrstart.py
     - name: store outputs
       uses: actions/upload-artifact@v4
       with: 
@@ -70,3 +62,5 @@ jobs:
         path: ./powr/output/*
         retention-days: 5
         overwrite: true
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
