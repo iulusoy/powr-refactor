@@ -60,6 +60,7 @@ jobs:
     - name: create outputs
       run: |
         cd powr
+        cp powrconfig ~/.powrconfig
         ./proc.dir/makechain.com 1
         ./wrjobs/wrstart1
     - name: store outputs
