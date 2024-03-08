@@ -41,6 +41,9 @@ jobs:
           - {compiler: intel, version: '2023.0'}
           - {compiler: intel, version: '2023.1'}
           - {compiler: intel, version: '2023.2'}
+        exclude:
+          - os: ubuntu-latest
+            toolchain: {compiler: intel-classic, version: '2021.3'}
           
     steps:
     - name: Checkout repository

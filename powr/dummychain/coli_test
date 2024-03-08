@@ -64,11 +64,11 @@ Mkdir $pathass
 submit=${submit:-$POWR_WORK/proc.dir/submit.com}
 
 # macOS: nice from /usr/bin/ is broken (dylibs paths not found for wrstart etc.)
-if [[ $OSTYPE == *darwin* ]] ; then
-    nice=$exepath/gnice
-else # Linux
+# if [[ $OSTYPE == *darwin* ]] ; then
+#    nice=$exepath/gnice
+#else # Linux
     nice=nice
-fi
+#fi
 
 #------------- end of settings ----------------------------
 
