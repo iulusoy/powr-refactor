@@ -44,7 +44,23 @@ jobs:
         exclude:
           - os: ubuntu-latest
             toolchain: {compiler: intel-classic, version: '2021.3'}
-          
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2021.1.2'}
+          - os: macos-latest
+            toolchain: {compiler: intel-classic, version: '2021.5'}
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2022.0'}
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2022.1'}
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2022.2.1'}
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2023.0'}
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2023.1'}
+          - os: macos-latest
+            toolchain: {compiler: intel, version: '2023.2'}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
