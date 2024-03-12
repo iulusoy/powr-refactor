@@ -15,52 +15,14 @@ jobs:
       matrix:
         python-version: [3.9]
         # os: [ubuntu-latest]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         toolchain:
-          - {compiler: intel-classic, version: '2021.1'}
-          - {compiler: intel-classic, version: '2021.2'}
-          - {compiler: intel-classic, version: '2021.3'}
-          - {compiler: intel-classic, version: '2021.4'}
-          - {compiler: intel-classic, version: '2021.5'}
-          - {compiler: intel-classic, version: '2021.6'}
-          - {compiler: intel-classic, version: '2021.7'}
-          - {compiler: intel-classic, version: '2021.7.1'}
-          - {compiler: intel-classic, version: '2021.8'}
-          - {compiler: intel-classic, version: '2021.9'}
-          - {compiler: intel-classic, version: '2021.10'}
-          - {compiler: intel, version: '2021.1'}
-          - {compiler: intel, version: '2021.1.2'}
-          - {compiler: intel, version: '2021.2'}
           - {compiler: intel, version: '2021.4'}
-          - {compiler: intel, version: '2022.0'}
           - {compiler: intel, version: '2022.1'}
-          - {compiler: intel, version: '2022.2'}
           - {compiler: intel, version: '2022.2.1'}
-          - {compiler: intel, version: '2022.2'}
           - {compiler: intel, version: '2023.0'}
           - {compiler: intel, version: '2023.1'}
           - {compiler: intel, version: '2023.2'}
-        exclude:
-          - os: ubuntu-latest
-            toolchain: {compiler: intel-classic, version: '2021.3'}
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2021.1.2'}
-          - os: macos-latest
-            toolchain: {compiler: intel-classic, version: '2021.5'}
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2022.0'}
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2022.1'}
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2022.2'}
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2022.2.1'}
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2023.0'}
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2023.1'}
-          - os: macos-latest
-            toolchain: {compiler: intel, version: '2023.2'}
 
     steps:
     - name: Checkout repository
@@ -84,9 +46,9 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        make intel_classic
+        make 
         make clean_build
-        make intel_classic_debug
+        make debug
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
