@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  compile:
+  compile-and-run-colitest:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -17,14 +17,14 @@ jobs:
         # os: [ubuntu-latest]
         os: [ubuntu-latest]
         toolchain:
-          - {compiler: intel, version: '2024.0'}
-          - {compiler: intel, version: '2023.2'}
-          - {compiler: intel, version: '2023.1'}
-          - {compiler: intel, version: '2023.0'}
-          - {compiler: intel, version: '2022.2'}
-          - {compiler: intel, version: '2022.2.1'}
-          - {compiler: intel, version: '2022.1'}
-          - {compiler: intel, version: '2022.0'}
+          # - {compiler: intel, version: '2024.0'}
+          - {compiler: intel-classic, version: '2023.2'}
+          # - {compiler: intel, version: '2023.1'}
+          # - {compiler: intel, version: '2023.0'}
+          # - {compiler: intel, version: '2022.2'}
+          # - {compiler: intel, version: '2022.2.1'}
+          # - {compiler: intel, version: '2022.1'}
+          # - {compiler: intel, version: '2022.0'}
 
     steps:
     - name: Checkout repository
@@ -36,7 +36,7 @@ jobs:
           powr
           test
     - name: get fortran compiler
-      uses: iulusoy/setup-fortran@v0.1
+      uses: ssciwr/setup-fortran@v0.1
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
