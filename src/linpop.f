@@ -74,14 +74,8 @@ C*******************************************************************************
 
       IMPLICIT NONE
 
-      INTEGER, PARAMETER :: NDIM    =        2560   !must be exactly as in STEAL
-      INTEGER, PARAMETER :: NFDIM   = 2*NDIM + 400  !must be exactly as in STEAL
-      INTEGER, PARAMETER :: MAXIND  =       45000   !must be exactly as in STEAL
-      INTEGER, PARAMETER :: MAXFEIND  =       2500  !must be exactly as in STEAL
-      
-      
-      
-      INTEGER, INTENT(IN) :: ND, NDDIM, N, NF, JOBNUM, MAXION, NFLDIM,
+      INTEGER, INTENT(IN) :: NDIM, NFDIM, MAXIND, MAXFEIND, ND, NDDIM, 
+     >                       N, NF, JOBNUM, MAXION, NFLDIM,
      >                       MAXLAP, NATOM, LASTKDR, MAXFINE, INDEXMAX,
      >                       IFF_MAX, IFF_MAX_MS, MAXATOM, LASTKON,
      >                       LASTIND, MAXAUTO, LASTINDAUTO, LASTINDALL,
@@ -459,8 +453,8 @@ C***  Initialize counters for ZERO_RATES
         LMINZERORATES(J) = ND+1
         LMAXZERORATES(J) = 0
       ENDDO
-
-      IF (bLAMAPPCOLI) THEN
+C problem occurs below IU: opt version n=1718908448
+      IF (bLAMAPPCOLI) THEN 
         WRITE (hCPR,'(A)') ' ALO version: XJLAPP COLI'
       ENDIF
       IF (iBLOCKINVERSION > 1) THEN
@@ -535,6 +529,7 @@ C***          FORMULATION OF RADIATIVE EQUILIBRIUM IN TEMPEQ
 
 C***  NEWTON - RAPHSON - ITERATION  ********************************************
 C***  THE ITERATION STARTS FROM THE OLD POP. NUMBERS
+C IU n is here some absurd number
       DO J=1,N
         EN(J)=POP1(L,J)
         EN1(J)=EN(J)
