@@ -76,6 +76,9 @@ NJNOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(NJNSRCDIR))
 STEALSRC = addhistentry.f addopa.f adjgamma.f aitken.f append_autolevels.f backuppopnum.f bfcross.f bnue.f brmv.f brnorm2.f brtpup.f brvdivs.f brvm.f brvvdy.f calcgammaradmean.f calcmassfromgeff.f calcwc.f cbbfe.f cbbh.f cbbhe.f cbbmore.f cbbn.f ccore.f change.f clock.f closms.f clump_struct.f cmsstore.f cofreq.f colli.f coma.f coop.f coopfrq.f count.f datom.f dbnuedt.f dcoop.f decnot.f decste.f decvelpar.f delpla.f deltagr.f deltagrthin.f deriv.f dliop.f dmopen.f drdat.f ensuretaumax.f erf.f expint1exp.f extrap.f fecheck.f fedat.f feop_steal.f filterfunctions.f findcharge.f flag_zerorates.f flgrid.f funsch.f gauntff.f geomesh.f gethistentry.f gradiff.f hysthdruku.f hystruku.f idx.f inhibit.f initfcorr.f initvel.f initvelbetapar.f install.f interpolatepopnum.f interpolatetemp.f inv.f isamax.f ismax.f isrcheq.f isrchfge.f isrchfgt.f isrchfle.f isrchflt.f isrchne.f jlderiv.f jsymset.f ksigma.f lcore.f lengthms.f linpop.f linsol.f linsol_split.f liop.f lipo.f load_ff.f loadwc.f ltepop.f mgoetz.f mlanger.f nextjob.f ng3.f ng4.f nltepop.f opaross.f openexms.f openms.f overlap.f owninv.f pgrid.f photocs.f photon3.f plocc.f plotacc.f plotaccelem.f plotalpha.f plotanf.f plotanfs.f plotapp.f plotcon.f plotcons.f plotdep.f plotflu.f plotfgadapter.f plotfgstrat.f plotforcemult.f plotgamma.f plothsum.f plotjline.f plotjnue.f plotpop.f plotsigmafe.f plott.f plotunlu.f plotv.f plotvgrad.f pop_renorm.f popsmall.f popzero.f preline.f prep_drlines.f prepkubat.f preplotapp.f pri1rat.f pricc.f pricolr.f pricomp.f pricorr.f pridat.f priex.f priexpo.f priflux.f prigahist.f prihist.f prijost.f prilc.f primat.f primod.f printmodelsummary.f pripop.f prirat.f pritau.f priunlu.f radio.f radnet.f readms.f redcor.f regridoldpop.f regula.f remark.f remarkf.f remost.f rgrid.f rsort.f sargc.f sargp.f sargv.f scaledm.f sdot.f second.f seqlinecl.f setxjc.f setxjfine.f setxjl.f setxjlcf.f shift.f shiftreal.f shiftstring.f smach.f splinpo.f splinpox.f stamp.f steal.f sthist.f storage.f tauscal.f tcolor.f tdiffus.f tempcorr.f tempcorr_expdamp.f tempcorr_fluxerr.f tradfun.f trbk.f vdopdd_setup.f velobeta.f velthin.f vmf.f vsub.f writms.f wrvel.f xextinc.f xrudi.f zanstra.f mainsteal.f
 STEALSRCDIR = $(addprefix $(SRC_DIR)/,$(STEALSRC))
 STEALOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(STEALSRCDIR))
+STEALMOD = params.f90
+STEALMODDIR = $(addprefix $(SRC_DIR)/,$(STEALMOD))
+STEALMODOBJ = $(patsubst $(SRC_DIR)/%.f90, $(OBJ_DIR)/%.o, $(STEALMODDIR))
 
 WRCONTSRC = addhistentry.f append_autolevels.f bnue.f clock.f closms.f cmsstore.f coop.f count.f datom.f dbnuedt.f decon.f delpla.f difdtdr.f diffus.f elimin.f equal.f fedat.f filterfunctions.f findcharge.f gauntff.f gethistentry.f horner.f idx.f install.f inv.f isamax.f isrcheq.f jsymset.f ksigma.f lipo.f mdmv.f mdv.f moment0.f moment1.f moment2.f msub.f mvmd.f mvv.f opaross.f openms.f openmsr.f owninv.f photocs.f photon3.f plotanf.f plotanfs.f plotcon.f plotcons.f polyfit.f popmin_nulling.f pricolr.f priflux.f priint.f prijost.f priopa.f readms.f regula.f remark.f rmodcon.f sargc.f sargp.f sargv.f second.f setup.f sfit.f sfitplo.f splinpo.f splinpox.f stamp.f storage.f tcolor.f tradfun.f trbk.f tremain.f vadd.f vmf.f wrcont.f writms.f xextinc.f xrudi.f zanstra.f mainwrcont.f
 WRCONTSRCDIR = $(addprefix $(SRC_DIR)/,$(WRCONTSRC))
@@ -158,7 +161,7 @@ newformal_cards.exe: $(NEWFORMAL_CARDSOBJ)
 njn.exe: $(NJNOBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
 
-steal.exe: $(STEALOBJ)
+steal.exe: $(STEALMODOBJ) $(STEALOBJ) 
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
 
 wrcont.exe: $(WRCONTOBJ)
@@ -171,13 +174,17 @@ wrstart.exe: $(WRSTARTOBJ)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.f
 	$(FC) $(FFLAGS) -c $< -o $@
 
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.f90
+	$(FC) $(FFLAGS) -c $< -o $@
+
 # rules to compile
 # $(OBJ_DIR)/colimo.o: $(SRC_DIR)/colimo.f
 # 	$(FC) $(FFLAGS_DEBUG-colimo) -c $< -o $@
 
 print_info:
-	$(info COLISRC: $(COLISRC))
-	$(info COLIOBJ: $(COLIOBJ))
+# $(info COLISRC: $(COLISRC))
+# $(info COLIOBJ: $(COLIOBJ))
+	$(info STEALMOD: $(STEALMODOBJ))
 
 clean:
 	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/*.exe $(BIN_DIR_DEBUG)/*.exe $(MODULE_DIR)/*.f90 $(MODULE_DIR)/*.mod
