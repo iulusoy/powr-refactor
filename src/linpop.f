@@ -1,10 +1,6 @@
-      SUBROUTINE LINPOP (T,RNE,ENTOT,ITNE,POPNUM,DEPART,POPLTE,POP1,
-     >   N,ENLTE,WEIGHT,NCHARG,EION,ELEVEL,EN,EINST,LEVEL,
-     >   FWEIGHT,XJC,NF,XJL,WCHARM,SCOLD,
-     >   XJLAPP, XLAMAPPMEAN, bUSEALO, ALOMIN, bLAMAPPCOLI,
-     >   DM, V1,V2,GAMMAC,GAMMAL,EPSILON,TOLD,
-     >   NOTEMP,DELTAC,GAMMAR,IPRICC,IPRILC,MODHEAD,JOBNUM,IFRRA,ITORA,
-     >   RADIUS,RSTAR,OPA,ETA,THOMSON,IWARN,MAINPRO,MAINLEV,
+      SUBROUTINE LINPOP (N,NF,ALOMIN,bLAMAPPCOLI,GAMMAC,GAMMAL,EPSILON, 
+     $   NOTEMP,DELTAC,GAMMAR,IPRICC,IPRILC,MODHEAD,    
+     $   JOBNUM,IFRRA,ITORA,RSTAR,ETA,THOMSON,IWARN,MAINPRO,MAINLEV,
      >   VELO,GRADI,VDOPDD,VDOPUNIT,PHI,PWEIGHT,
      >   LASTIND, LASTINDAUTO, LASTINDALL,
      >   SIGMAKI,
@@ -71,6 +67,7 @@ C***  was updated by TEMPCORR. This might be considered to be changed,
 C***  i.e. SOLD might be better estimated with TOLD. (???)
 C*******************************************************************************
       USE params
+      USE linpop_arrays
 
       IMPLICIT NONE
 
@@ -93,7 +90,6 @@ C*******************************************************************************
       REAL, DIMENSION(MAXIND) :: XRED, XBLUE, SLOLD, DETAL, OPAL, 
      >                           SLNEW, DOPAL, SCOLIND, SCNEIND,
      >                           OPACIND, XRED0, XBLUE0, OPALOLD
-      LOGICAL, DIMENSION(LASTINDAUTO) :: bUSEALO
       REAL, DIMENSION(4, MAXIND) :: COCO
 
       COMMON /COMIND/  INDNUP, INDLOW, XRED,XBLUE, SLOLD, DETAL, OPAL,
@@ -108,27 +104,24 @@ C*******************************************************************************
      >                DETA, ETAC, EXPFAC, XJCLP1, OPAC1, XKC, XKC2, 
      >                XJCAPPNEW, XJC_PLOTDATA_L, FWTEST
 
-      REAL, DIMENSION(ND) :: RADIUS, ENTOTDENS
-      REAL, DIMENSION(N) :: ENOLD, WEIGHT
+      REAL, DIMENSION(ND) :: ENTOTDENS
+      REAL, DIMENSION(N) :: ENOLD
       INTEGER, DIMENSION(1) :: IGAUNT   !dies ist eigentlich ein CHARACTER-Array
 
       REAL, DIMENSION(NDDIM) :: OPAFE, ETAFE
-      REAL, DIMENSION(ND, N) :: POPNUM, POP1, POPLTE, DEPART
-      REAL, DIMENSION(ND) :: ENLTE, RNE, T, ENTOT, OPA, ETA, VELO,
-     >                       GRADI, THOMSON, CORRS, TOLD
-      INTEGER, DIMENSION(ND) :: ITNE, IWARN
-      REAL, DIMENSION(NDIM) :: ELEVEL, EION, DRRATEN, RDIEL, RAUTO,
+      REAL, DIMENSION(ND) :: T, ETA, VELO,
+     >                       GRADI, THOMSON, CORRS
+      INTEGER, DIMENSION(ND) :: IWARN
+      REAL, DIMENSION(NDIM) :: DRRATEN, RDIEL, RAUTO,
      >                         DRJLW, DRJLWE, DRLJW
-      REAL, DIMENSION(NDIM+2) :: V1, V2, EN, BRS, BRSP, BRY, DTEST
+      REAL, DIMENSION(NDIM+2) :: BRS, BRSP, BRY, DTEST
       REAL, DIMENSION(4, NDIM) :: ALTESUM
-      INTEGER, DIMENSION(NDIM) :: NCHARG, IONGRND, 
+      INTEGER, DIMENSION(NDIM) :: IONGRND, 
      >                            NBSTART, NBEND, NBATOM
-      REAL, DIMENSION(NDIM, NDIM) :: EINST, CRATE, RRATE
-      REAL, DIMENSION(NDIM+2,NDIM+2) :: RATCO, DM, AOFF, 
+      REAL, DIMENSION(NDIM, NDIM) :: CRATE, RRATE
+      REAL, DIMENSION(NDIM+2,NDIM+2) :: RATCO, AOFF, 
      >                                  ATEST, BTEST, SCRATCH
 
-      REAL, DIMENSION(ND,LASTINDALL) :: XJL
-      REAL, DIMENSION(ND,LASTINDAUTO) :: XLAMAPPMEAN
       REAL, DIMENSION(ND, 5) :: XJL_PLOTDATA
       REAL, DIMENSION(ND, 4) :: XJC_PLOTDATA_I
 
@@ -139,9 +132,7 @@ C*******************************************************************************
 
       REAL, DIMENSION(NFDIM) :: XJLAPPNEW
       REAL, DIMENSION(NF,LASTKON) :: SIGMAKI
-      REAL, DIMENSION(NF,ND) :: SCOLD
       REAL, DIMENSION(NF,0:MAXION) :: SIGMAFF
-      REAL, DIMENSION(NF) :: FWEIGHT
       REAL, DIMENSION(MAXATOM,MAXION) :: EDGEK, SIGMATHK, SEXPOK
       REAL, DIMENSION(MAXATOM) :: ABXYZ
       INTEGER, DIMENSION(MAXATOM) :: IMAXPOP
@@ -157,10 +148,9 @@ C*******************************************************************************
       REAL, DIMENSION(MAXIND) :: XLAMZERO, XLAMSOR, XLAMMIN, XLAMMAX,
      >                           ETAL, XKMIN, XKMAX, XKMID, XKRED, 
      >                           DEXFAC
-      REAL, DIMENSION(MAXIND) :: XJLAPP
       INTEGER, DIMENSION(MAXIND) :: NBLENDS
       INTEGER, DIMENSION(LASTKDR) :: KODRNUP, KODRLOW
-      REAL, DIMENSION(ND,NF) :: WJC, WCHARM, XJC
+      REAL, DIMENSION(ND,NF) :: WJC
 
       REAL, DIMENSION(NFLDIM) :: PHI, PWEIGHT
       REAL, DIMENSION(NFLDIM, MAXLAP) :: PHIL
@@ -178,7 +168,6 @@ C*******************************************************************************
 
       CHARACTER(4) :: VERSION
       CHARACTER(4), DIMENSION(MAXIND) :: KEYCBB
-      CHARACTER(10), DIMENSION(N) :: LEVEL
       CHARACTER(10), DIMENSION(ND) :: MAINPRO, MAINLEV
 
       LOGICAL, DIMENSION(N,ND) :: ZERO_RATES
