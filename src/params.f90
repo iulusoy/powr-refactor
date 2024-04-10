@@ -11,15 +11,17 @@ module params
     integer, parameter :: i32 = selected_int_kind(6)
     integer, parameter :: dp = selected_real_kind(15, 307)
     integer, parameter :: NDIM = 2560 
-    integer, parameter :: MAXIND = 45000 
-    integer, parameter :: MAXATOM = 26 
-    integer, parameter :: NFDIM   = 2*NDIM + 400 
-    integer, parameter :: MAXAUTO = 3200 
-    integer, parameter :: MAXINDE = MAXAUTO+MAXIND 
     integer, parameter :: NDDIM   = 89 
+    integer, parameter :: NFDIM   = 2*NDIM + 400 
     integer, parameter :: NPDIM   = 94 
     integer, parameter :: NFLDIM  = 40 
+    integer, parameter :: NDIMP2  = NDIM + 2 
+    integer, parameter :: MAXIND = 45000 
+    integer, parameter :: MAXATOM = 26 
+    integer, parameter :: MAXAUTO = 3200 
+    integer, parameter :: MAXINDE = MAXAUTO+MAXIND 
     integer, parameter :: MAXHIST = 4000 
-    integer, parameter :: MAXXDAT = 11 
     integer, parameter :: MAXFEIND = 2500 
+    integer, parameter :: MAXXDAT = 11 
+
 end module params
