@@ -86,7 +86,8 @@ WRSTARTSRCDIR = $(addprefix $(SRC_DIR)/,$(WRSTARTSRC))
 WRSTARTOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(WRSTARTSRCDIR))
 
 # the different targets
-all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+#all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+all: coli steal
 
 adapter: adapter.exe
 coli: coli.exe
@@ -114,7 +115,8 @@ debug_all: adapter como coli extrap formal modify msinfo newdatom newformal_card
 intel_classic: FC = $(FC_classic)
 intel_classic: FFLAGS = $(FFLAGS_classic)
 intel_classic: LINKER_OPTIONS = $(LINKER_OPTIONS_classic)
-intel_classic: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+intel_classic: coli steal
+#intel_classic: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
 
 intel_classic_debug: FC = $(FC_classic)
 intel_classic_debug: FFLAGS = $(FFLAGS_DEBUG_classic)
@@ -183,4 +185,4 @@ clean:
 	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/*.exe $(BIN_DIR_DEBUG)/*.exe $(MODULE_DIR)/*.f90 $(MODULE_DIR)/*.mod
 
 clean_build:
-	rm -f $(OBJ_DIR)/*.o
+	rm -f $(OBJ_DIR)/*.o $(MODULE_DIR)/*.f90 $(MODULE_DIR)/*.mod
