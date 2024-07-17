@@ -239,3 +239,7 @@ def test_colitest(set_vars, get_plot_to_match, run_colitest):
     plot_np12 = extract_np_between(plot_for_test, "N=   49   PLOTSYMBOL=  1", "ENDE")
     plot_values12 = np.fromstring(get_plot_to_match[8], sep=" ")
     assert np.allclose(plot_np12, plot_values12, atol=1e-06)
+
+
+# "unit" test for colimo subroutine
+# set all the input params
