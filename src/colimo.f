@@ -59,6 +59,67 @@ C     LOGICAL BPDONE, BPLOT, BPLOT2, BSTATIC, bALOTri
 
       INTEGER :: IWARNJMNEG
       
+
+      ! write(*,*) "RADIUS" , RADIUS
+      ! write(*,*) "OPAK" , OPAK
+      ! write(*,*) "ETAKNOTH" , ETAKNOTH
+      ! write(*,*) "OPAKNOTH", OPAKNOTH
+      ! write(*,*) "XJLMO", XJLMO
+      ! write(*,*) "XJLMOR2", XJLMOR2
+      ! write(*,*) "XHLMO", XHLMO
+      ! write(*,*) "XJLMO_OLD", XJLMO_OLD
+      ! write(*,*) "XHLMO_OLD", XHLMO_OLD
+      ! write(*,*) "DLF", DLF
+      ! write(*,*) "DLH",DLH
+      ! write(*,*) "GLF", GLF
+      ! write(*,*) "GLH", GLH
+      ! write(*,*) "VLF", VLF
+      ! write(*,*) "VLH", VLH
+      ! write(*,*) "GLF2", GLF2
+      ! write(*,*) "GLH2", GLH2
+      ! write(*,*) "VLF2", VLF2
+      ! write(*,*) "VLH2", VLH2
+      ! write(*,*) "QLF", QLF
+      ! write(*,*) "QLH", QLH
+      ! write(*,*) "OPAKH", OPAKH
+      ! write(*,*) "EDDIF", EDDIF
+      ! write(*,*) "EDDIFO", EDDIFO
+      ! write(*,*) "EDDIG", EDDIG
+      ! write(*,*) "EDDIGO",EDDIGO
+      ! write(*,*) "EDDIHOUT", EDDIHOUT
+      ! write(*,*) "EDDIHIN", EDDIHIN
+      ! write(*,*) "ALH", ALH
+      ! write(*,*) "BLH", BLH
+      ! write(*,*) "CLH", CLH
+      ! write(*,*) "A", A
+      ! write(*,*) "B", B
+      ! write(*,*) "C", C
+      ! write(*,*) "W", W
+      ! write(*,*) "DX", DX
+      ! write(*,*) "BCORE", BCORE
+      ! write(*,*) "XLAMK",XLAMK
+      ! write(*,*) "DJDSMOD", DJDSMOD
+      ! write(*,*) "bALOTri", bALOTri
+      ! write(*,*) "DJDSMOU", DJDSMOU
+      ! write(*,*) "DJDSMOL",DJDSMOL
+      ! write(*,*) "FULFIL0", FULFIL0
+      ! write(*,*) "FULFIL1", FULFIL1
+      ! write(*,*) "BPLOT", BPLOT
+      ! write(*,*) "BPLOT2", BPLOT2
+      ! write(*,*) "IPLOT", IPLOT
+      ! write(*,*) "IW_COLIMO_F", IW_COLIMO_F
+      ! write(*,*) "IW_COLIMO_G", IW_COLIMO_G
+      ! write(*,*) "IW_COLIMO_G2", IW_COLIMO_G2
+      ! write(*,*) "BSTATIC", BSTATIC
+      ! write(*,*) "CLMOETA", CLMOETA
+      ! write(*,*) "CLMOOPA", CLMOOPA
+      ! write(*,*) "XHI", XHI
+      ! write(*,*) "RADIUS2", RADIUS2
+      ! write(*,*) "EPSG", EPSG
+      ! write(*,*) "GEPSB", GEPSB
+      ! write(*,*) "GEPSBO", GEPSBO
+      ! write(*,*) "IWARNJMNEG", IWARNJMNEG
+
 C***  DNUEINV is frequency step in Hertz * Doppler velocity in cm/s
       IF (K .EQ. 0 .OR. BSTATIC) THEN
         DNUEINV = 0.
