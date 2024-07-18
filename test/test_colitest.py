@@ -31,7 +31,7 @@ def run_colitest(get_chain, colitest_options):
     colitest_path = "${POWR_WORK}/wrjobs/colitest1"
     colitest_command = colitest_path + colitest_options
     try:
-        subprocess.run(
+        colitest_subprocess = subprocess.run(
             colitest_command,
             shell=True,
             check=True,
@@ -39,11 +39,15 @@ def run_colitest(get_chain, colitest_options):
             capture_output=True,
             text=True,
         )
-    except subprocess.CalledProcessError as error:
+    except colitest_subprocess.CalledProcessError as error:
         print(error.stderr)
         print(error.stdout)
         assert False, "CalledProcessError error"
-
+    print("colitest stdout")
+    print(colitest_subprocess.stdout)
+    print("colitest stderr")
+    print(colitest_subprocess.stderr)
+    print("done with colitest run")
     os.system("cat ${POWR_WORK}/output/colitest1.cpr")
     yield "ran colitest"
     os.system("rm -rf ${POWR_WORK}/tmp_data")
@@ -235,3 +239,7 @@ def test_colitest(set_vars, get_plot_to_match, run_colitest):
     plot_np12 = extract_np_between(plot_for_test, "N=   49   PLOTSYMBOL=  1", "ENDE")
     plot_values12 = np.fromstring(get_plot_to_match[8], sep=" ")
     assert np.allclose(plot_np12, plot_values12, atol=1e-06)
+
+
+# "unit" test for colimo subroutine
+# set all the input params

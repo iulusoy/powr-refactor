@@ -230,10 +230,10 @@ C***        level names are already prepared in the FEDAT file
           ELSE
 C***        use default level names if no predefined names are available
             IF (NCHARG(N)+1 .GT. NROMMAX) THEN
-              WRITE (0,'(A)') '*** Roman Number for Ion. stage not known' 
+            WRITE(0,'(A)') '*** Roman Number for Ion. stage not known' 
               STOP            '*** ERROR STOP IN FEDAT *********'
             ENDIF
-            LEVEL(N) = SYMBOL(NATOM) // ' ' // ROMNUM(NCHARG(N)+1) // '.'
+            LEVEL(N)=SYMBOL(NATOM) // ' ' // ROMNUM(NCHARG(N)+1) // '.'
             WRITE (LEVEL(N)(9:10),'(I2)') J
             IF (J .LE. 9) LEVEL(N)(9:9) = '.'
           ENDIF 
@@ -277,7 +277,7 @@ C***      CREATE POINTER TO STARTING INDEX OF RBB TRANSITION-DATA
           INDSTA = INDEX+1
           NDATA = NX_A(J)
           IF (NDATA+2 .GT. NFEREADMAX) THEN
-              WRITE (0,'(A)') '*** Dim. NFEREADMAX insufficient for b-b!' 
+            WRITE(0,'(A)') '*** Dim. NFEREADMAX insufficient for b-b!' 
               WRITE (0,'(A, I10)') 
      >          '*** dimensioned: NFEREADMAX = ', NFEREADMAX
               WRITE (0,'(A, I10)') 

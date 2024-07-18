@@ -27,6 +27,9 @@ C***  with NDDIM,NFDIM,
 C***  with NDDIM,NPDIM,NIT
      >             XIPLUS_OLD, XIMINUS_OLD,
 C***  with NDDIM-1, NIT; In COLI it is also NDDIM,NIT
+C*** ISU what does "In COLI it is also NDDIM,NIT" mean?
+C EDDIGO is here set to NDDIM,NIT, but in coli to NDDIM-1, NIT
+C memory access overflow 
      >             XHLOLD, XHLMO_OLD, EDDIGO, 
 C***  with MAXFEIND, NDDIM
      >             XJFEMEAN, FERATLU, FERATUL, FTFE, WFELOW, WFENUP,
@@ -92,7 +95,9 @@ C****************************************************************
       REAL, DIMENSION(NDDIM-1) :: QOPAHMEAN, HMEAN, QLHOLD, OPAKHOLD
       
       REAL, DIMENSION(NDDIM,NIT) :: XJLOLD, XJLMO_OLD, EDDIFO, 
-     >                              XHLOLD, XHLMO_OLD, EDDIGO
+     >                              XHLOLD, XHLMO_OLD
+      REAL, DIMENSION(NDDIM-1,NIT) :: EDDIGO
+
 
       REAL, DIMENSION(NDDIM,NPDIM,NIT) :: XIPLUS_OLD, XIMINUS_OLD
 

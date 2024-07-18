@@ -694,7 +694,8 @@ C***    Ausgabe der Variable mit der Nummer I
      >              SCRATCHBYTE
             INDEX = (I-1) * IADRL
             DO J=1, MIN(IADRL, NREST), IKIND
-              WRITE (*,FMT=TRIM(FMTSTR)) (SCRATCHBYTE(JJ), JJ=J, J+IKIND-1)
+              WRITE (*,FMT=TRIM(FMTSTR)) (SCRATCHBYTE(JJ), 
+     >                                    JJ=J, J+IKIND-1)
             ENDDO
           ELSE
             READ(UNIT=ICHANNEL, REC=(IFIRST-1+I), ERR=94, IOSTAT=IOS)

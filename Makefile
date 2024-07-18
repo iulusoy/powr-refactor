@@ -7,14 +7,30 @@ OBJ_DIR = build
 BIN_DIR = powr/exe.dir
 BIN_DIR_DEBUG = powr/exe_dev.dir
 LIB_DIR = lib
+MODULE_DIR = modules
 
 # compiler and linking options
-FC = ifort
-FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+FC = ifx
+FC_classic = ifort
+FFLAGS = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -module ${MODULE_DIR}
+FFLAGS_classic = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O3 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+# compiler options for debug
+FFLAGS_DEBUG = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -fpe:1 -module ${MODULE_DIR}
+FFLAGS_DEBUG_colimo = -integer-size 64 -real-size 64 -I${LIB_DIR} -assume byterecl -extend-source -O0 -fpe:0 -traceback -mcmodel=medium -g -fp-model strict -warn all -check all -fpe:1
+FFLAGS_DEBUG_classic = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -fp-stack-check
+FFLAGS_DEBUG_classic-colimo = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -fp-stack-check
 MKLPATH    = ${MKLROOT}/lib/intel64
 MKLINCLUDE = ${MKLROOT}/include
-LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium 
+LINKER_OPTIONS = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel=medium -Wl,--no-relax
+LINKER_OPTIONS_classic = -L${MKLPATH} -I${MKLINCLUDE} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -mcmodel medium
 LINKER_DYNAMIC = -shared-intel
+
+# gfortran compiler
+FC_gfortran = gfortran
+FFLAGS_gfortran = -O0 -fdefault-integer-8 -fno-range-check -fallow-argument-mismatch -ffree-line-length-0 -I${LIB_DIR} -g
+FFLAGS_gfortran_asan = -O0 -fdefault-integer-8 -fno-range-check -fallow-argument-mismatch -ffree-line-length-0 -I${LIB_DIR} -g -fsanitize=address -fno-omit-frame-pointer
+LINKER_OPTIONS_gfortran = -llapack -lblas
+LINKER_DYNAMIC_gfortran =
 
 # relevant source files for the different programs
 ADAPTERSRC = adapop.f adapter.f adatrans.f addhistentry.f append_autolevels.f chrinstr.f clock.f closms.f cmsstore.f count.f datom.f decadp.f fedat.f findcharge.f idx.f install.f isrcheq.f jsymset.f lengthms.f lipo.f openms.f priadp.f readms.f remark.f rmodadp.f sargc.f sargp.f sargrest.f sargv.f second.f splinpox.f stamp.f storage.f trbk.f writms.f mainadapter.f
@@ -61,7 +77,7 @@ STEALSRC = addhistentry.f addopa.f adjgamma.f aitken.f append_autolevels.f backu
 STEALSRCDIR = $(addprefix $(SRC_DIR)/,$(STEALSRC))
 STEALOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(STEALSRCDIR))
 
-WRCONTSRC = addhistentry.f append_autolevels.f bnue.f clock.f closms.f cmsstore.f coop.f count.f datom.f dbnuedt.f decon.f delpla.f difdtdr.f diffus.f elimin.f equal.f fedat.f filterfunctions.f findcharge.f gauntff.f gethistentry.f horner.f idx.f install.f inv.f isamax.f isrcheq.f jsymset.f ksigma.f lipo.f mdmv.f mdv.f moment0.f moment1.f moment2.f msub.f mvmd.f mvv.f opaross.f openms.f openmsr.f owninv.f photocs.f photon3.f plotanf.f plotcon.f plotcons.f polyfit.f popmin_nulling.f pricolr.f priflux.f priint.f prijost.f priopa.f readms.f regula.f remark.f rmodcon.f sargc.f sargp.f sargv.f second.f setup.f sfit.f sfitplo.f splinpo.f splinpox.f stamp.f storage.f tcolor.f tradfun.f trbk.f tremain.f vadd.f vmf.f wrcont.f writms.f xextinc.f xrudi.f zanstra.f mainwrcont.f
+WRCONTSRC = addhistentry.f append_autolevels.f bnue.f clock.f closms.f cmsstore.f coop.f count.f datom.f dbnuedt.f decon.f delpla.f difdtdr.f diffus.f elimin.f equal.f fedat.f filterfunctions.f findcharge.f gauntff.f gethistentry.f horner.f idx.f install.f inv.f isamax.f isrcheq.f jsymset.f ksigma.f lipo.f mdmv.f mdv.f moment0.f moment1.f moment2.f msub.f mvmd.f mvv.f opaross.f openms.f openmsr.f owninv.f photocs.f photon3.f plotanf.f plotanfs.f plotcon.f plotcons.f polyfit.f popmin_nulling.f pricolr.f priflux.f priint.f prijost.f priopa.f readms.f regula.f remark.f rmodcon.f sargc.f sargp.f sargv.f second.f setup.f sfit.f sfitplo.f splinpo.f splinpox.f stamp.f storage.f tcolor.f tradfun.f trbk.f tremain.f vadd.f vmf.f wrcont.f writms.f xextinc.f xrudi.f zanstra.f mainwrcont.f
 WRCONTSRCDIR = $(addprefix $(SRC_DIR)/,$(WRCONTSRC))
 WRCONTOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(WRCONTSRCDIR))
 
@@ -70,7 +86,8 @@ WRSTARTSRCDIR = $(addprefix $(SRC_DIR)/,$(WRSTARTSRC))
 WRSTARTOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(WRSTARTSRCDIR))
 
 # the different targets
-all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+#all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+all: coli steal
 
 adapter: adapter.exe
 coli: coli.exe
@@ -87,15 +104,31 @@ wrcont: wrcont.exe
 wrstart: wrstart.exe
 
 # debug options and rules
-# debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -warn all -check all -traceback -fp-stack-check
-debug: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict -traceback -fp-stack-check
+debug: FFLAGS = $(FFLAGS_DEBUG)
 debug: coli steal
 debug: BIN_DIR = $(BIN_DIR_DEBUG)
 
-# debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O0 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
-debug_all: FFLAGS = -i8 -r8 -I${LIB_DIR} -assume byterecl -save -extend-source -O1 -fpe0 -traceback -mcmodel medium -g -fpconstant -fp-model strict
+debug_all: FFLAGS = -$(FFLAGS_DEBUG)
 debug_all: BIN_DIR = $(BIN_DIR_DEBUG)
 debug_all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+
+intel_classic: FC = $(FC_classic)
+intel_classic: FFLAGS = $(FFLAGS_classic)
+intel_classic: LINKER_OPTIONS = $(LINKER_OPTIONS_classic)
+intel_classic: coli steal
+#intel_classic: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+
+intel_classic_debug: FC = $(FC_classic)
+intel_classic_debug: FFLAGS = $(FFLAGS_DEBUG_classic)
+intel_classic_debug: LINKER_OPTIONS = $(LINKER_OPTIONS_classic)
+intel_classic_debug: BIN_DIR = $(BIN_DIR_DEBUG)
+intel_classic_debug: coli steal
+
+gfortran: FC = $(FC_gfortran)
+gfortran: FFLAGS = $(FFLAGS_gfortran)
+gfortran: LINKER_OPTIONS = $(LINKER_OPTIONS_gfortran)
+gfortran: LINKER_DYNAMIC = $(LINKER_DYNAMIC_gfortran)
+gfortran: coli
 
 adapter.exe: $(ADAPTEROBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
@@ -104,7 +137,7 @@ como.exe: $(COMOOBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
 
 coli.exe: $(COLIOBJ)
-	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
+	$(FC) $(FFLAGS) -o $(BIN_DIR)/$@ $^ $(LINKER_OPTIONS) $(LINKER_DYNAMIC) 
 
 extrap.exe: $(EXTRAPOBJ)
 	$(FC) $(FFLAGS) $(LINKER_OPTIONS) $(LINKER_DYNAMIC) -o $(BIN_DIR)/$@ $^
@@ -140,9 +173,16 @@ wrstart.exe: $(WRSTARTOBJ)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.f
 	$(FC) $(FFLAGS) -c $< -o $@
 
+# rules to compile
+# $(OBJ_DIR)/colimo.o: $(SRC_DIR)/colimo.f
+# 	$(FC) $(FFLAGS_DEBUG-colimo) -c $< -o $@
+
 print_info:
 	$(info COLISRC: $(COLISRC))
 	$(info COLIOBJ: $(COLIOBJ))
 
 clean:
-	rm -f build/*.o $(BIN_DIR)/*.exe $(BIN_DIR_DEBUG)/*.exe
+	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/*.exe $(BIN_DIR_DEBUG)/*.exe $(MODULE_DIR)/*.f90 $(MODULE_DIR)/*.mod
+
+clean_build:
+	rm -f $(OBJ_DIR)/*.o $(MODULE_DIR)/*.f90 $(MODULE_DIR)/*.mod

@@ -195,7 +195,8 @@ C***  LEVELS -----------------------------------------------------------
       ENDIF
       IF (NATOM .NE. 0) NOM(N)=NATOM
 
-      READ (KARTE,11,ERR=985) LEVEL(N),NCHARG(N),NW,ELEVEL(N),E,MAINQN(N)
+      READ (KARTE,11,ERR=985) LEVEL(N),NCHARG(N),NW,ELEVEL(N),E,
+     &        MAINQN(N)
    11 FORMAT(12X,A10,1X,I2,1X,I4,2F10.0,1X,I2)
 
       WEIGHT(N)=FLOAT(NW)
@@ -603,7 +604,7 @@ C***  Consistency check for DRTRANSIT lines:
                ENDIF
                IF (EAUTO(I) .NE. EAUTO(J)) THEN
                   WRITE (0,'(A,2X,2F10.2)') 
-     >                '*** ERROR in DRTRANSIT data: different energies ' //
+     >         '*** ERROR in DRTRANSIT data: different energies ' //
      >                'for level ' // LEVUPAUTO(I),  
      >                EAUTO(I), EAUTO(J)  
                   GOTO 989

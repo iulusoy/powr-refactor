@@ -49,7 +49,7 @@ C*** Calculation of the Row-Norm (Quadratic Norm)
           R = 0.
           DO L=1, N
             XM = A(L,K)
-            IF (ABS(XM) .GT. 1.E100) THEN
+            IF (ABS(XM) .GT. 1.D100) THEN
               R = 1.
               EXIT
             ENDIF
