@@ -26,7 +26,7 @@ jobs:
           powr
           test
     - name: get fortran compiler
-      uses: iulusoy/setup-fortran@v0
+      uses: ssciwr/setup-fortran@v0.1
       id: setup-fortran
       with:
         compiler: ${{ matrix.toolchain.compiler }}
