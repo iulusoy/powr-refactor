@@ -31,6 +31,7 @@ jobs:
       with:
         compiler: ${{ matrix.toolchain.compiler }}
         version: ${{ matrix.toolchain.version }}
+        install_mkl: "true"
     - name: get compiler version
       run: ${{ env.FC }} --version
       env:
