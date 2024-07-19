@@ -86,8 +86,7 @@ WRSTARTSRCDIR = $(addprefix $(SRC_DIR)/,$(WRSTARTSRC))
 WRSTARTOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(WRSTARTSRCDIR))
 
 # the different targets
-#all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
-all: coli steal
+all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
 
 adapter: adapter.exe
 coli: coli.exe
@@ -115,8 +114,7 @@ debug_all: adapter como coli extrap formal modify msinfo newdatom newformal_card
 intel_classic: FC = $(FC_classic)
 intel_classic: FFLAGS = $(FFLAGS_classic)
 intel_classic: LINKER_OPTIONS = $(LINKER_OPTIONS_classic)
-intel_classic: coli steal
-#intel_classic: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+intel_classic: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
 
 intel_classic_debug: FC = $(FC_classic)
 intel_classic_debug: FFLAGS = $(FFLAGS_DEBUG_classic)

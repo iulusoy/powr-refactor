@@ -15,7 +15,7 @@ jobs:
         os: [ubuntu-latest]
         # os: [ubuntu-latest, macos-latest]
         toolchain:
-          - {compiler: intel-classic, version: '2021.10'}
+          - {compiler: intel, version: '2023.2'}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        make intel_classic
+        make
       # make clean_build
       # make debug_all
     # - name: get the test models
