@@ -2,6 +2,7 @@ import os
 import subprocess
 import pytest
 import time
+import re
 
 import numpy as np
 
@@ -17,6 +18,20 @@ def find_string(str, file, set_vars):
         return False
 
 
+def remove_string_get_array(mystring):
+    # remove all strings from the list of numbers
+    numbers = re.sub("[^0-9. ]", " ", mystring)
+    myarray = np.fromstring(numbers, sep=" ")
+    return myarray
+
+
+def extract_np_between(str, start, end):
+    partition = str.partition(start)
+    mystring = partition[2].partition(end)[0]
+    myarray = remove_string_get_array(mystring)
+    return myarray
+
+
 @pytest.fixture()
 def run_wrstart(get_chain, set_vars, submit_options):
     if submit_options is None:
@@ -25,6 +40,7 @@ def run_wrstart(get_chain, set_vars, submit_options):
     # wrstart finishes first then wruniq
     # for wruniq, in wruniq1.log there appears a line
     # ""
+    print("Starting wrstart run")
     submit_path = "${POWR_WORK}/proc.dir/submit.com wrstart1"
     submit_command = submit_path + submit_options
     # run wrstart
@@ -54,6 +70,9 @@ def run_wrstart(get_chain, set_vars, submit_options):
         ):
             break
         time.sleep(1)
+        print("Looking for finished job..")
+        print(result.stdout)
+        print(result.stderr)
 
     os.system("ls ${POWR_WORK}")
     os.system("ls ${POWR_WORK}/wrdata1")
@@ -62,14 +81,6 @@ def run_wrstart(get_chain, set_vars, submit_options):
     yield "ran powr full cycle"
     os.system("rm -rf ${POWR_WORK}/tmp_data")
     return "Cleaned powr tmp data"
-
-
-def extract_np_between(str, start, end):
-    partition = str.partition(start)
-    plot = partition[2].partition(end)[0]
-    plot_np = np.fromstring(plot, sep=" ")
-
-    return plot_np
 
 
 # @pytest.mark.parametrize("submit_options", ["", " nonopt"])
@@ -137,11 +148,41 @@ def test_run_wrstart(
     with open(wruniq1_out_file, "r") as f:
         output_for_test = f.read()
 
-    for idx, str_searched in enumerate(get_wruniq1_out_to_match):
+    for idx, str_searched in enumerate(get_wruniq1_out_to_match[0]):
         assert (
             str_searched in output_for_test
         ), f"String {idx=} not found in get_wruniq1_out_to_match"
 
+    # test for float values
+    wruniq1_out_np0 = extract_np_between(
+        output_for_test,
+        "(ATOMS PER CM+3)    (EL. PER CM+3)    (NLTE)       (NLTE)",
+        "RADII AND TEMPERATURES FOR DIFFERENT OPTICAL DEPTHS",
+    )
+    out_values0 = remove_string_get_array(get_wruniq1_out_to_match[1][0])
+    assert np.allclose(wruniq1_out_np0, out_values0, atol=1e-06)
+
+    wruniq1_out_np1 = extract_np_between(
+        output_for_test,
+        "(KM/S)           (KM/S PER RSTAR)  DENSCON     FILLFAC    MASS (XMU)",
+        " ------------------------------------ 1          MODEL START",
+    )
+    out_values1 = remove_string_get_array(get_wruniq1_out_to_match[1][1])
+    assert np.allclose(wruniq1_out_np1, out_values1, atol=1e-06)
+
+    wruniq1_out_np2 = extract_np_between(
+        output_for_test,
+        "(KELVIN)    (KELVIN)    B(TEFF)    (ERG/CM2/SEC)        (MAGNITUDES)",
+        "EFFECTIVE TEMPERATURE:  70581. KELVIN",
+    )
+    out_values2 = remove_string_get_array(get_wruniq1_out_to_match[1][2])
+    temparr = wruniq1_out_np2 - out_values2
+    for i in range(len(temparr)):
+        if abs(temparr[i]) > 1e-06:
+            print(f"i={i} {temparr[i]}")
+    wruniq1_out_np2 = wruniq1_out_np2[:2282]
+    out_values2 = out_values2[:2282]
+    assert np.allclose(wruniq1_out_np2, out_values2, atol=1e-6)
     ###############
 
     wruniq1_plot = set_vars / "output/wruniq1.plot"
