@@ -183,5 +183,5 @@ def test_wruniq_plot(run_wrstart, set_vars, get_wruniq1_plot_to_match):
         "N=     49 COLOR=3 SYMBOL=9 SIZE=0.1",
         "N=     49 COLOR=7 SYMBOL=9 SIZE=0.1",
     )
-    plot_values3 = remove_string_get_array(get_wruniq1_plot_to_match[3], sep=" ")
+    plot_values3 = remove_string_get_array(get_wruniq1_plot_to_match[3])
     assert np.allclose(plot_np3, plot_values3, atol=1e-06)

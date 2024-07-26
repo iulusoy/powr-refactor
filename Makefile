@@ -87,6 +87,7 @@ WRSTARTOBJ = $(patsubst $(SRC_DIR)/%.f, $(OBJ_DIR)/%.o, $(WRSTARTSRCDIR))
 
 # the different targets
 all: adapter como coli extrap formal modify msinfo newdatom newformal_cards njn steal wrcont wrstart
+small: coli steal
 
 adapter: adapter.exe
 coli: coli.exe
