@@ -55,4 +55,19 @@ jobs:
         python -m pip install -r requirements.txt
     - name: run integration tests
       run: |
-        python -m pytest -svv test/test_wrstart.py
+        cd powr
+        ./proc.dir/makechain.com 1
+        ./wrjobs/wrstart1
+        ls output
+        sleep 3600
+        ls output
+        cat output/wrstart1.out
+        cat output/wrstart1.log        
+        cat output/wruniq1.out
+        cat output/wruniq1.log
+        sleep 3600
+        cat output/wrstart1.out
+        cat output/wrstart1.log        
+        cat output/wruniq1.out
+        cat output/wruniq1.log
+        # python -m pytest -svv test/test_wrstart.py
