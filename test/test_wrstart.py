@@ -71,6 +71,11 @@ def run_wrstart(get_chain, set_vars):
         print("Looking for finished job..")
         print(result.stdout)
         print(result.stderr)
+        os.system(f"ls {set_vars}/output")
+        print("cat wrstart1.log")
+        os.system(f"cat {set_vars}/output/wrstart1.log")
+        print("cat wruniq1.log")
+        os.system(f"cat {set_vars}/output/wruniq1.log")
 
     os.system("ls ${POWR_WORK}")
     os.system("ls ${POWR_WORK}/wrdata1")
