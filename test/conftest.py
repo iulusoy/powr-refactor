@@ -65,7 +65,7 @@ def get_chain(inject_path):
     print(result.stderr)
     print("done with makechain run")
     print(os.system("ls ${POWR_WORK}"))
-    print(os.cwd())
+    print(os.getcwd())
     makechain_command = "${POWR_WORK}/proc.dir/makechain.com 2 -force"
 
     try:
