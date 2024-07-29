@@ -38,7 +38,7 @@ jobs:
         FC: ${{ steps.setup-fortran.outputs.fc }}
     - name: compile powr
       run: |
-        make
+        make intel_classic
       # make clean_build
       # make debug_all
     # - name: get the test models
