@@ -64,8 +64,25 @@ def get_chain(inject_path):
     print("makechain stderr")
     print(result.stderr)
     print("done with makechain run")
+    print(os.system("ls ${POWR_WORK}"))
+    print(os.cwd())
+    makechain_command = "${POWR_WORK}/proc.dir/makechain.com 2 -force"
 
-    yield "Created chain 1"
+    try:
+        result = subprocess.run(
+            makechain_command,
+            shell=True,
+            check=True,
+            executable="/bin/bash",
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as error:
+        print(error.stderr)
+        print(error.stdout)
+        assert False, "CalledProcessError error"
+
+    yield "Created chains 1 and 2"
     # teardown directories
     # we need access to ${POWR_WORK} so shutil will not work
     # why does sourcing powrconfig in the script not work?

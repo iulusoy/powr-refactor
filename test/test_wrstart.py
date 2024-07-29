@@ -60,7 +60,7 @@ def run_wrstart(get_chain, set_vars):
     print(result.stdout)
     print("wrstart stderr")
     print(result.stderr)
-    print("done with wrstart run")
+    os.system(f"{set_vars}/wrjobs/wrstart_wrh_gen 2")
 
     while True:
         if find_string("WRSTART finished", "wrstart1.log", set_vars) and find_string(
@@ -72,6 +72,7 @@ def run_wrstart(get_chain, set_vars):
         print(result.stdout)
         print(result.stderr)
         os.system(f"ls {set_vars}/output")
+        os.system(f"ls {set_vars}")
         print("cat wrstart1.log")
         os.system(f"cat {set_vars}/output/wrstart1.log")
         print("cat wruniq1.log")

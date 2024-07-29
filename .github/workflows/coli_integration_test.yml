@@ -55,4 +55,6 @@ jobs:
         python -m pip install -r requirements.txt
     - name: run integration tests
       run: |
+        pwd
+        ls
         python -m pytest -svv test/test_wrstart.py
