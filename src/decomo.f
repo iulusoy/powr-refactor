@@ -7,6 +7,8 @@ C*******************************************************************************
  
       CHARACTER(80) :: KARTE
       CHARACTER(80), DIMENSION(NPLOTOPADIM) :: OPTIONPLOTOPA
+      PARAMETER (MAXPAR = 3)
+      CHARACTER(20), DIMENSION(MAXPAR) :: ACTPAR
       LOGICAL NOTEMP, BUNLU, BPLOTRTAU1
       INTEGER :: NPLOTOPA, NPLOTOPADIM
 
@@ -26,32 +28,53 @@ C***  DEFAULT VALUES
  
     8 READ (1,4, END=99) KARTE
     4 FORMAT (A)
+      CALL SARGC(KARTE,NPAR)
+      IF ( NPAR .LT. 1) GOTO 8
+      IF ( NPAR .GT. 20) NPAR = 20
+C***  Get actual parameters
+      ACTPAR = ''
+      DO I=1, NPAR
+       CALL SARGV(KARTE,I,ACTPAR(I))
+      ENDDO
  
-      IF (KARTE(:10) .EQ. 'PRINT INT ') THEN
-C                          ==========
-            DECODE (80,7,KARTE) XL
-    7       FORMAT (10X,F10.0)
-   77       FORMAT (11X,F10.0)
+C***  PRINT options
+      IF (ACTPAR(1) .EQ. 'PRINT') THEN
+C                         =====
+
+         IF(ACTPAR(2) .EQ. 'INT') THEN
+C                           ===
+            READ (ACTPAR(3), 7) XL
+    7       FORMAT (F20.0)
             LSINT=IFIX(XL)
             IF (LSINT.EQ.0) LSINT=1
-      ELSE IF (KARTE(:10) .EQ. 'PRINT OPA ') THEN
-C                               ==========
-            DECODE (80,7,KARTE) XL
+
+         ELSEIF (ACTPAR(2) .EQ. 'OPA') THEN
+C                                ===
+            READ (ACTPAR(3), 7) XL
             LSOPA=IFIX(XL)
             IF (LSOPA.EQ.0) LSOPA=1
-      ELSE IF (KARTE(:11) .EQ. 'PRINT HTOTC') THEN
+
+         ELSEIF (ACTPAR(2) .EQ. 'HTOTC') THEN
 C                               ===========
-            DECODE (80,77,KARTE) XL
+            READ (ACTPAR(3), 7) XL
             LSHTOT=IFIX(XL)
             IF (LSHTOT.EQ.0) LSHTOT=1
-      ELSE IF (KARTE(:10) .EQ. 'PLOT HTOTC') THEN
-C                               ==========
+         ENDIF
+
+C***  PLOT options
+      ELSEIF (ACTPAR(1) .EQ. 'PLOT') THEN
+C                             ====
+
+         IF (ACTPAR(2) .EQ. 'HTOTC') THEN
+C                            =====
             LPLOHTOT=1
-      ELSE IF (KARTE(:10) .EQ. 'PLOT RTAU1') THEN
-C                               ==========
+
+         ELSEIF (ACTPAR(2) .EQ. 'RTAU1') THEN
+C                                =====
             BPLOTRTAU1 = .TRUE.
-      ELSE IF (KARTE(:8) .EQ. 'PLOT OPA') THEN
-C                              ==========
+
+         ELSEIF (ACTPAR(2) .EQ. 'OPA') THEN
+C                                ===
             NPLOTOPA = NPLOTOPA + 1
             IF (NPLOTOPA .LE. NPLOTOPADIM) THEN 
                OPTIONPLOTOPA(NPLOTOPA) = KARTE
@@ -61,14 +84,20 @@ C                              ==========
                WRITE (0,*) 
      >            'WARNING: more PLOT OPA options than dimensioned' 
             ENDIF
-      ELSE IF (KARTE(:8) .EQ. 'NO TEMPE') THEN
-C                              ========
+         ENDIF
+C     Other options
+      ELSE
+
+         IF (KARTE(:8) .EQ. 'NO TEMPE') THEN
+C                            ========
             NOTEMP=.TRUE.
             IF (KARTE(30:40) .NE. ' ') 
      $         CALL DECNOT (MODHIST,MODHIST,KARTE,NOTEMP,'COMO')
-      ELSE IF (KARTE(:7) .EQ. 'UNLUTEC') THEN
-C                              =======
+
+         ELSEIF (ACTPAR(1) .EQ. 'UNLUTEC') THEN
+C                                =======
             BUNLU=.TRUE.
+         ENDIF
       ENDIF
 
       GOTO 8

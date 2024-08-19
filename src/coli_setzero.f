@@ -1,23 +1,16 @@
-      SUBROUTINE COLI_SETZERO(ND, NDDIM, NIT, NPDIM, NFDIM, MAXATOM,
-     >             MAXFEIND, MAXLIN, MAXIND, MAXION,
-     >             DBDTINT, DBDTOPAINT, EDDIHOUTJMEAN, 
-     >             HTOTOUTMINUS, DBDTINT_M, DBDTOPAINT_M,
-C***  with ND (NDDIM)
+      SUBROUTINE COLI_SETZERO(ND, NDDIM, NIT, NPDIM, NFDIM, MAXFEIND, 
+     >             MAXLIN, DBDTINT, DBDTOPAINT, EDDIHOUTJMEAN, 
+     >             HTOTOUTMINUS, HTOTND, HTOTNDCOR,
+     >             DBDTINT_M, DBDTOPAINT_M,
+C***  with ND
      >             OPA, ETA,
      >             XJTOTL, HTOTL, XKTOTL, XNTOTL, ARAD, ACONT, ATHOM, 
-     >             FTCOLI, FTCOLIB, OPAKOLD, ETAKOLD, OPAKNOTHO, 
-     >             ETAKNOTHO, OPAO, THOMSONO, ETANOTHO,
-     >             DJDSMOD_OLD, 
+     >             FTCOLI, OPAKOLD, ETAKOLD, OPAKNOTHO, ETAKNOTHO, 
+     >             OPAO, THOMSONO, ETANOTHO, DJDSMO_OLD, DJDOMO_OLD, 
      >             OPASMEAN, QFJMEAN, OPAJMEAN, OPASMEANTC, OPAJMEANTC, 
-     >             OPAPMEAN, SMEAN, QLFOLD, EPSGMAX, OPAROSS, 
-     >             OPALAMBDAMEAN,
-     >             OPAROSSELEM, OPAROSSCONT,
-     >             OPAKFEOLD, iIgnoreK, OPAKFEFTOLD, ETAKFEFTOLD, 
-     >             OPAKNOFENOTHO, ETAKNOFENOTHO,
-     >             bOSKIPLAST, XLAMLASTOSKIP, XJLMO, XJLMOR2,
-C***  with ND-1 (NDDIM-1)
-     >             QOPAHMEAN, HMEAN, QLHOLD, OPAKHOLD,
-     >             HTOTLTEST, HTOTCUT,
+     >             OPAPMEAN, SMEAN, QLFOLD, EPSGMAX, OPAROSS, OPALAMBDAMEAN,
+C***  with ND-1
+     >             QOPAHMEAN, HMEAN, QLHOLD, OPAKHOLD, 
 C***  with NDDIM,NIT
      >             XJLOLD, XJLMO_OLD, EDDIFO, S_OLD, OPAK_OLD, EPSG,
 C***  with NDDIM,NPDIM
@@ -27,77 +20,46 @@ C***  with NDDIM,NFDIM,
 C***  with NDDIM,NPDIM,NIT
      >             XIPLUS_OLD, XIMINUS_OLD,
 C***  with NDDIM-1, NIT; In COLI it is also NDDIM,NIT
-C*** ISU what does "In COLI it is also NDDIM,NIT" mean?
-C EDDIGO is here set to NDDIM,NIT, but in coli to NDDIM-1, NIT
-C memory access overflow 
      >             XHLOLD, XHLMO_OLD, EDDIGO, 
 C***  with MAXFEIND, NDDIM
      >             XJFEMEAN, FERATLU, FERATUL, FTFE, WFELOW, WFENUP,
-C***  with MAXATOM,ND
-     >             OPAKELEM, OPAKOLDELEM, OPACELEM, OPACOLDELEM,
-     >             ETAKELEM, ETAKOLDELEM, ETACELEM, ETACOLDELEM,
-     >             OPATOTELEM,
-C***  with MAXATOM,ND-1
-     >             ARADELEM, ACONTELEM,
-C***  with ND, MAXATOM, MAXION
-     >             OPAKION, OPAKOLDION, OPACION, OPACOLDION,
-     >             ETAKION, ETAKOLDION, ETACION, ETACOLDION,
-C***  with ND-1, MAXATOM, MAXION
-     >             ARADION, ACONTION,
 C***  with MAXLIN
-     >             LIND, LINDS,
-C***  with NDDIM, MAXLIN
-     >             WS,
+     >             LIND, LINDS, WS,
 C***  with MAXIND
-     >             BLASERL,
+     >             MAXIND, BLASERL,
 C***  with NFDIM
      >             EMCOLI,
 C***  no Arrays
-     >             HTOTMINUSND, HTOTND, HTOTNDS, HTOTNDCOR,
      >             OPAMAX1, OPAMAX1_LAMBDA, IOPAMAX1_K)
 
 C****************************************************************
 C***  Presets all given variables to zero
 C***    Called by COLI
-C***
-C***  Note: For the line opacities only the "old"-variables are
-C***        nulled here, the variables for the current K index
-C***        are nulled in ADDOPA
 C****************************************************************
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: ND, NDDIM, NIT, NPDIM, NFDIM, MAXATOM,
-     >                       MAXFEIND, MAXLIN, MAXIND, MAXION
-      REAL, DIMENSION(NDDIM) :: XJTOTL, HTOTL, XKTOTL, XNTOTL, 
-     >                       ARAD, ACONT, ATHOM, FTCOLI, FTCOLIB,
+      INTEGER, INTENT(IN) :: ND, NDDIM, NIT, NPDIM, NFDIM,
+     >                       MAXFEIND, MAXLIN, MAXIND
+      REAL, DIMENSION(ND) :: XJTOTL, HTOTL, XKTOTL, XNTOTL, 
+     >                       ARAD, ACONT, ATHOM, FTCOLI, 
      >                       OPAKOLD, ETAKOLD, OPAKNOTHO, ETAKNOTHO, 
      >                       OPAO, THOMSONO, ETANOTHO, 
-     >                       DJDSMOD_OLD, OPASMEAN, 
+     >                       DJDSMO_OLD, DJDOMO_OLD, OPASMEAN, 
      >                       QFJMEAN, OPAJMEAN, OPASMEANTC, 
-     >                       OPAJMEANTC, OPAPMEAN, SMEAN,
-     >                       QLFOLD, 
-     >                       EPSGMAX, OPAROSS,
-     >                       OPAKNOFENOTHO, ETAKNOFENOTHO,
-     >                       OPAKFEFTOLD, ETAKFEFTOLD, HTOTLTEST, 
-     >                       HTOTCUT, XLAMLASTOSKIP, XJLMO, XJLMOR2
-      LOGICAL, DIMENSION(NDDIM) :: bOSKIPLAST
-      INTEGER, DIMENSION(NDDIM) :: iIgnoreK
-      REAL, DIMENSION(NDDIM) :: OPA, ETA, 
-     >                          OPAKFEOLD, OPAROSSCONT, 
-     >                          OPALAMBDAMEAN
+     >                       OPAJMEANTC, OPAPMEAN, SMEAN, QLFOLD,
+     >                       EPSGMAX, OPAROSS, OPALAMBDAMEAN
+      REAL, DIMENSION(NDDIM) :: OPA, ETA
       REAL, DIMENSION(NDDIM,NIT) :: S_OLD, OPAK_OLD, EPSG
       REAL, DIMENSION(NDDIM,NPDIM) :: CWM0, CWM2, CWM1, CWM3
       REAL, DIMENSION(NDDIM, MAXFEIND) :: WFELOW, WFENUP, FTFE, 
      >                                    XJFEMEAN
       REAL, DIMENSION(NDDIM,NFDIM) :: WJC
       
-      REAL, DIMENSION(NDDIM-1) :: QOPAHMEAN, HMEAN, QLHOLD, OPAKHOLD
-      
-      REAL, DIMENSION(NDDIM,NIT) :: XJLOLD, XJLMO_OLD, EDDIFO, 
-     >                              XHLOLD, XHLMO_OLD
-      REAL, DIMENSION(NDDIM-1,NIT) :: EDDIGO
+      REAL, DIMENSION(ND-1) :: QOPAHMEAN, HMEAN, QLHOLD, OPAKHOLD
 
+      REAL, DIMENSION(NDDIM,NIT) :: XJLOLD, XJLMO_OLD, EDDIFO, 
+     >                              XHLOLD, XHLMO_OLD, EDDIGO
 
       REAL, DIMENSION(NDDIM,NPDIM,NIT) :: XIPLUS_OLD, XIMINUS_OLD
 
@@ -105,29 +67,16 @@ C****************************************************************
       
       REAL, DIMENSION(MAXFEIND,NDDIM) :: FERATLU, FERATUL
 
-      REAL, DIMENSION(MAXATOM, NDDIM) :: OPAKELEM, OPAKOLDELEM, 
-     >                                   OPACELEM, OPACOLDELEM,
-     >                                   ETAKELEM, ETAKOLDELEM, 
-     >                                   ETACELEM, ETACOLDELEM, 
-     >                                   OPAROSSELEM, OPATOTELEM
-      REAL, DIMENSION(MAXATOM, NDDIM-1) :: ARADELEM, ACONTELEM
-
-      REAL, DIMENSION(NDDIM, MAXATOM, MAXION) :: OPAKION, OPAKOLDION, 
-     >                                           OPACION, OPACOLDION,
-     >                                           ETAKION, ETAKOLDION, 
-     >                                           ETACION, ETACOLDION
-      REAL, DIMENSION(NDDIM, MAXATOM, MAXION) :: ARADION, ACONTION
-      
       INTEGER, DIMENSION(MAXLIN) :: LIND, LINDS
-      REAL, DIMENSION(NDDIM, MAXLIN) :: WS
+      REAL, DIMENSION(MAXLIN) :: WS
       
       LOGICAL, DIMENSION(MAXIND) :: BLASERL
       
-      INTEGER :: IOPAMAX1_K, IND, L
+      INTEGER :: IOPAMAX1_K
       REAL :: OPAMAX1_LAMBDA, OPAMAX1, HTOTOUTMINUS, EDDIHOUTJMEAN,
-     >        DBDTOPAINT_M, DBDTINT_M, DBDTOPAINT, DBDTINT, 
-     >        HTOTMINUSND, HTOTND, HTOTNDCOR, HTOTNDS
-     
+     >        DBDTOPAINT_M, DBDTINT_M, DBDTOPAINT, DBDTINT,
+     >        HTOTND, HTOTNDCOR
+
 C***  Set Zero
       DBDTINT        = 0.
       DBDTOPAINT     = 0.
@@ -135,12 +84,8 @@ C***  Set Zero
       DBDTOPAINT_M   = 0.
       EDDIHOUTJMEAN  = 0.
       HTOTOUTMINUS   = 0.
-      HTOTMINUSND    = 0.
       HTOTND         = 0.
-      HTOTNDS        = 0.
       HTOTNDCOR      = 0.
-      HTOTLTEST      = 0.
-      HTOTCUT        = 0.
  
       OPA            = 0.
       ETA            = 0.
@@ -157,7 +102,6 @@ C***  Set Zero
       ACONT          = 0.
       ATHOM          = 0.
       FTCOLI         = 0.
-      FTCOLIB        = 0.
       OPAKOLD        = 0.
       ETAKOLD        = 0.
       OPAKNOTHO      = 0.
@@ -165,7 +109,8 @@ C***  Set Zero
       OPAO           = 0.
       THOMSONO       = 0.
       ETANOTHO       = 0.
-      DJDSMOD_OLD    = 0.
+      DJDSMO_OLD     = 0.
+      DJDOMO_OLD     = 0.
       OPASMEAN       = 0.
       QFJMEAN        = 0.
       OPAJMEAN       = 0.
@@ -177,22 +122,11 @@ C***  Set Zero
       SMEAN          = 0.
       QLFOLD         = 0.
       EPSGMAX        = 0.
-      iIgnoreK       = 0
-      OPAKNOFENOTHO  = 0.
-      OPAKNOFENOTHO  = 0.
  
       QOPAHMEAN      = 0.
       HMEAN          = 0.
       QLHOLD         = 0.
       OPAKHOLD       = 0.
-
-      XJLMO          = 0.
-      XJLMOR2        = 0. 
-      
-      XLAMLASTOSKIP  = 0.
-      DO L=1, NDDIM
-        bOSKIPLAST(L) = .FALSE.
-      ENDDO
  
       XJLOLD         = 0.
       XJLMO_OLD      = 0.
@@ -215,49 +149,17 @@ C***  BLUE BOUNDARY CONDITION FOR SHORTRAY
       WFELOW         = 0.
       WFENUP         = 0.
 
-      LIND           = 0
-      LINDS          = 0
+      LIND           = 0.
+      LINDS          = 0.
       WS             = 0.
-      DO IND=1, MAXIND
-        BLASERL(IND) = .FALSE.
-      ENDDO
+      BLASERL        = .FALSE.
 
       OPAMAX1        = 0.
       OPAMAX1_LAMBDA = 0.
       IOPAMAX1_K     = 0
 
       EMCOLI         = 0.
-      OPAROSSELEM      = 0.
-      OPAROSSCONT    = 0.
-      OPAKFEOLD      = 0.
-      OPAKFEFTOLD    = 0.
-      ETAKFEFTOLD    = 0.
-
-      OPACELEM       = 0.
-      OPACOLDELEM    = 0.
-      OPAKELEM       = 0.
-      OPAKOLDELEM    = 0.
-      ETACELEM       = 0.
-      ETACOLDELEM    = 0.
-      ETAKELEM       = 0.
-      ETAKOLDELEM    = 0.
       
-      OPATOTELEM     = 0.
-      
-      ARADELEM       = 0.
-      ACONTELEM      = 0.
 
-      OPACION       = 0.
-      OPACOLDION    = 0.
-      OPAKION       = 0.
-      OPAKOLDION    = 0.
-      ETACION       = 0.
-      ETACOLDION    = 0.
-      ETAKION       = 0.
-      ETAKOLDION    = 0.
-
-      ARADION       = 0.
-      ACONTION      = 0.
-      
       RETURN
       END

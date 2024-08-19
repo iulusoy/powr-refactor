@@ -2,7 +2,7 @@
      >                    DELXLAP,NBLINE,MAXLAP,INDLOW,INDNUP,LASTIND,
      >                    MAXIND,LEVEL,WEIGHT,ELEVEL,N,EINST,NDIM,
      >                    POPNUM,T,ND,ALN,VDOP,EION,ENTOT,RNE,
-     >                    MAXSUBL,NSUBLOW,BROAD,LINPRO,AVOIGT, 
+     >                    MAXNSUBLEVEL, NSUBLOW, BROAD, LINPRO, AVOIGT, 
      >                    DENSCON,NMOD, MAXMOD, NDDIM, 
      >                    MAINQN, NCHARG, NOM, IND_ORIGLEV)
 C***********************************************************************
@@ -26,7 +26,7 @@ C***********************************************************************
       DIMENSION INDLOW(LASTIND),INDNUP(LASTIND)
       DIMENSION POPNUM(NDDIM,NDIM,NMOD)
       REAL, DIMENSION (NDDIM,NMOD) :: T, ENTOT, RNE, DENSCON
-      DIMENSION NSUBLOW(MAXSUBL)
+      DIMENSION NSUBLOW(MAXNSUBLEVEL)
       CHARACTER KARTE*80
       CHARACTER*10 LEVEL(N), LEV, LEVUP,LEVLOW
       CHARACTER*8 LINPRO(MAXLAP), LINPROBL
@@ -42,7 +42,7 @@ C***  DEFAULTS FOR DRTRANSIT HANDLING:
 C***  NLOW: NUMBER OF /LOWERLEVELS from splitting LEVELS
       NLOW=0
 C***  NSUBLOW: POINTER TO ADDITIONAL LEVELS IN THE ORIGINAL ARRAYS
-      DO 10 I=1,MAXSUBL
+      DO 10 I=1, MAXNSUBLEVEL
    10 NSUBLOW(I)=0
 
 C***  1. READ INPUT FOR DRTRANSIT HANDLING OF SPECIFIED LINE  ----------
@@ -141,11 +141,10 @@ C                               ===========
             STOP 'NDIM1'
          ENDIF
          NLOW=NLOW+1
-         IF (NLOW .GT. MAXSUBL) THEN
-            PRINT *,
-     >           ' >>>>> SUBR. DRTRANS: ERROR STOP (NLOW .GT. MAXSUBL)'
-            CALL REMARK ('DRTRANS: NLOW GREATER THAN MAXSUBL')
-            STOP 'NLOW'
+         IF (NLOW .GT. MAXNSUBLEVEL) THEN
+            WRITE (0,*)  '*** More sublevels than dimensioned!'
+            WRITE (0,*)  '*** FATAL ERROR in subr. DRTRANS'
+            STOP '*** ERROR: NLOW'
          ENDIF
          NSUBLOW(NLOW)=N
          READ (KARTE,3) LEVEL(N),NW,ELEVEL(N)

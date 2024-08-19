@@ -1,5 +1,5 @@
       SUBROUTINE VDOP_STRUCT (BDD_VDOP, DD_VDOP_LINE, DD_VDOP, VDOP, 
-     >                        VMIC_MODEL, VELO, T, 
+     >                        VELO, T, 
      >                        ND, NDDIM, NATOM, MAXATOM, DD_VDOPDU, 
      >                        VMICFRAC_DEFAULT, ATMASS, 
      >                        XMAX, XMAXMIN, 
@@ -46,8 +46,7 @@ C*******************************************************************************
       INTEGER  :: L, NA, NPAR, I, NA_MIN, ISRCHEQ, IVDOPSTATUS
       REAL, DIMENSION(NATOM), INTENT(IN) :: ATMASS
 
-      REAL, DIMENSION(ND), INTENT(IN) :: VELO, T, TAUROSS, RADIUS,
-     >                                   VMIC_MODEL
+      REAL, DIMENSION(ND), INTENT(IN) :: VELO, T, TAUROSS, RADIUS
       REAL, DIMENSION(ND) :: DD_VMIC, DD_VMICDU
 
       REAL, INTENT(IN) :: VMICFRAC_DEFAULT, XMAXMIN 
@@ -81,28 +80,15 @@ C***  Note: DD_VDOP(L,NA) depends on element (NA)!
         CALL SARGC (DD_VDOP_LINE, NPAR)
         IF ((NPAR .LT. 2) .OR. (NPAR .GT. 8)) GOTO 102
         CALL SARGV (DD_VDOP_LINE, 2, ACTPAR)
-        IF (ACTPAR == 'MODEL') THEN
-C***      use VMIC as specified in the MODEL file
-          IF (MINVAL(VMIC_MODEL) < 0.) THEN
-C***        FATAL ERROR if no (useful) VMIC is stored in the MODEL
-            WRITE (0, '(A)') '*** ERROR: No VMIC stored in MODEL file'
-            WRITE (0, '(A)') '*** VMIC MODEL is invalid in this case!'
-            STOP '*** Fatal error in vdop_struct'            
-          ENDIF
-          DO L=1, ND
-            DD_VMIC(L) = VMIC_MODEL(L)
-          ENDDO
-        ELSE
-C***      VMIC was specified via FORMAL_CARDS
-          READ (ACTPAR, '(F20.0)', ERR = 102) VMIC_MIN
-C***      VMIC(L) is never smaller than specified by user
-          WRITE(0,'(A,F10.5)') "Inner microturbulence:", VMIC_MIN
-          IF (NPAR .EQ. 2) THEN
-            WRITE(0,'(A,F10.2)') 'VMIC is constant:', VMIC_MIN
-            DO L=1, ND
-              DD_VMIC(L) = VMIC_MIN
-            ENDDO
-          ELSE 
+        READ (ACTPAR, '(F20.0)', ERR = 102) VMIC_MIN
+C***    VMIC(L) is never smaller than specified by user
+        WRITE(0,'(A,F10.5)') "Inner microturbulence:", VMIC_MIN
+        IF (NPAR .EQ. 2) THEN
+           WRITE(0,'(A,F10.2)') 'VMIC is constant:', VMIC_MIN
+           DO L=1, ND
+            DD_VMIC(L) = VMIC_MIN
+           ENDDO
+        ELSE 
             CALL SARGV (DD_VDOP_LINE, 3, ACTPAR)
 C***        In this branch: vmic(L) = VMIC_FRAC * VELO(L)
             IF (ACTPAR .EQ. 'VELOFRAC') THEN
@@ -156,12 +142,6 @@ C***                1) Interpolation on velocity
                             DIST_IN = DIST_OUT
                             DIST_OUT = DUMMY
                         ENDIF 
-                        IF ((DIST_IN .GE. VELO(1)) .OR. (DIST_OUT .LE. VELO(ND))) THEN
-                            WRITE(0,'(A,F10.5)') "Interpolation boundaries not in model boundaries!"
-                            WRITE(0,'(A,F10.5)') "Inner wind velocity: ", VELO(ND)
-                            WRITE(0,'(A,F10.5)') "Outer wind velocity: ", VELO(1)
-                            STOP "Fatal error in subroutine VDOP_STRUCT"
-                        ENDIF
 C***                    interpolation boundaries may not exceed model boundaries
                         DIST_IN = AMAX1(DIST_IN, VELO(ND))
                         DIST_OUT = AMIN1(DIST_OUT, VELO(1))
@@ -194,12 +174,6 @@ C***                2) Interpolation on Rosseland tau (analog to last block)
                             DIST_IN = DIST_OUT
                             DIST_OUT = DUMMY
                         ENDIF 
-                        IF ((DIST_IN .LE. TAUROSS(1)) .OR. (DIST_OUT .GE. TAUROSS(ND))) THEN
-                            WRITE(0,'(A,F10.5)') "Interpolation boundaries not in model boundaries!"
-                            WRITE(0,'(A,F10.5)') "Inner tau: ", TAUROSS(ND)
-                            WRITE(0,'(A,F10.5)') "Outer tau: ", TAUROSS(1)
-                            STOP "Fatal error in subroutine VDOP_STRUCT"
-                        ENDIF
                         DIST_IN = AMIN1(DIST_IN, TAUROSS(ND))
                         DIST_OUT = AMAX1(DIST_OUT, TAUROSS(1))
                         WRITE(0,'(A,F10.5, A, F10.5)') 
@@ -231,12 +205,6 @@ C***                3) Interpolation on Radius (analog to last block)
                             DIST_IN = DIST_OUT
                             DIST_OUT = DUMMY
                         ENDIF                    
-                        IF ((DIST_IN .GE. RADIUS(1)) .OR. (DIST_OUT .LE. RADIUS(ND))) THEN
-                            WRITE(0,'(A,F10.5)') "Interpolation boundaries not in model boundaries!"
-                            WRITE(0,'(A,F10.5)') "Inner radius: ", RADIUS(ND)
-                            WRITE(0,'(A,F10.5)') "Outer radis: ", RADIUS(1)
-                            STOP "Fatal error in subroutine VDOP_STRUCT"
-                        ENDIF
                         DIST_IN = AMAX1(DIST_IN, RADIUS(ND))
                         DIST_OUT = AMIN1(DIST_OUT, RADIUS(1))
                         WRITE(0,'(A,F10.5, A, F10.5)') 
@@ -266,8 +234,7 @@ C***            End of VMICMAX branch
             ELSE
                 GOTO 102
             ENDIF
-          ENDIF
-C***      End of depth-dependent VMIC
+C***        End of depth-dependent VMIC
         ENDIF
 C***    VMIC(L) is now defined for every case
 C***    VDOP(L,NA) may now be filled via 
@@ -356,12 +323,6 @@ C***           VMIC branch - (see detailed comments there)
                             DIST_IN = DIST_OUT
                             DIST_OUT = DUMMY
                         ENDIF
-                        IF ((DIST_IN .GE. VELO(1)) .OR. (DIST_OUT .LE. VELO(ND))) THEN
-                            WRITE(0,'(A,F10.5)') "Interpolation boundaries not in model boundaries!"
-                            WRITE(0,'(A,F10.5)') "Inner wind velocity: ", VELO(ND)
-                            WRITE(0,'(A,F10.5)') "Outer wind velocity: ", VELO(1)
-                            STOP "Fatal error in subroutine VDOP_STRUCT"
-                        ENDIF
                         DIST_IN = AMAX1(DIST_IN, VELO(ND))
                         DIST_OUT = AMIN1(DIST_OUT, VELO(1))
                         WRITE(0,'(A,F10.5, A, F10.5)') 
@@ -393,12 +354,6 @@ C***           VMIC branch - (see detailed comments there)
                             DUMMY = DIST_IN
                             DIST_IN = DIST_OUT
                             DIST_OUT = DUMMY
-                        ENDIF
-                        IF ((DIST_IN .LE. TAUROSS(1)) .OR. (DIST_OUT .GE. TAUROSS(ND))) THEN
-                            WRITE(0,'(A,F10.5)') "Interpolation boundaries not in model boundaries!"
-                            WRITE(0,'(A,F10.5)') "Inner tau: ", TAUROSS(ND)
-                            WRITE(0,'(A,F10.5)') "Outer tau: ", TAUROSS(1)
-                            STOP "Fatal error in subroutine VDOP_STRUCT"
                         ENDIF
                         DIST_IN = AMIN1(DIST_IN, TAUROSS(ND))
                         DIST_OUT = AMAX1(DIST_OUT, TAUROSS(1))
@@ -432,12 +387,6 @@ C***           VMIC branch - (see detailed comments there)
                             DIST_IN = DIST_OUT
                             DIST_OUT = DUMMY
                         ENDIF
-                        IF ((DIST_IN .GE. RADIUS(1)) .OR. (DIST_OUT .LE. RADIUS(ND))) THEN
-                            WRITE(0,'(A,F10.5)') "Interpolation boundaries not in model boundaries!"
-                            WRITE(0,'(A,F10.5)') "Inner radius: ", RADIUS(ND)
-                            WRITE(0,'(A,F10.5)') "Outer radius: ", RADIUS(1)
-                            STOP "Fatal error in subroutine VDOP_STRUCT"
-                        ENDIF
                         DIST_IN = AMAX1(DIST_IN, RADIUS(ND))
                         DIST_OUT = AMIN1(DIST_OUT, RADIUS(1))
                         WRITE(0,'(A,F10.5, A, F10.5)') 
@@ -468,10 +417,6 @@ C***           VMIC branch - (see detailed comments there)
                 GOTO 101
             ENDIF
         ENDIF
-C*** VMIC array is filled even when not specified so that convolution works in subr. STARKBROAD
-      DO L=1, ND
-        DD_VMIC(L) = DD_VDOP(L,1)
-      ENDDO
 *********** END OF VDOP VERSION ************
       ENDIF
 C*** Generic (Symbol 'G') has its own VDOP velocity VDOPFE from the iron file

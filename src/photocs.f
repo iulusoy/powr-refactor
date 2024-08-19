@@ -6,8 +6,8 @@ C***  CALCULATES SIGMA(NUE), THE FREQUENCY DEPENDENT PHOTO CROSS SECTION
 C***  THIS ROUTINE IS ONLY CALLED FROM BFCROSS, COOP AND CMFCOOP
 C***********************************************************************
 
-      CHARACTER(8), DIMENSION(1) :: IGAUNT
       DIMENSION ALPHA(1),SEXPO(1)
+      CHARACTER*8 IGAUNT(1)
       DIMENSION ADDCON1(1), ADDCON2(1), ADDCON3(1)
 C***  THE FOLLOWING DATA ARE FOR MIHALAS' GAUNT FACTOR FIT ( HY AND HE II, N=1) 
       DATA A0,A1,A2,A3,AM1,AM2 /
@@ -22,8 +22,7 @@ C***  The calling programms should not call PHOTOCS beyond the ionisation edge,
 C***  althogh this is not a catastrophy. 
 C***  The followong warning might be switched off if annoying.
       IF (WAVENUM .LT. EDGE) THEN
-         WRITE (0,'(a)') '*** WARNING: PHOTOCS CALLED '//
-     >          'OUTSIDE EDGE FREQUENCY'
+         WRITE (0,'(a)') '*** WARNING: PHOTOCS CALLED OUTSIDE EDGE FREQUENCY'
          SIGMA = .0
          RETURN
       ENDIF
@@ -125,8 +124,6 @@ C***           THRESHOLD TO 50 A:
       ENDIF
  
 C***  GII FIT FROM SEATON (1960), REP. PROG. PHYS. 23, P. 313
-C***  using FORMULA (2.4) from page 316
-C***     note that DEN := ( n * (u + 1) )^(-2/3)
 C***  THIS FORMULA IS VALID FOR ALL HYDROGENIC LEVELS,
 C***  I.E.  H I, HE II, ..., C IV, N V, O VI
 C***  VARIABLE SEXPO IS MISUSED TO CARRY THE MAIN QUANTUM NUMBER

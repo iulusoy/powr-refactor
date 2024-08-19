@@ -61,7 +61,8 @@ C***  ADD ADDITIONAL D-R TERMS INTO RATE COEFFICIENT MATRIX RATCO
       WRITE (11,4)
     4 FORMAT (1X)
       DO 5 I=NFIRNA,NLANA
-      ENCODE (120,40,NUMBERS) (RATCO(I,J),J=J1,J2)
+c      ENCODE (120,40,NUMBERS) (RATCO(I,J),J=J1,J2)
+      WRITE (NUMBERS,40) (RATCO(I,J),J=J1,J2)
       DO 43 M=1,10
       IF (NUMBERS(M) .EQ. '    0.00E+00') NUMBERS(M)='    0       '
    43 CONTINUE
@@ -83,7 +84,8 @@ C***  RATIO COLLISIONAL / RADIATIVE RATE COEFFICIENTS
       DO 66 J=J1,J2
       M=1+J-J1
       IF (RRATE(I,J) .NE. .0) THEN
-         ENCODE (12,40,NUMBERS(M)) CRATE(I,J)/RRATE(I,J)
+c         ENCODE (12,40,NUMBERS(M)) CRATE(I,J)/RRATE(I,J)
+         WRITE (NUMBERS(M),40) CRATE(I,J)/RRATE(I,J)
          IF (NUMBERS(M) .EQ. '    0.00E+00') NUMBERS(M)='    0       '
          ELSE
          NUMBERS(M)=' '
@@ -112,7 +114,8 @@ C***  RATIO D-R / (RADIATIVE + COLLISIONAL) RATE COEFFICIENTS
       IF ((I .GT. J) .AND. (I .EQ. IONGRND(J))) DRRATE=RDIEL(J)
       M=1+J-J1
       IF (RRATE(I,J)+CRATE(I,J) .NE. .0) THEN
-         ENCODE (12,40,NUMBERS(M)) DRRATE/(CRATE(I,J)+RRATE(I,J))
+c         ENCODE (12,40,NUMBERS(M)) DRRATE/(CRATE(I,J)+RRATE(I,J))
+         WRITE (NUMBERS(M),40) DRRATE/(CRATE(I,J)+RRATE(I,J))
          IF (NUMBERS(M) .EQ. '    0.00E+00') NUMBERS(M)='    0       '
          ELSE
          NUMBERS(M)=' '
@@ -139,7 +142,8 @@ C***  ADDING (ABSOLUTE) RATES INTO MATRIX RATCO
      $       I3,//,11X,10(2X,A10))
       WRITE (11,4)
       DO 22 I=NFIRNA,NLANA
-      ENCODE (120,40,NUMBERS) (RATCO(I,J),J=J1,J2)
+c      ENCODE (120,40,NUMBERS) (RATCO(I,J),J=J1,J2)
+      WRITE (NUMBERS,40) (RATCO(I,J),J=J1,J2)
       DO 44 M=1,10
       IF (NUMBERS(M) .EQ. '    0.00E+00') NUMBERS(M)='    0       '
    44 CONTINUE
@@ -156,7 +160,8 @@ C*******************************************************************************
      $       I3,//,11X,10(2X,A10))
       WRITE (11,4)
       DO 8 I=NFIRNA,NLANA
-      ENCODE (120,40,NUMBERS) (RATCO(I,J)-RATCO(J,I),J=J1,J2)
+c      ENCODE (120,40,NUMBERS) (RATCO(I,J)-RATCO(J,I),J=J1,J2)
+      WRITE (NUMBERS,40) (RATCO(I,J)-RATCO(J,I),J=J1,J2)
    40 FORMAT (1P,10E12.2)
       DO 41 M=1,10
       IF (NUMBERS(M) .EQ. '    0.00E+00') NUMBERS(M)='    0       '
@@ -179,7 +184,8 @@ C*******************************************************************************
    30       SCALE=SCALE+ABS(RATCO(I,J)-RATCO(J,I))
          SCALE=SCALE/2.
          IF (SCALE.LE.0.) SCALE=1.
-      ENCODE (120,40,NUMBERS) ((RATCO(I,J)-RATCO(J,I))/SCALE,J=J1,J2)
+c      ENCODE (120,40,NUMBERS) ((RATCO(I,J)-RATCO(J,I))/SCALE,J=J1,J2)
+      WRITE (NUMBERS,40) ((RATCO(I,J)-RATCO(J,I))/SCALE,J=J1,J2)
       DO 45 M=1,10
       IF (NUMBERS(M) .EQ. '    0.00E+00') NUMBERS(M)='    0       '
    45 CONTINUE

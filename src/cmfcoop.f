@@ -1,17 +1,13 @@
-      SUBROUTINE CMFCOOP (XLAM,ND,T,RNE,POPNUM,ENTOT,RSTAR,
-     >       LEVEL,OPA,ETA,THOMSON,NDIM,N,NCHARG,WEIGHT,ELEVEL,EION,
+      SUBROUTINE CMFCOOP (XLAM,ND,T,RNE,POPNUM,ENTOT,RSTAR, LEVEL,
+     >       OPA,ETA,THOMSON,NDIM,N,NCHARG,WEIGHT,ELEVEL,EION,
      >       EINST,ALPHA,SEXPO, ADDCON1, ADDCON2, ADDCON3, 
      >       IGAUNT,SIGMA1I,KONTLOW,KONTNUP,LASTKON,NATOM,KONTHLP, 
      >       DENSCON,BPLOT,BPLOT2,IPLOT,K,KCL,KCU,KCDELTA,
      >       OPACL,OPACU,ETACL,ETACU,XLAM0LN,ALN, MAXXDAT, XDATA, 
-     >       SIGMATHK,SEXPOK,EDGEK, MAXATOM, NOM, KODAT, RADIUS,
-     >       MAINPRO, MAINLEV, IWARN, OPACLEL, OPACUEL, OPACELEM,
-     >       ETACLEL, ETACUEL, ETACELEM, OPACLION, OPACUION,
-     >       OPACION, ETACLION, ETACUION, ETACION, 
-     >       OPALEL, ETALEL, OPALION, ETALION)
+     >       SIGMATHK,SEXPOK,EDGEK, MAXATOM, NOM, KODAT, RADIUS)
 C***********************************************************************
 C***  NON-LTE CONTINUOUS OPACITY AT GIVEN FREQUENCY FOR ALL DEPTH POINTS
-C***  OPTIMIZED VERSION OF SUBR. COOP, CALLED FROM MAIN PROGRAM COLI
+C***  OPTIMIZED VERSION OF SUBR. COOP, CALLED FROM MAIN PROGRAM CMF
 C***  This version (23-Mar-2007) assumes that KODAT positions
 C***  (i.e. KODATIND) give the atomic number (NCORECHARGE)
 C***********************************************************************
@@ -22,8 +18,8 @@ C***  MAXIMUM ION CHARGE WHICH MAY OCCUR
       DIMENSION NCHARG(N),WEIGHT(N),ELEVEL(N),EION(N)
       DIMENSION NOM(N)
       DIMENSION KODAT(MAXATOM)
-      INTEGER, DIMENSION(MAXATOM) :: NFIRST, NLAST
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
+      DIMENSION EDGEK(MAXATOM,MAXATOM)
       DIMENSION KONTLOW(LASTKON),KONTNUP(LASTKON),KONTHLP(LASTKON)
       DIMENSION EINST(NDIM,NDIM)
       DIMENSION POPNUM(ND,N)
@@ -34,31 +30,23 @@ C***  MAXIMUM ION CHARGE WHICH MAY OCCUR
       DIMENSION OPACL(ND),OPACU(ND)
       DIMENSION ETACL(ND),ETACU(ND)
       DIMENSION XDATA(MAXXDAT)
-      REAL, DIMENSION(NATOM, ND) :: OPACELEM, OPACLEL, OPACUEL,
-     >                              ETACELEM, ETACLEL, ETACUEL
-      REAL, DIMENSION(ND, NATOM, MAXION) :: OPACION, OPACLION, OPACUION,
-     >                                      ETACION, ETACLION, ETACUION     
-      REAL, DIMENSION(NATOM) :: OPALEL, ETALEL
-      REAL, DIMENSION(NATOM, MAXION) :: OPALION, ETALION
       CHARACTER(10), DIMENSION(N) :: LEVEL
-      CHARACTER(10), DIMENSION(ND) :: MAINPRO, MAINLEV
-      CHARACTER(8), DIMENSION(ND) :: IWARN
       LOGICAL XRAYS, KSHELL
 
       LOGICAL BPLOT,BPLOT2,BFCALC
 
 C***  Output of laser warnings for bound-free transitions
-      INTEGER, SAVE :: NWARN
       DATA NWARN /0/ ! no warning has been issued yet
+      SAVE NWARN
 
 C***  tiefenabh. clumping nach goetz
       DIMENSION DENSCON(ND)
 
 C***  Dimension of the core-charge data locally provided here
-      INTEGER, PARAMETER :: MAXATOMDIM = 30
-      REAL, DIMENSION(MAXATOMDIM) :: KODATIND
+      PARAMETER (MAXATOMDIM = 26)
+      DIMENSION KODATIND(MAXATOMDIM)
       
-      REAL :: OPAMAX, XLAM, PARALKONT, W, W3
+      REAL :: XLAM, W, W3
  
 C***  C1 = H * C / K    ( CM * ANGSTROEM )
       DATA C1 / 1.4388 /
@@ -96,7 +84,7 @@ C***     First find number of used elements
          NATOMMAX = NOM(N)
          IF (MAXATOM .GT. MAXATOMDIM) THEN
             WRITE (0,*) '*** ERROR: MAXATOMDIM TOO SMALL'
-            STOP 'ERROR IN CMFCOOP'
+            STOP 'ERROR IN COOP'
          ENDIF
 C***     Now find for each NA the corresponding KODAT index
          DO NA=1, NATOMMAX
@@ -106,7 +94,7 @@ C***     Now find for each NA the corresponding KODAT index
             ENDDO
             IF (KODATIND(NA) .EQ. 0) THEN
                WRITE (0,*) '*** ERROR: ELEMENT NOT FOUND'
-               STOP 'ERROR IN CMFCOOP'
+               STOP 'ERROR IN COOP'
             ENDIF
             IF (KODATIND(NA) .GT. MAXATOMDIM) THEN
                WRITE (0,*) '*** ERROR: NCORECHARGE NOT FOUND'
@@ -153,14 +141,6 @@ C         WRITE (39,'(I6,1X,F3.0)') KCL, -3.
          DO L=1, ND
             OPACL(L) = OPACU(L)
             ETACL(L) = ETACU(L)
-            DO NA=1, NATOM
-              OPACLEL(NA,L) = OPACUEL(NA,L)
-              ETACLEL(NA,L) = ETACUEL(NA,L)
-              DO ION=1, MAXION
-                OPACLION(L, NA, ION) = OPACUION(L, NA, ION)
-                ETACLION(L, NA, ION) = ETACUION(L, NA, ION)
-              ENDDO
-            ENDDO
          ENDDO
          KCU = KCU+KCDELTA
          IF (BPLOT) WRITE (39,'(I6,1X,F3.0)') KCU, -3.
@@ -197,19 +177,9 @@ ccc         in der folgenden Zeile W --> WU verbessert (?) - wrh  6-Dec-2006
 C***  LOOP OVER ALL DEPTH POINTS  --------------------------------------
       DO 1 L=1,ND
       NBFLASER = 0
-   55 CONTINUE  
-      OPAMAX=.0
+   55 CONTINUE
       OPAL=.0
       ETAL=.0
-      DO NA=1, NATOM
-        OPALEL(NA) = .0
-        ETALEL(NA) = .0
-        DO ION=1, MAXION
-          OPALION(NA, ION) = .0
-          ETALION(NA, ION) = .0
-        ENDDO
-      ENDDO
-      IWARN(L)='        '
       TL=T(L)
       ROOTTL=SQRT(TL)
       T32=TL*ROOTTL
@@ -221,14 +191,6 @@ C***  I = LOW      J = UP
       IF (BFCALC) THEN
          OPACU(L) = 0.
          ETACU(L) = 0.
-         DO NA=1, NATOM
-           OPACUEL(NA,L) = 0.
-           ETACUEL(NA,L) = 0.
-           DO ION=1, MAXION
-             OPACUION(L, NA, ION) = 0.
-             ETACUION(L, NA, ION) = 0.
-           ENDDO
-         ENDDO
          DO 5 KH=1,KHELP
             KONT=KONTHLP(KH)
             J=KONTNUP(KONT)
@@ -255,37 +217,25 @@ C***        Set emissivities zero if both levels are equal (=POPMIN)
 ccC***  LASER WARNING IF STIMULATED EMISSION EXCEEDS ABSORPTION 
 ccC***    IN THIS TRANSITION
 ccC***  IF TOTAL CONT. OPA WAS < 0 AT FIRST TRIAL. THIS BF TRANSITION IS SKIPPED
-cc            IF (SUM .LT. .0 .AND. NBFLASER .EQ. 1) THEN
+cc      IF (SUM .LT. .0 .AND. NBFLASER .EQ. 1) THEN
 
 C***    Note: the above version, which makes use of NBLASER. has been
-C***          replaced by the more radical version that any lasering b-f
+C***          replaced by the more radical version that any lasering b-f 
 C***          transition is immediately disregarded - wrh  4-Apr-2019
-            IF (SUM .LT. .0) THEN
-              IWARN(L) = '*       '
-              IF (NWARN .EQ. 0)   WRITE (0, 90) L, LEVEL(I), LEVEL(J)
-   90         FORMAT ('*** WARNING FROM Subr. CMFCOOP: ',
-     >          'LASERING BOUND-FREE CONTINUA SUPPRESSED',/,
-     >          '*** THIS OCCURED FOR THE FIRST TIME AT DEPTH INDEX',
-     >          I7,/,'*** BETWEEN LEVELS ', A10, ' AND ', A10 )
-              NWARN = NWARN + 1
-            ELSE
-              NA = NOM(I)
-              ION = NCHARG(I) + 1
-              OPACU(L)=OPACU(L)+SUM
-              OPACUEL(NA,L) = OPACUEL(NA,L) + SUM
-              OPACUION(L, NA, ION) = OPACUION(L, NA, ION) + SUM
-              ETACU(L)=ETACU(L)+EMINDU
-              ETACUEL(NA,L) = ETACUEL(NA,L) + EMINDU
-              ETACUION(L, NA, ION) = ETACUION(L, NA, ION) + EMINDU
-            ENDIF
-            
-            IF (SUM > OPAMAX) THEN
-              OPAMAX = SUM
-              MAINPRO(L)='BOUND-FREE'
-              MAINLEV(L)=LEVEL(I)
-            ENDIF
-            
-    5    CONTINUE
+        IF (SUM .LT. .0) THEN 
+          IF (NWARN .EQ. 0)   WRITE (0, 90) L, LEVEL(I), LEVEL(J)
+   90     FORMAT ('*** WARNING FROM Subr. CMFCOOP: ',
+     >    'LASERING BOUND-FREE CONTINUA SUPPRESSED',
+     >    /,'*** THIS OCCURED FOR THE FIRST TIME AT DEPTH INDEX', I7,
+     >    /,'*** BETWEEN LEVELS ', A10, ' AND ', A10 )
+         NWARN = NWARN + 1
+        ELSE
+           OPACU(L)=OPACU(L)+SUM
+           ETACU(L)=ETACU(L)+EMINDU
+        ENDIF
+
+ 5       CONTINUE
+
 
 C***  K-SHELL IONISATION  **********************************************
       IF (KSHELL) THEN      
@@ -304,7 +254,7 @@ C***        IS RADIATION HARDER THAN K-SHELL EDGE ?
 C***        K-SHELL IONIZATION NEEDS IONS WITH AT LEAST 3 ELECTRONS LEFT
             IF (KODATIND(NOMJ) - NCHARG(J) .LT. 3) THEN  
                WRITE (0,*) 'UNEXPECTED INCONSISTENCY WITH K-SHELL DATA'
-               STOP 'ERROR in Subr. CMFCOOP'
+               STOP 'ERROR in Subr. COOP'
             ENDIF
 
             IF (LASTNOMJ .NE. NOMJ .OR. LASTISTATE .NE. ISTATE) THEN
@@ -315,14 +265,6 @@ C***        K-SHELL IONIZATION NEEDS IONS WITH AT LEAST 3 ELECTRONS LEFT
             ENDIF
             SUM = POPNUM(L,J) * SIGMAK
             OPACU(L) = OPACU(L) + SUM
-            OPACUEL(NOMJ,L) = OPACUEL(NOMJ,L) + SUM
-            OPACUION(L,NOMJ,ISTATE) = OPACUION(L,NOMJ,ISTATE) + SUM
-            IF (SUM > OPAMAX) THEN
-              OPAMAX = SUM
-              MAINPRO(L)='K-SHELL'
-              MAINLEV(L)=LEVEL(J)(:2)
-              WRITE (MAINLEV(L)(4:5), '(I2)') ISTATE
-            ENDIF
     6    CONTINUE
       ENDIF
 
@@ -361,25 +303,13 @@ C*                normalization
                ELSE
                   WRITE (0,*) '*** XRAY DIFFERENTIAL EMISSION MEASURE:'
                   WRITE (0,*) '*** INVALID EXPONENT:', DIFFEMEXP
-                  STOP '*** FATAL ERROR IN SUBR. CMFCOOP'
+                  STOP '*** FATAL ERROR IN SUBR. COOP'
                ENDIF
                EMINDU = SUM * FDEM
-               NA = NOM(I)
-               ION = NCHARG(I) + 1
 C*             In the DEM branch, the opacity is set to zero
-               IF (DIFFEMEXP .EQ. .0) THEN
-                 OPACU(L) = OPACU(L) + (SUM-EMINDU)
-                 OPACUEL(NA,L) = OPACUEL(NA,L) + (SUM-EMINDU)
-                 OPACUION(L,NA,ION) = OPACUION(L,NA,ION) + (SUM-EMINDU)
-               ENDIF
+               IF (DIFFEMEXP .EQ. .0)
+     >               OPACU(L) = OPACU(L) + (SUM-EMINDU)
                ETACU(L) = ETACU(L) + EMINDU 
-               ETACUEL(NA,L) = ETACUEL(NA,L) + EMINDU
-               ETACUION(L,NA,ION) = ETACUION(L,NA,ION) + EMINDU
-               IF (SUM > OPAMAX) THEN
-                 OPAMAX = SUM
-                 MAINPRO(L)='XRAYSOURCE'
-                 MAINLEV(L)=LEVEL(I)
-               ENDIF               
             ENDDO
          ENDIF
 C***     X-RAY SOURCE: FREE-FREE BREMSSTRAHLUNG 2
@@ -394,19 +324,8 @@ C***      -- Inserted by wrh  2-Aug-2006 19:32:10
                SUM = SUM * DENSCON(L)
                EMINDU = SUM * EXPFACXRAY2
                SUM = SUM - EMINDU
-               NA = NOM(I)
-               ION = NCHARG(I) + 1
                OPACU(L) = OPACU(L) + SUM
-               OPACUEL(NA,L) = OPACUEL(NA,L) + SUM
-               OPACUION(L,NA,ION) = OPACUION(L,NA,ION) + SUM
                ETACU(L) = ETACU(L) + EMINDU 
-               ETACUEL(NA,L) = ETACUEL(NA,L) + EMINDU
-               ETACUION(L,NA,ION) = ETACUION(L,NA,ION) + SUM
-               IF (SUM > OPAMAX) THEN
-                 OPAMAX = SUM
-                 MAINPRO(L)='XRAYSOURCE'
-                 MAINLEV(L)=LEVEL(I)
-               ENDIF               
             ENDDO
          ENDIF
       ENDIF
@@ -439,20 +358,9 @@ C***  PRECALCULATE SIGMAFF, LEAVING OUT THE FACTOR NCHARGE*NCHARGE
                   ENDIF
                ENDIF
             ENDIF
-            NA = NOM(I)
-            ION = NCHARG(I) + 1
             OPACU(L)=OPACU(L)+SUM
             ETACU(L)=ETACU(L)+EMINDU
-            OPACUEL(NA,L) = OPACUEL(NA,L) + SUM
-            ETACUEL(NA,L) = ETACUEL(NA,L) + EMINDU
-            OPACUION(L,NA,ION) = OPACUION(L,NA,ION) + SUM
-            ETACUION(L,NA,ION) = ETACUION(L,NA,ION) + EMINDU
-            IF (SUM > OPAMAX) THEN
-              OPAMAX = SUM
-              MAINPRO(L)='FREE-FREE'
-              MAINLEV(L)=LEVEL(I)
-            ENDIF               
-    3    CONTINUE
+ 3       CONTINUE
 
       ENDIF
 
@@ -470,42 +378,16 @@ C***  Interpolation of the BF+FF-Opacity
       IF (K .EQ. KCU) THEN
          OPAL = OPAL+ OPACU(L)
          ETAL = ETAL+ ETACU(L)
-         DO NA=1, NATOM
-           OPALEL(NA) = OPALEL(NA) + OPACUEL(NA,L)
-           ETALEL(NA) = ETALEL(NA) + ETACUEL(NA,L)
-           DO ION=1, MAXION
-             OPALION(NA,ION) = OPALION(NA,ION) + OPACUION(L,NA,ION)
-             ETALION(NA,ION) = ETALION(NA,ION) + ETACUION(L,NA,ION)
-           ENDDO
-         ENDDO
 C***    New Start of Interpolation Procedure if (KCL = KCU)
          IF (KCL .EQ. KCU) THEN
             OPACL(L) = OPACU(L)
             ETACL(L) = ETACU(L)
-            DO NA=1, NATOM
-              OPACLEL(NA,L) = OPACUEL(NA,L)
-              ETACLEL(NA,L) = ETACUEL(NA,L)  
-              DO ION=1, MAXION
-                OPACLION(L,NA,ION) = OPACUION(L,NA,ION)
-                ETACLION(L,NA,ION) = ETACUION(L,NA,ION)
-              ENDDO
-            ENDDO
          ENDIF
       ELSEIF (K .GE. KCL) THEN
          FL = FLOAT(KCU-K)/FLOAT(KCU-KCL)
          FU = 1.-FL         
          OPAL = OPAL + FL*OPACL(L) + FU*OPACU(L)
          ETAL = ETAL + FL*ETACL(L) + FU*ETACU(L)
-         DO NA=1, NATOM
-           OPALEL(NA) = OPALEL(NA) + FL*OPACLEL(NA,L) + FU*OPACUEL(NA,L)
-           ETALEL(NA) = ETALEL(NA) + FL*ETACLEL(NA,L) + FU*ETACUEL(NA,L)
-           DO ION=1, MAXION
-             OPALION(NA,ION) = OPALION(NA,ION) + FL * OPACLION(L,NA,ION)
-     >                                         + FU * OPACUION(L,NA,ION)
-             ETALION(NA,ION) = ETALION(NA,ION) + FL * ETACLION(L,NA,ION)
-     >                                         + FU * ETACUION(L,NA,ION)
-           ENDDO
-         ENDDO
       ELSE
          STOP 'CMFCOOP: FATAL ERROR'
       ENDIF
@@ -518,32 +400,12 @@ C***  Clump density and filling factor cancel out for Thomson scattering
       if (l .eq. iplot) then
         sumt = sum
       endif
-C***  New addition to avoid THOMSON == 1 in case of very low OPAL
-      IF (ABS(OPAL/SUM) < 1.E-10) THEN
-        OPAL = (1. + 1.E-10) * SUM
-      ELSE
-        OPAL=OPAL+SUM
-      ENDIF
+      OPAL=OPAL+SUM
 C***  THOMSON = RELATIVE FRACTION FROM THE TOTAL OPACITY
       THOMSON(L)=SUM/OPAL
-C***  Maximum opacity check only for frequency points
-C***  where the cross sections are not interpolated
-      IF (BFCALC .AND. SUM > OPAMAX) THEN
-        OPAMAX = SUM
-        MAINPRO(L)='THOMSON'
-        MAINLEV(L)='ELECTRON'
-      ENDIF               
-
+ 
       OPA(L)=OPAL*ENTOT(L)*RSTAR
       ETA(L)=ETAL*ENTOT(L)*RSTAR
-      DO NA=1, NATOM
-        OPACELEM(NA,L) = OPALEL(NA)*ENTOT(L)*RSTAR
-        ETACELEM(NA,L) = C2*W3*ETALEL(NA)*ENTOT(L)*RSTAR
-        DO ION=1, MAXION
-          OPACION(L,NA,ION) = OPALION(NA,ION)*ENTOT(L)*RSTAR
-          ETACION(L,NA,ION) = C2*W3*ETALION(NA,ION)*ENTOT(L)*RSTAR
-        ENDDO
-      ENDDO
     1 CONTINUE
 C***  ENDLOOP  ---------------------------------------------------------
  

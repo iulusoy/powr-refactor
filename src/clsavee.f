@@ -1,8 +1,8 @@
       SUBROUTINE CLSAVEE (NCHANE, NZE1, NZE2, NFRO, EDDIA, NDEDDIA, 
-     >                    EDDIF, EDDIG, ND, EDDIHOUT, 
-     >                    EDDIHIN, EDDIHINM, EDDINOUT, EDDININ, 
+     >                    EDDIF, EDDIG, ND, 
+     >                    EDDIHOUT, EDDIHIN, EDDINOUT, EDDININ, 
      >                    BCLEERR, CMODE, XHI, XHO, EPSG, 
-     >                    XHOM, XNOM, EDDIHOUTP, EDDINOUTP, EDDIHINT)
+     >                    XHOM, XNOM, EDDIHOUTP, EDDINOUTP)
 C**********************************************************************
 C***  Saves the old EDDIEs to file fort.<NCHANE>
 C**********************************************************************
@@ -12,8 +12,6 @@ C**********************************************************************
       DIMENSION EPSG(ND)
       CHARACTER NAME*8, CMODE*1
       LOGICAL BCLEERR
-      INTEGER :: IDUMMY
-      REAL :: DBDTAUND, EDDIHINT
 
 C***  Store the EDDIEs into EDDIA
 C***  At this point the change of the EDDIEs could be calculated
@@ -35,16 +33,14 @@ C***  For that BCLEERR would be needed
       EDDIA(NDA+8, NZE2) = XNOM
       EDDIA(NDA+9, NZE2) = EDDIHOUTP
       EDDIA(NDA+10, NZE2) = EDDINOUTP
-      EDDIA(NDA+11, NZE2) = EDDIHINM
-      EDDIA(NDA+12, NZE2) = EDDIHINT
 
 C***  Save array to file
       IF (NZE2 .EQ. NFRO .OR. CMODE .EQ. 'F') THEN
         WRITE (NAME,'(A2,I5,A1)') 'ED', NZE1, ' '
-        CALL WRITMS (NCHANE, EDDIA, NDEDDIA*NFRO, NAME,-1,IDUMMY, IERR)
+        CALL WRITMS (NCHANE, EDDIA, NDEDDIA*NFRO, NAME, IERR)
       ENDIF
       IF (CMODE .EQ. 'F') THEN
-        CALL WRITMS (NCHANE, EPSG, ND-1, 'EPSG    ',  -1, IDUMMY, IERR)
+        CALL WRITMS (NCHANE, EPSG, ND-1, 'EPSG    ', IERR)
       ENDIF      
 
       RETURN

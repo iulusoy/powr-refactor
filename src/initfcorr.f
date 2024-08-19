@@ -1,25 +1,14 @@
-      SUBROUTINE INITFCORR (TEFF, RSTAR, T, RNE, bNoARAD, bINCADV,
+      SUBROUTINE INITFCORR (TEFF, RSTAR, T, RNE, bNoARAD,
      >                      ABXYZ, ATMASS, ELEMENT, NATOM, WRTYPE,
      >                      RADIUS, VELO, GRADI, VTURB, ENTOT, ND,
      >                      HTOTM, HTOTG, HTOTOBS, HTOTL, ACONT, ATHOM,
      >                      AGRAV, AMECH, ARAD, APRESS, WORKRATIO, 
      >                      CLUMP_SEP, OPAROSS, MacroCard, DENSCON,
-     >                      FILLFAC, OPALINE_SCALE, MacroDamp, FTCOLI,
-     >                      XJTOTL, XKTOTL, XNTOTL, HTOTCMF0, 
-     >                      HTOTCMF0ADV, HTOTND, HTOTE, XMSTAR, MFORM, 
-     >                      GLOG, ATMEAN, VMACH,
-     >                      XMU, TAUROSS, QIONMEAN, GAMMARADMEAN, RCON)
-C***********************************************************************
-C**** calculates the acceleration contributions, the integrated
-C**** work ratio as well as the input of the wind on the observed flux
-C**** This information is used most prominently in the subroutines
-C**** ENSURETAUMAX and HYDROSOLVE, where the hydrostatic/-dynamic
-C**** is solved to obtain a new velocity field.
-C**** A graphical output of the contributions is provided by the 
-C**** ACC plot done in PLOTACC
-C****
-C**** called by STEAL
-C***********************************************************************
+     >                      FILLFAC, OPALINE_SCALE,
+     >                      FTCOLI, XJTOTL, XKTOTL, XNTOTL, HTOTCMF0, 
+     >                      XMSTAR, MFORM, GLOG, ATMEAN, VMACH,
+     >                      TAUROSS, QIONMEAN, GAMMARADMEAN, RCON)
+
       IMPLICIT NONE
       INCLUDE 'interfacebib.inc'
      
@@ -30,34 +19,29 @@ C***********************************************************************
      >                       HTOTM, HTOTG, HTOTOBS, HTOTL, HTOTCMF0,
      >                       AGRAV, AMECH, ARAD, APRESS, GEFFL, RI,
      >                       ATHOM, ACONT, ALINES, DENSCON, FILLFAC, 
-     >                       XJTOTL, XKTOTL, XNTOTL, FTCOLI, MacroDamp,
-     >                       OPAROSS, ClumpScale, HTOTE, HTOTCMF0ADV,
-     >                       TAUROSS, VMACH, XMU, VTURB
+     >                       XJTOTL, XKTOTL, XNTOTL, FTCOLI, 
+     >                       OPAROSS, ClumpScale, TAUROSS, VMACH
      
       INTEGER :: MFORM, NA, L, LCON
-      REAL :: GLOG, ATMEAN, XMSTARG, XMSTAR, TEFF, XMDOT, TINT,
+      REAL :: GLOG, VTURB, ATMEAN, XMSTARG, XMSTAR, TEFF, XMDOT,
      >        EWTOT, WMEAN, XHY, YHE, XC, SUM, SUMADD, HNULL, VELOINT,
      >        RINT, DELTAH, DELTAV, DELTAR, XMECH, VDR, RSTAR, RL2,
      >        HMECH, HMECH1, HGRAV, XGRAV, XKINT, XJINT, WRAD, WWIND, 
      >        RHOL, RHOLP, XMUL, XMULP, AL2, ALP2, PL, PLP, WORKRATIO,
-     >        CLUMP_SEP, OPALINE_SCALE, DCmacro, fAmod, TauCL, dummy,
-     >        QIONMEAN, GAMMARADMEAN, RCON, HTOTND, DVDR, DVTURBDR,
-     >        VMACHINT, VTURBINT, ENTOTINT, DENTOTDR, DVMACHDR, DJDR,
-     >        AMACHINT, APRESSTEST, DELTAA, XESPC, HESPC, HSPCM, DHSPC,
-     >        DELTAHADV
+     >        CLUMP_SEP, OPALINE_SCALE, DCmacro, fAmod, TauCL,
+     >        QIONMEAN, GAMMARADMEAN, RCON
       
       CHARACTER(2) :: WRTYPE
       CHARACTER(9) :: MLRELATION
       CHARACTER(120) :: MacroCard
 
-      LOGICAL :: BFMEC, bNoARAD, bINCADV
+      LOGICAL :: BFMEC, bNoARAD
 
 C***  Physical constants
       REAL, PARAMETER :: PI4 = 12.5663706144    !PI4 = 4*PI
       REAL, PARAMETER :: GCONST = 6.6726E-8     !GCONST = GRAVITATIONAL CONSTANT (CGS-UNITS)
       REAL, PARAMETER :: STEBOL = 1.8046E-5     !STEBOL = STEFAN-BOLTZMANN CONSTANT (CGS-UNITS) / PI
-      REAL, PARAMETER :: CLIGHTKM = 2.99792458E5    !CLIGHT = SPEED OF LIGHT IN KILOMETER/SECOND
-      REAL, PARAMETER :: RADCONST = 7.5657E-15  !RADIATION CONSTANT in cgs (erg cm^-3 K^-4)
+      REAL, PARAMETER :: CLIGHTKM = 2.9979E5    !CLIGHT = SPEED OF LIGHT IN KILOMETER/SECOND
       REAL, PARAMETER :: BOLTZK = 1.3807E-16    !BOLTZMANN CONSTANT on cgs units
       REAL, PARAMETER :: XMSUN = 1.989E33       !XMSUN = Solar Mass (g)
       REAL, PARAMETER :: XLSUN = 3.85E33        !Solar Luminosity (CGS-Units)
@@ -131,25 +115,7 @@ C***   Mittlere Massenzahl
         ATMEAN = ATMEAN + ABXYZ(NA) * ATMASS(NA)
       ENDDO
       WMEAN = AMU*ATMEAN
-            
-      DO L=1, ND
-        XMU(L)  = ATMEAN / (1.+RNE(L))
-        XMULP = ATMEAN / (1.+RNE(L+1))
-        IF (L == ND-1) THEN
-          XMU(ND) = XMULP
-        ENDIF
-        AL2   = BOLTZK / AMU * T(L) / XMU(L)
-        ALP2  = BOLTZK / AMU * T(L+1) / XMULP
-      
-        VMACH(L) = SQRT(AL2) / 1.E5
-        IF (L == ND-1) THEN
-          VMACH(ND) = SQRT(ALP2) / 1.E5
-        ENDIF      
-        
-        IF (L == ND) CYCLE
-        RI(L) = 0.5 * ( RADIUS(L) + RADIUS(L+1) )        
-      ENDDO
-            
+
             
       DO L=1, ND          
          RL2 = RADIUS(L) * RADIUS(L)
@@ -162,30 +128,23 @@ C***     Kinetic Part of Wind-Flux
 C***     Gravitational Part of Wind-Flux
          XGRAV = XMDOT*GCONST*XMSTARG/RSTAR * (1. - 1./RADIUS(L))
          HGRAV = XGRAV / (RSTAR*RSTAR*PI4*PI4)
-
-C***     Flux of specific Gas Energy
-         XESPC   = XMDOT * BOLTZK * T(L) / (XMU(L) * AMU)
-         HESPC   = XESPC / (RSTAR*RSTAR*PI4*PI4)
          
          IF (L .EQ. 1) HMECH1 = HMECH
 
          HTOTM(L) = HMECH
          HTOTG(L) = HGRAV
-         HTOTE(L) = HESPC
 
 C***  Gravitational and Wind acceleration at radius interstices
          IF (L .EQ. ND) EXIT
 
+         RI(L) = 0.5 * ( RADIUS(L) + RADIUS(L+1) )
          RINT = RI(L) * RSTAR
          AGRAV(L) = XMSTARG * GCONST / RINT / RINT
 
-c         VELOINT = 0.5 * (VELO(L) + VELO(L+1)) 
-         CALL SPLINPOX(VELOINT, RI(L), VELO, RADIUS, ND, DFDX=DVDR)
-         
-c         DELTAV = (VELO(L) - VELO(L+1)) 
+         VELOINT = 0.5 * (VELO(L) + VELO(L+1)) 
+         DELTAV = (VELO(L) - VELO(L+1)) 
          DELTAR = (RADIUS(L) - RADIUS(L+1)) * RSTAR
-c         AMECH(L) = VELOINT * DELTAV / DELTAR * 1.E10
-         AMECH(L) = VELOINT * DVDR * 1.E10 / RSTAR
+         AMECH(L) = VELOINT * DELTAV / DELTAR * 1.E10
 C***  Gas Pressure term
 C***     a_press = - 1/rho dp/dr
 C***       including turbulence:
@@ -194,17 +153,25 @@ C***             = rho * ( a^2 + v_turb^2 )
 C***         rho = ENTOT * m_H * ATMEAN = ENTOT * WMEAN
 C***          mu = ATMEAN / ( 1 + RNE )
          EWTOT = 0.5 * (ENTOT(L) + ENTOT(L+1)) * WMEAN
-         CALL SPLINPOX(ENTOTINT,RI(L),ENTOT,RADIUS,ND, DFDX=DENTOTDR)
-         CALL SPLINPOX(VMACHINT,RI(L),VMACH,RADIUS,ND, DFDX=DVMACHDR)
-         CALL SPLINPOX(VTURBINT,RI(L),VTURB,RADIUS,ND, DFDX=DVTURBDR)
-         CALL SPLINPOX(TINT,RI(L),T,RADIUS,ND)
-         
-         APRESS(L) = - (
-     >            (VMACHINT**2 + VTURBINT**2) / ENTOTINT * DENTOTDR
-     >                 + 2. * VMACHINT * DVMACHDR
-     >                 + 2. * VTURBINT * DVTURBDR
-     >                 ) * 1.E10 / RSTAR
-         
+         RHOL  = ENTOT(L) * WMEAN
+         RHOLP = ENTOT(L+1) * WMEAN
+         XMUL  = ATMEAN / (1.+RNE(L))
+         XMULP = ATMEAN / (1.+RNE(L+1))
+         AL2   = BOLTZK / AMU * T(L) / XMUL
+         ALP2  = BOLTZK / AMU * T(L+1) / XMULP
+         PL  = RHOL  * (AL2  + (VTURB*1.E5)**2)
+         PLP = RHOLP * (ALP2 + (VTURB*1.E5)**2)
+         APRESS(L) = (PLP-PL) / (DELTAR * EWTOT)
+
+         VMACH(L) = SQRT(AL2) / 1.E5
+         IF (L == ND-1) THEN
+           VMACH(ND) = SQRT(ALP2) / 1.E5
+         ENDIF
+C         IF (L > 50) THEN
+C           WRITE (0,'(I4,6(G15.8))') L, PL, EWTOT,
+C     >     DELTAR, (PLP-PL), EWTOT*DELTAR, APRESS(L)
+C         ENDIF
+
 C***     Scale line acceleration if CARDS option is set        
          IF (OPALINE_SCALE /= 1.) THEN
            ALINES(L) = ARAD(L) - ACONT(L)
@@ -213,7 +180,6 @@ C***     Scale line acceleration if CARDS option is set
          ENDIF
 
 C***     Adjust with macroclumping effect 
-         MacroDamp = 1.
          IF (CLUMP_SEP > 0.) THEN
            DCmacro = 0.5 * (DENSCON(L) + DENSCON(L+1))
            ClumpScale(L) = CLUMP_SEP * ( 3./PI4 /DCmacro )**(1./3.)
@@ -226,8 +192,6 @@ C***     Adjust with macroclumping effect
            ENDIF
            ARAD(L) = ARAD(L) * fAmod
            ACONT(L) = ACONT(L) * fAmod
-           ATHOM(L) = ATHOM(L) * fAmod
-           MacroDamp(L) = fAmod
          ENDIF          
 
 C***  Integrals of total work (arbitrary units)
@@ -243,7 +207,6 @@ C***  Flux in the observer's frame (only for HSUM-PLOT!)
 
       ENDDO
 
-      
 C***  Calculate mean GAMMARAD and mean ionization parameter q  
       QIONMEAN = RNE(ND) / ATMEAN
       DO L=ND-1, 1, -1
@@ -263,16 +226,8 @@ C***        the integration step delta-r as one-sided, instead of between
 C***        interstices L+1/2, L-1/2. 
       HNULL = 0.25 * STEBOL * TEFF*TEFF*TEFF*TEFF
       HTOTCMF0(ND-1) = HNULL
-      HTOTCMF0ADV(ND-1) = HNULL
       DO L=ND-1, 2, -1
          VDR = VELO(L)/RADIUS(L)
-         CALL SPLINPOX(dummy,RADIUS(L),XJTOTL,RADIUS,ND, DFDX=DJDR)
-         DELTAHADV = ( (GRADI(L)-VDR)*(XKTOTL(L)+XJTOTL(L))
-     >                  + 4 * VDR*XJTOTL(L) 
-     >                  + VELO(L)*DJDR-2*VDR*XJTOTL(L) ) *
-     >              0.5 * (RADIUS(L-1)-RADIUS(L+1)) / CLIGHTKM
-         HTOTCMF0ADV(L-1) = HTOTCMF0ADV(L) - DELTAHADV
-
          DELTAH = ((GRADI(L) -VDR)*XKTOTL(L) + VDR*XJTOTL(L)) *
      >            0.5 * (RADIUS(L-1)-RADIUS(L+1)) / CLIGHTKM
          HTOTCMF0(L-1) = HTOTCMF0(L) - DELTAH 

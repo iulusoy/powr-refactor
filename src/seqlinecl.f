@@ -1,7 +1,7 @@
       SUBROUTINE SEQLINECL(NLINE, LINE, EINST, INDLOW, 
-     >             INDNUP, XLAMSOR, ELEVEL, NDIM, VDOPUNIT,
-     >             CMFBAND, CLIGHT, XLAMMIN, XLAMMAX, VELOMAX,
-     >             EXLAM1, EXLAM2, MAXEXT, LASTIND, NAUTO, KRUDAUT)
+     >             INDNUP, XLAMSOR, ELEVEL,
+     $             NDIM, VDOP, CMFBAND, CLIGHT, XLAMMIN, XLAMMAX,
+     $             VELO, EXLAM1, EXLAM2, MAXEXT, LASTIND, NAUTO, KRUDAUT)
 C**********************************************************************
 C***  "SEQUENCE OF LINES"  
 C***  THE LINES ARE SORTED IN THE SEQUENCE OF INCREASING WAVELENGTHS.
@@ -26,7 +26,7 @@ C***  Count of  rudimental lines which are removed from the LINE vector
          IF (IND .LE. LASTIND) THEN
             BRUDTEST = (EINST(INDLOW(IND),INDNUP(IND)) .EQ. -2.) 
          ELSE
-            BRUDTEST = KRUDAUT(IND-LASTIND)
+            BRUDTEST = (KRUDAUT(IND-LASTIND) .EQ. 1)
          ENDIF
          IF (BRUDTEST) THEN
             NUMRUD=NUMRUD+1
@@ -56,10 +56,10 @@ C***  THE RED WING IS EXTENDED TO  2 * V-FINAL
       REDBAND = CMFBAND
       XLAMACT = XLAMSOR(NL)
       IF ( (XLAMACT - EXLAM1) * (XLAMACT - EXLAM2) .LT. .0 )
-     >   REDBAND = CMFBAND + 2. * VELOMAX / VDOPUNIT
+     >   REDBAND = CMFBAND + 2. * VELO / VDOP
 
-      XLAMMIN(NL) = XLAMSOR(NL) * (1 - CMFBAND * VDOPUNIT / CLIGHT)
-      XLAMMAX(NL) = XLAMSOR(NL) * (1 + REDBAND * VDOPUNIT / CLIGHT)
+      XLAMMIN(NL) = XLAMSOR(NL) * (1 - CMFBAND * VDOP / CLIGHT)
+      XLAMMAX(NL) = XLAMSOR(NL) * (1 + REDBAND * VDOP / CLIGHT)
 400   CONTINUE
 
       RETURN

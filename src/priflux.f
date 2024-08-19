@@ -4,10 +4,11 @@ C***********************************************************************
 C***   PRINTOUT OF THE EMERGENT CONTINUUM FLUX
 C***********************************************************************
  
-      DIMENSION XLAMBDA(NF),EMFLUX(NF),FWEIGHT(NF),KEY(NF), EMCOLI(NF)
+      DIMENSION XLAMBDA(NF),EMFLUX(NF),FWEIGHT(NF), EMCOLI(NF)
       CHARACTER*30 MODHEAD*100
       CHARACTER*8 ITCOL, IFSUM, JUMP
- 
+      CHARACTER(8), DIMENSION(NF) :: KEY 
+      CHARACTER*5 NEDGE
       LOGICAL BEMCOLI
 
 C***  CLIGHT = SPEED OF LIGHT ( CM/SEC )
@@ -63,20 +64,23 @@ C***  INTEGRATION OF F-NUE FROM ZERO TO CURRENT WAVELENGTH
       FSUM=FSUM+FK*FWEIGHT(K)
       IF (FSUM .GT. .0) THEN
          FSUMLOG=ALOG10(FSUM)
-         ENCODE (8,5,IFSUM) FSUMLOG
+ccc         ENCODE (8,5,IFSUM) FSUMLOG
+         WRITE (IFSUM,5) FSUMLOG
     5    FORMAT (F8.3)
          ELSE
          IFSUM='    -INF'
          ENDIF
 C***  CONTINUUM JUMPS AT EDGE FREQUENCIES
       JUMP=' '
-      DECODE (5,99,KEY(K)) NEDGE
-   99 FORMAT (A5)
-      IF (NEDGE .EQ. 5HEDGE+ .OR. NEDGE .EQ. 5HK-ED+) THEN
+c      DECODE (5,99,KEY(K)) NEDGE
+c   99 FORMAT (A5)
+      NEDGE = KEY(K)(1:5)
+      IF (NEDGE .EQ. 'EDGE+' .OR. NEDGE .EQ. 'K-ED+') THEN
          IF (EMFLUX(K-1) .LE. .0 .OR. EMFLUX(K) .LE. .0) THEN
             JUMP='   UNDEF'
             ELSE
-            ENCODE (8,8,JUMP) ALOG10(EMFLUX(K)/EMFLUX(K-1))*2.5
+c            ENCODE (8,8,JUMP) ALOG10(EMFLUX(K)/EMFLUX(K-1))*2.5
+            WRITE (JUMP,8) ALOG10(EMFLUX(K)/EMFLUX(K-1))*2.5
     8       FORMAT (F8.3)
             ENDIF
          ENDIF

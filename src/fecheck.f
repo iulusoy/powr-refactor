@@ -7,9 +7,9 @@ C***  CHECK FOR ACTIVE BOUND-BOUND TRANSITIONS OF GENERIC ION
 C***  CALLED FROM COLI
 C***********************************************************************
 
-      INTEGER, DIMENSION(LASTFE) :: INDRB, IFRBSTA, IFRBEND, INDFEACT
-      INTEGER :: LASTFE, MAXFEACT
-      LOGICAL :: BFECHECK, BFEWING
+      DIMENSION INDRB(LASTFE), IFRBSTA(LASTFE), IFRBEND(LASTFE)
+      DIMENSION INDFEACT(LASTFE)
+      LOGICAL BFECHECK, BFEWING
 
 C***  SEARCH FOR LOWEST POSSIBLE TRANSITION
 
@@ -27,9 +27,6 @@ C ***   NO TRANSITIONS ARE ACTIVE ANYMORE
 
       XINDLOW  = FLOAT(IFRBSTA(IND))
 
-C**** Cross-check: Is the first transition INDFEACT(1) an active transition?
-C****              If not, set INDFEACT(1) to first active transition!
-C****              If no transition is active, set BFECHECK = .FALSE.
       IF (XINDF .LT. XINDLOW) THEN
 C ***   NO ACTIVE TRANSITION
          BFECHECK = .FALSE.
@@ -51,24 +48,22 @@ C ***      TRANSITION ACTIVE!
 
  20   CONTINUE
 
-C  *** Improved Wing test: all former transitions are checked ***
 C *** TEST IF RED WING OF ANY LINE IS ACTIVE
       IF ((.NOT. BFECHECK) .AND. (IND .GT. 1)) THEN
 C ***   RED WING OF LAST LINE, WHICH HAS BEEN ACTIVE
-         BFEWING = .FALSE.
-         DO INDW=1, IND-1
-           XINDUP = FLOAT(IFRBEND(INDW-1))
-           XINDWING = XINDUP + DFEINDR
-           IF (XINDF < XINDWING) THEN
-             BFEWING = .TRUE.
-             EXIT
-           ENDIF
-         ENDDO
+         XINDUP = FLOAT(IFRBEND(IND-1))
+         XINDWING = XINDUP + DFEINDR
+         IF (XINDF .LT. XINDWING) THEN
+C ***      WING IS ACTIVE!
+            BFEWING = .TRUE.
+         ELSE
+            BFEWING = .FALSE.
+         ENDIF
       ELSE
 C ***   WING IS ACTIVE, WHEN LINE IS ACTIVE!         
          BFEWING = BFECHECK
       ENDIF
-      
+
 C *** STORE INDICES OF ACTIVE LINES IN ARRAY INDFEACT
       MAXFEACT = 0
       DO IND=INDFEACT(1), LASTFE
@@ -80,11 +75,8 @@ C ***         TRANSITION ACTIVE !
                MAXFEACT = MAXFEACT + 1
                INDFEACT(MAXFEACT) = IND
             ENDIF
-C         ELSE           !these two lines
-C            EXIT        !are taken from Goetz (can be added for speed, since INDEFEACT is sorted by wavelength)
          ENDIF
       ENDDO
 
-      
       RETURN
       END

@@ -4,21 +4,20 @@ C***  MAIN PROGRAM FORMAL  ****************************************************
 C*******************************************************************************
 C***  FORMAL INTEGRAL IN THE OBSERVERS FRAME, YIELDING EMERGENT FLUX PROFILES
 C*******************************************************************************
- 
+
       IMPLICIT NONE
-      CHARACTER(1) :: onechar
- 
-C***  DEFINE ARRAY DIMENSIONS
- 
+      character onechar*1
+
 C***  IRON: ADD GENERIC ION TO MAXATOM
       INTEGER, PARAMETER :: MAXATOM =          26 
 
       INTEGER, PARAMETER :: MAXLAP  =           15000
-      INTEGER, PARAMETER :: MAXSUBL =           15000
-      INTEGER, PARAMETER :: MAXIND  = 45000 + MAXSUBL
+      INTEGER, PARAMETER :: MAXNSUBLINE  =     15000
+      INTEGER, PARAMETER :: MAXNSUBLEVEL =      5000
+      INTEGER, PARAMETER :: MAXIND  = 45000 + MAXNSUBLINE
       INTEGER, PARAMETER :: MAXFEIND  =       1500 
-C***  NDIM = Number-of-original-levels + MAXSUBLevels (without 2*)
-      INTEGER, PARAMETER :: NDIM    =  1560 + MAXSUBL
+C***  NDIM = Number-of-original-levels + MAXNSUBLevel 
+      INTEGER, PARAMETER :: NDIM    =  2560 + MAXNSUBLEVEL
       INTEGER, PARAMETER :: NFLDIM  =          300000   
       INTEGER, PARAMETER :: NFODIM  =          250000   
       INTEGER, PARAMETER :: MAXMOD  =               2
@@ -38,8 +37,8 @@ C***  MAXIMUM ION CHARGE WHICH MAY OCCUR (SEE ALSO SUBR. GAUNTFF)
       
 C***  IRON: COMMON BLOCK FOR IRON-SPECIFIC DATA
 C***  include "dimblock"
-C      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5    !std
-      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5    !vd20
+      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5    !std
+C      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5    !vd20
 C      INTEGER, PARAMETER :: INDEXMAX = 1E8, NFEREADMAX = 6E5    !xxl
       
 C***  ARRAYS FOR TREATMENT OF LINE OVERLAPS:
@@ -51,7 +50,7 @@ C***  ARRAYS FOR TREATMENT OF LINE OVERLAPS:
       REAL, DIMENSION(MAXLAP,NDDIM,MAXMOD) :: AVOIGT, GRIEMPAR
 
 C***  ARRAYS FOR MULTIPLET HANDLING:
-      INTEGER, DIMENSION(MAXSUBL) :: NSUBLOW, NSUBNUP
+      INTEGER, DIMENSION(MAXNSUBLINE) :: NSUBLOW, NSUBNUP
 
 C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
       INTEGER, PARAMETER :: MAXAUTO = 2850
@@ -81,7 +80,7 @@ C***  VECTORS FOR USE IN SUBR. ZONEINT
       REAL, DIMENSION(NDDIM) :: RADIUS_MERGED 
       REAL, DIMENSION(NDDIM,MAXMOD) :: VDU_ORIG, 
      >               T_ORIG, RNE_ORIG, ENTOT_ORIG
-      REAL, DIMENSION(MAXMOD) :: RCON, XMDOT, POPMIN
+      REAL, DIMENSION(MAXMOD) :: RCON, XMDOT
       REAL, DIMENSION(MAXATOM,MAXMOD) :: ABXYZ
       REAL, DIMENSION(NDDIM,NFDIM,MAXMOD) :: XJC
       REAL, DIMENSION(NDDIM,NPDIM) :: U, UK
@@ -108,7 +107,8 @@ C***  @TODO: GET RID OF THIS CONDITION ASAP!!!
       REAL, DIMENSION(NDDIM,NPDIM,MAXMOD) :: ZGRID, ZGRID_ORIG
       REAL, DIMENSION(NDDIM,NPDIM) :: ZGRID_MERGED
 
-      REAL, DIMENSION(NDDIM,NDIM,MAXMOD) :: POPNUM, POPNUM_ORIG
+      REAL, DIMENSION(NDDIM,NDIM,MAXMOD) :: POPNUM, POPNUM_ORIG, 
+     >                                       POPLTE
       REAL, DIMENSION(MAXKONT) :: ALPHA, SEXPO, 
      >                            ADDCON1, ADDCON2, ADDCON3
       INTEGER, DIMENSION(MAXKONT) :: KONTNUP, KONTLOW 
@@ -132,7 +132,7 @@ C***  ARRAYS TO HANDLE DEPTH-DEPENDENT REDISTRIBUTION INTEGRAL
 
 C***  X-RAY DATA
       REAL, DIMENSION(MAXXDAT) :: XDATA
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      REAL, DIMENSION(MAXATOM,MAXATOM) :: SIGMATHK, SEXPOK, EDGEK
 
 C***  Density Contrast
       REAL, DIMENSION(NDDIM,MAXMOD) :: DENSCON, FILLFAC 
@@ -190,8 +190,7 @@ C***  Variables needed for SECONDMODEL_DEFINE
 
 C***  VARIABLES READ BY FORMOSA
       INTEGER, DIMENSION(MAXMOD) :: ND, NP, NF, JOBNUM
-      REAL, DIMENSION(MAXMOD) :: RSTAR, VDOP_MODEL, TEFF
-      REAL, DIMENSION(NDDIM, MAXMOD) :: VMIC_MODEL
+      REAL,    DIMENSION(MAXMOD) :: RSTAR, VDOP_MODEL, TEFF
 
 C***  FOR depth-dependent VDOP:
       REAL :: VMICFRAC_DEFAULT, VDOP, VDOP_FIRSTMOD
@@ -221,7 +220,7 @@ C***  FROM PREPRAY -> OBSFRAM
       REAL BCOREL, DBDRL
 
 C***  Intersection points with secondmodel domain
-      REAL, DIMENSION(2, NPDIM, NPHIMAX) :: ZINTER
+      REAL, DIMENSION(4, NPDIM, NPHIMAX) :: ZINTER
 
 C***  To Store Feautrier Matrices ST(94*95,89)
       REAL, DIMENSION((NPDIM+1)*NPDIM,NDDIM) :: ST
@@ -258,7 +257,8 @@ ccc      REAL, DIMENSION(INDEXMAX) :: SIGMAFE, SIGMAFEUL, SIGNU3FE
      >        FREMAX, FREMIN, DUMMY, XCMFRED, XCMFBLUE, DXCMF, FNUEC,
      >        XLAMREF, DXOBS, FINCRI, BEGLAM, XOBS0, XO, PJPJ, 
      >        PWEIGHT, XLAM2, DISMO, FACLOG, FAC, CEMINT, EMINT, 
-     >        ATMEAN, XMUL, AMACHL, TAUMINBROAD
+     >        POPMIN, ATMEAN, XMUL, AMACHL, TAUMINBROAD, PI4, STEBOL,
+     >        XLUM1, XLUM2, XLOGL_COMBINED, THETA, WMOD1, WMOD2, XLSUN
       INTEGER LSOPA, LSDWL, LSPRO, IFIRST, IERR, IDUMMY,
      >        LPHISTA, LPHIEND, IMOD, JPFIRST, JPLAST, KANAL1, LINE,
      >        LASTIND, LASTFE, KWORDS, K,
@@ -297,6 +297,11 @@ C***  Initialize values (only DATA statements here!)
 C***  X-UNITS OF PLOT IN ANGSTROEM (ALTERNATIVELY: MICROMETER)
       DATA XUNIT / 'ANGSTROEM ' /
 
+C***  STEBOL = STEFAN-BOLTZMANN CONSTANT (CGS-UNITS)
+      DATA STEBOL / 5.6705E-5 /
+      DATA PI4 / 12.56637062 /
+      DATA XLSUN / 3.85E33 /  !Solar Luminosity [erg/s]
+
 C***  Link data to identify program version
       CHARACTER(30) :: LINK_DATE
       CHARACTER(10) :: LINK_USER
@@ -317,7 +322,6 @@ C***  Write Link Data (Program Version) to CPR file
       CALL INSTALL
 ccc not in gfortran      CALL TIME(TIM1)
 
-C***  XN = NUMBER OF INTEGRATION INTERVALS ACROSS THE SCATTERING ZONE (REAL)
 C***  TAUMAX = MAXIMUM OPTICAL DEPTH WHERE INTEGRATION IS TRUNCATED
 C***  XMAX   = COMOVING-FRAME BANDWIDTH OF THE SCATTERING ZONE
 C***  DXMAX  = MAXIMUM CMF FREQUENCY STEP IN THE SCATTERING ZONE
@@ -398,14 +402,12 @@ C***  READING OF THE MODEL FILE
      >          ENTOT(1,IMOD), RNE(1,IMOD), ABXYZ(1,IMOD), NATOM, 
      >          T(1,IMOD), VELO(1,IMOD), NF(IMOD),
      >          XLAMBDA(1,IMOD), GRADI(1,IMOD),
-     >          POPNUM_ORIG(1,1,IMOD), 
-     >          RSTAR(IMOD), VDOP_MODEL(IMOD), VMIC_MODEL(1,IMOD),
+     >          POPNUM_ORIG(1,1,IMOD), RSTAR(IMOD), VDOP_MODEL(IMOD), 
      >          JOBNUM(IMOD), N, NDDIM, NPDIM, NFDIM, 
      >          MODHEAD(IMOD), TEFF(IMOD),
      >          MAXXDAT, XDATA, XJC(1,1,IMOD), IMOD, 
      >          DENSCON(1,IMOD), FILLFAC(1,IMOD), TAURCONT(1,IMOD),
-     >          POPMIN(IMOD), ZERO_RATES(1,1,IMOD), RCON(IMOD), NDIM, 
-     >          XMDOT(IMOD) )
+     >          ZERO_RATES(1,1,IMOD), RCON(IMOD), NDIM, XMDOT(IMOD) )
 
       VMAX = VELO(1,1)
       RMAX = RADIUS(1,1)
@@ -418,7 +420,7 @@ C***  Default (if not specified otherwise in FORMAL_CARDS):
       ENDDO
 
       CALL POPMIN_NULLING (ZERO_RATES(1,1,IMOD), POPNUM(1,1,IMOD), 
-     >                     POPMIN(IMOD), ND(IMOD), N)
+     >                     ND(IMOD), N)
 
 C***  The no. of core-intersecting impact parameters might be modified 
 C***  in subr. ROTATION_PREP; 
@@ -550,7 +552,7 @@ C***     of any line at any depth for ensuring sufficient resolution
 C***  VDOP_STRUCT must be REPEATED FOR THE SECOND MODE (different T)
       IMOD = 1
       CALL VDOP_STRUCT (BDD_VDOP, DD_VDOP_LINE, 
-     >   DD_VDOP(1,1,IMOD), VDOP, VMIC_MODEL(1,IMOD), VELO(1,IMOD), 
+     >   DD_VDOP(1,1,IMOD), VDOP, VELO(1,IMOD), 
      >   T(1,IMOD), ND(IMOD), NDDIM, NATOM, MAXATOM,  
      >   DD_VDOPDU(1,1,IMOD), 
      >   VMICFRAC_DEFAULT, ATMASS, XMAX, XMAXMIN,
@@ -596,14 +598,12 @@ C***        used there
      >          ENTOT(1,IMOD), RNE(1,IMOD), ABXYZ(1,IMOD), NATOM, 
      >          T(1,IMOD), VELO(1,IMOD), NF(IMOD),
      >          XLAMBDA(1,IMOD), GRADI(1,IMOD),
-     >          POPNUM_ORIG(1,1,IMOD),
-     >          RSTAR(IMOD), VDOP_MODEL(IMOD), VMIC_MODEL(1, IMOD),
+     >          POPNUM_ORIG(1,1,IMOD), RSTAR(IMOD), VDOP_MODEL(IMOD), 
      >          JOBNUM(IMOD), N, NDDIM, NPDIM, NFDIM, 
      >          MODHEAD(IMOD), TEFF(IMOD),
      >          MAXXDAT, XDATA, XJC(1,1,IMOD), IMOD,
      >          DENSCON(1,IMOD), FILLFAC(1,IMOD), TAURCONT(1,IMOD),
-     >          POPMIN(IMOD), ZERO_RATES(1,1,IMOD), RCON(IMOD), NDIM,
-     >          XMDOT(IMOD) )
+     >          ZERO_RATES(1,1,IMOD), RCON(IMOD), NDIM, XMDOT(IMOD) )
 
         VMAX = MAX (VELO(1,1),VELO(1,2))
 
@@ -613,10 +613,10 @@ C***        used there
         ENDDO
 
         CALL POPMIN_NULLING (ZERO_RATES(1,1,IMOD), POPNUM(1,1,IMOD), 
-     >                       POPMIN(IMOD), ND(IMOD), N)
+     >                       ND(IMOD), N)
 
 C***    Printout of Model Parameters (second model)
-        WRITE (*,'(2A)') 'SECOND MODEL READ FROM ', 
+        WRITE (*,'(/,2A)') 'SECOND MODEL READ FROM ', 
      >      SECONDMODEL_PATH(:IDX(SECONDMODEL_PATH))
         WRITE (*,'(2A)') 'MODHEAD=', MODHEAD(IMOD)
         CALL PRI_PAR (TEFF(IMOD), RSTAR(IMOD), 
@@ -626,7 +626,7 @@ C***    Preparation of depth-dependent ("DD") VDOP.
 C***    This is repeated here for the SECOND MODEL (different T(r)!)
         VDOP_FIRSTMOD = VDOP
         CALL VDOP_STRUCT (BDD_VDOP, DD_VDOP_LINE, 
-     >   DD_VDOP(1,1,IMOD), VDOP, VMIC_MODEL(1,IMOD), VELO(1,IMOD), 
+     >   DD_VDOP(1,1,IMOD), VDOP, VELO(1,IMOD), 
      >   T(1,IMOD), ND(IMOD), NDDIM, NATOM, MAXATOM,  
      >   DD_VDOPDU(1,1,IMOD), 
      >   VMICFRAC_DEFAULT, ATMASS, XMAX, XMAXMIN,
@@ -685,7 +685,7 @@ C*******************************************************************
      >                XLAM, NBLINE, MAXLAP, MAXIND, MAXATOM, 
      >                LEVEL, WEIGHT, EINST, NDIM, POPNUM,
      >                T, ND, NOM, NCHARG, EION, ENTOT, RNE,
-     >                MAXSUBL, NSUBLOW, NSUBNUP, BROAD, 
+     >                MAXNSUBLEVEL, MAXNSUBLINE, NSUBLOW, NSUBNUP, BROAD, 
      >                LINPRO, AVOIGT, NMOD, NDDIM, MAXMOD, DENSCON, 
      >                MAINQN, MULTIIND, 
      >                NMULTI, DD_VDOP, NATOM,
@@ -976,7 +976,21 @@ C***           by subr. ROTATION_PREP
          CALL SECONDMODEL_PREP (ZINTER, NPHI, PGRID_MERGED, NP_MERGED, 
      >        NPDIM, NPHIMAX, PHIARR, PHIWEIGHT, PHI_VEC, 
      >        SECONDMODEL_LINE, 
-     >        JPFIRST, JPLAST, LPHISTA_ORIG, LPHIEND_ORIG)
+     >        JPFIRST, JPLAST, LPHISTA_ORIG, LPHIEND_ORIG, THETA)
+
+C***    Calculate and print combined luminosity (CONE only)
+        IF (THETA .GT. .0) THEN 
+           XLUM1 = PI4 * STEBOL * RSTAR(1)**2 * TEFF(1)**4 / XLSUN
+           XLUM2 = PI4 * STEBOL * RSTAR(2)**2 * TEFF(2)**4 / XLSUN
+           WMOD2 = COS(THETA)
+           WMOD1 = 1. - WMOD2
+           XLOGL_COMBINED = ALOG10(WMOD1*XLUM1+WMOD2*XLUM2)
+           WRITE (6,'(A,F7.3)') 
+     >      'Combined luminosity of both models: log L =', XLOGL_COMBINED
+           WRITE (6,'(A,F7.3,A,F7.3)') 
+     >      'as weighted mean from log L1 =', ALOG10(XLUM1), 
+     >      ' and log L2 =', ALOG10(XLUM2)
+        ENDIF
 
 C***  Test output in case of a single ray
          IF (JPFIRST == JPLAST .AND. LPHISTA_ORIG == LPHIEND_ORIG) THEN

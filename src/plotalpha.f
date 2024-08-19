@@ -1,38 +1,26 @@
-      SUBROUTINE PLOTALPHA (PLOTOPT, ND, RADIUS, ALPHAF, VMACH,
-     >                      VELO, TAUROSS, ENTOT, ATMEAN,
-     >                      MODHEAD, JOBNUM, bOwn)
+      SUBROUTINE PLOTALPHA (ND ,RADIUS, ALPHAF, MODHEAD, JOBNUM, bOwn)
 C******************************************************************************
 C***  PLOT FORCE MULTIPLIER PARAMETER ALPHA VS DEPTH POINT OR LOG(R/R*-1)
 C******************************************************************************
 
       IMPLICIT NONE
-      INCLUDE 'interfacebib.inc'
 
       INTEGER, PARAMETER :: NDMAX = 100
       INTEGER, INTENT(IN) :: ND, JOBNUM
       CHARACTER(100), INTENT(IN) :: MODHEAD
-      REAL, DIMENSION(ND) :: RADIUS, ALPHAF, VSCRATCH, RI,
-     >                       VELO, VMACH, TAUROSS, ENTOT, RHO
+      REAL, DIMENSION(ND) :: RADIUS, ALPHAF
       LOGICAL, INTENT(IN) :: bOwn           !own plot file or part of wruniq.plot?
 
       REAL, DIMENSION(NDMAX) :: X, Y
       CHARACTER(60) :: HEAD1, HEAD2
-      CHARACTER(40) :: XTEXT
       CHARACTER(10) :: CTIME
-      CHARACTER(8) :: CDATE, CENTER
-      CHARACTER(20) :: CUROPT, XAXISMODE      
-      CHARACTER PLOTOPT*(*)
+      CHARACTER(8) :: CDATE
 
-      INTEGER :: L, NPAR, I, Lcand
-      REAL :: XMIN, XMAX, YMIN, YMAX, Xsonic, Rsonic, Vsonic, ATMEAN,
+      INTEGER :: L
+      REAL :: XMIN, XMAX, YMIN, YMAX, 
      >        XSCALE, XTICK, XABST,
      >        YSCALE, YTICK, YABST
 
-      INTEGER, EXTERNAL :: IDX
-     
-      !Physical constants
-      REAL, PARAMETER :: AMU = 1.66E-24         !Atomic mass unit (gramm)     
-     
       !File and channel handles (=KANAL)
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
       INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
@@ -48,150 +36,21 @@ C***  INITIALIZATION
         CALL REMARK ('FORCE MULTIPLIERS TO BE ROUTED')
       ENDIF
         
-      XAXISMODE = 'DEPTHINDEX'
-      CALL SARGC (PLOTOPT, NPAR)
-      IF (NPAR > 2) THEN
-        parloop: DO I=3, NPAR
-          CALL SARGV (PLOTOPT, I, CUROPT)
-          IF (CUROPT == 'XAXISMODE' .OR. CUROPT == 'X') THEN
-            IF (NPAR >= (I+1)) THEN
-              CALL SARGV (PLOTOPT, I+1, CUROPT)
-            ELSE
-              CYCLE parloop
-            ENDIF
-          ENDIF
-          SELECTCASE (CUROPT)
-            CASE ('VELOCITY', 'VELO', 'V')
-              XAXISMODE = 'VELOCITY'
-            CASE ('TAUROSS', 'TAU')
-              XAXISMODE = 'TAUROSS'
-            CASE ('RADIUS', 'R')
-              XAXISMODE = 'RADIUS'
-            CASE ('DEPTHINDEX', 'INDEX', 'ND')
-              XAXISMODE = 'DEPTHINDEX'
-            CASE ('N', 'NTOT', 'ENTOT', 'PARTDENS')
-              XAXISMODE = 'ENTOT'
-            CASE ('RHO', 'DENS', 'DENSITY')
-              XAXISMODE = 'RHO'
-          ENDSELECT
-        ENDDO parloop
-      ENDIF
  
- 
-      !Find sonic point parameters
-      Lcand = 0
-      DO L=1, ND
-        IF (L /= ND) THEN
-          RI(L) = 0.5 * ( RADIUS(L) + RADIUS(L+1) )
-        ENDIF
-        VSCRATCH(L) = VELO(L) - VMACH(L)        
-        IF ((VSCRATCH(L) < 0) .AND. (Lcand == 0)) THEN
-          Lcand = L
-        ENDIF
-      ENDDO
-      IF (Lcand > 1) THEN
-        CALL SPLINPOX(Rsonic,0.,RADIUS,VSCRATCH,ND,.FALSE.,Lcand)
-        CALL SPLINPOX(Vsonic,Rsonic,VMACH,RADIUS,ND)
-      ENDIF
-      
-      
 C***  HEADER  ------------------------------------------------------
       HEAD1=' FORCE MULTIPLIER PARAMETER ALPHA VERSUS DEPTH INDEX'
       HEAD2      = MODHEAD(13:32)
       HEAD2(22:) = 'FORCE MULTIPLIER ALPHA(L)'
 
-      CENTER = '\CENTER\'
-      
 C***  X-AXIS: ----------------------------------------------------------
 C***  DEPTH POINT INDEX
 C***  @TODO: IMPLEMENT RADIUS OPTION
+      XMAX=FLOAT(ND)
+      XMIN=0.
+      XSCALE = 22./(XMAX-XMIN)
+      XTICK=5.
+      XABST=10.
 
-      IF (XAXISMODE == 'DEPTHINDEX') THEN 
-C***     X-Axis = Depth Index
-         XTEXT = CENTER//'DEPTH INDEX L'
-         XMIN = 0.
-         XMAX = FLOAT(ND)
-         XTICK = 5.
-         XABST = 10. 
-         DO L=1, ND-1
-            X(L) = FLOAT(L) + 0.5
-         ENDDO
-         IF (Lcand > 1 .AND. Lcand < ND) THEN
-           CALL SPLINPOX(Xsonic,Rsonic,X,RADIUS,ND-1)         
-         ENDIF
-      ELSEIF (XAXISMODE == 'VELOCITY') THEN
-C***     X-Axis: velocity / v_infty
-         XTEXT = CENTER//'v(r) / v\8'
-         XMIN = 0.
-         XMAX = 1.
-         XTICK = 0.1
-         XABST = 0.5 
-C         DO L=1, ND-2
-         DO L=1, ND-1
-            X(L) = 0.5 * (VELO(L) + VELO(L+1)) / VELO(1)
-         ENDDO
-         IF (Lcand > 1 .AND. Lcand < ND) THEN
-           Xsonic = Vsonic/VELO(1)
-         ENDIF
-      ELSEIF (XAXISMODE == 'TAUROSS') THEN
-         XTEXT = CENTER//'LOG Rosseland Optical Depth #t#'
-         XMIN = LOG10(0.9 * TAUROSS(2))
-         XMAX = LOG10( TAUROSS(ND) )
-         XTICK = 0.1
-         XABST = 1.0 
-         DO L=1, ND-1
-           X(L) = LOG10 (0.5 * (TAUROSS(L) + TAUROSS(L+1)))
-         ENDDO
-         IF (Lcand > 1 .AND. Lcand < ND) THEN
-           CALL SPLINPOX(Xsonic,Rsonic,X,RADIUS,ND-1)         
-         ENDIF
-      ELSEIF (XAXISMODE == 'RADIUS') THEN
-         XTEXT = CENTER//'LOG (R/R\*-1)'
-         XMIN = LOG10 ( 0.9 * (RI(ND-1) - 1.) )
-         XMAX = LOG10 ( RADIUS(1) - 1. )
-         XTICK = 0.1
-         XABST = 0.5 
-         DO L=1, ND-1
-           X(L) = LOG10( RI(L) - 1. )
-         ENDDO
-         IF (Lcand > 1 .AND. Lcand < ND) THEN
-           Xsonic = LOG10( Rsonic - 1. )
-         ENDIF
-      ELSEIF (XAXISMODE == 'ENTOT') THEN
-         XTEXT = CENTER // 'log(&Rn&N&Ttot&M/cm&H-3&M)'
-         XMIN = LOG10(ENTOT(1))
-         XMAX = LOG10(ENTOT(ND))
-         XTICK = 1.
-         XABST = 3.
-         DO L=1, ND-1
-           X(L) = LOG10(0.5 * (ENTOT(L) + ENTOT(L+1)))
-         ENDDO      
-         IF (Lcand > 1 .AND. Lcand < ND) THEN
-           CALL SPLINPOX(Xsonic,Rsonic,X,RADIUS,ND-1)         
-         ENDIF      
-      ELSEIF (XAXISMODE == 'RHO') THEN
-         XTEXT = CENTER // 'log(&R#r#&N/(g cm&H-3&M))'
-         DO L=1, ND
-           RHO(L) = ENTOT(L) * AMU * ATMEAN
-         ENDDO         
-         XMIN = LOG10(RHO(1))
-         XMAX = LOG10(RHO(ND))
-         XTICK = 1.
-         XABST = 2.
-         DO L=1, ND-1
-           X(L) = LOG10(0.5 * (RHO(L) + RHO(L+1)))
-         ENDDO      
-         IF (Lcand > 1 .AND. Lcand < ND) THEN
-           CALL SPLINPOX(Xsonic,Rsonic,X,RADIUS,ND-1)         
-         ENDIF      
-      ELSE
-         WRITE (hCPR,*) 'PLOTACC: Invalid XAXISMODE ************'
-         WRITE (hCPR,*) '***** The following plot was aborted:'
-         WRITE (hCPR,*) PLOTOPT(:IDX(PLOTOPT))
-         RETURN
-      ENDIF
-      
-      
 C***  Y-AXIS:  ---------------------------------------------------------
 C***  ALPHA RANGE (AUTO)
       YMAX = 0. 
@@ -202,6 +61,7 @@ C***  ALPHA RANGE (AUTO)
 
 C***  DATA TABLE ------------------------------------
       DO L=1, ND-1
+        X(L) = FLOAT(L)
         Y(L) = ALPHAF(L)
       ENDDO
  
@@ -224,9 +84,9 @@ C***  DATA TABLE ------------------------------------
      >   CTIME(1:2), ':', CTIME(3:4), ')'
 
       CALL PLOTANF (hPLOT,HEAD1,HEAD2
-     >        ,XTEXT
+     >        ,'\CENTER\depth index'
      >        ,'\CENTER\force multiplier parameter #a#'
-     >        ,0.,XMIN,XMAX,XTICK,XABST,.0
+     >        ,XSCALE,XMIN,XMAX,XTICK,XABST,.0
      >        ,YSCALE,0.,0.,YTICK,YABST,.0
      >        ,X,Y,ND-1, 5)
  

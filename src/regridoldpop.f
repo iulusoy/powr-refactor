@@ -4,7 +4,7 @@
      >                        RNE, RNEorg, ABXYZ, NFIRST, NLAST, 
      >                        NATOM, WEIGHT, NCHARG, EION, ELEVEL, NOM, 
      >                        TAUROSScont, TAUSCALorg,
-     >                        ENLTE, DEPARTNDorg, bUseENTOT, bKeepTTAU)
+     >                        ENLTE, DEPARTNDorg, bUseENTOT)
 C***********************************************************************      
 C***  Adjusts old population numbers (i.e. POP1, etc. from older 
 C***  STEAL jobs) to a new stratification (R, V)
@@ -24,12 +24,11 @@ C***********************************************************************
       
       INTEGER, INTENT(IN) :: ND, N, NATOM
       REAL, INTENT(IN) :: POPMIN, TAUTHICK
-      LOGICAL, INTENT(IN) :: bNoRGrid, bUseENTOT, bKeepTTAU
+      LOGICAL, INTENT(IN) :: bNoRGrid, bUseENTOT
       
-      REAL, DIMENSION(ND), INTENT(IN) :: RNEorg, ENTOT, ENTOTorg, 
+      REAL, DIMENSION(ND), INTENT(IN) :: RNEorg, RNE, ENTOT, ENTOTorg, 
      >                                   RADIUSorg, RADIUS, T, Told,
      >                                   TAUROSScont, TAUSCALorg
-      REAL, DIMENSION(ND), INTENT(INOUT) :: RNE
       REAL, DIMENSION(N), INTENT(IN) :: WEIGHT, ELEVEL, EION
       REAL, DIMENSION(NATOM) :: ABXYZ
 
@@ -43,12 +42,10 @@ C***********************************************************************
       INTEGER :: L, J
       
       CALL BACKUPPOPNUM(ND, N, POPNUM, SCRATCH)      
-      IF ((.NOT. bNoRGrid) .OR. bUseENTOT) THEN
+      IF (.NOT. bNoRGrid) THEN
         CALL INTERPOLATEPOPNUM(POPNUM, SCRATCH, POPMIN,
      >                         RADIUS, RADIUSorg, ENTOT, ENTOTorg,
-     >                         RNE, RNEorg, T, Told, N, ND,
-     >                         ABXYZ, NFIRST, NLAST, NATOM,
-     >                         NCHARG, WEIGHT, EION, ELEVEL, NOM,
+     >                         N, ND, ABXYZ, NFIRST, NLAST, NATOM,
      >                         bUseENTOT)
       ENDIF     
 C***  Calculate departure coefficients for the innermost
@@ -61,7 +58,6 @@ C***  depth point of the old stratification
         DEPARTNDorg(J) = SCRATCH(ND,J)/ENLTE(J)
       ENDDO      
       DO L=1, ND        
-        IF (.NOT. bKeepTTAU) EXIT
         IF (TAUROSScont(L) < TAUTHICK) CYCLE
         IF (TAUROSScont(L) <= TAUSCALorg(ND)) THEN
           DO J=1, ND
@@ -79,8 +75,6 @@ C***      Inner extrapolation necessary
           ENDDO
         ENDIF        
       ENDDO      
-      
-      CALL POP_RENORM(POPNUM, ND, N, NATOM, NFIRST, NLAST, ABXYZ)
       
       RETURN
       END

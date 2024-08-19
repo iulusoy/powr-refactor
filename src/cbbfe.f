@@ -10,15 +10,10 @@ C***  We now insert cross-sections for such transitions in COLLI
 C***  Calling tree: STEAL - COMA - COLLI - CBBFE
 C***********************************************************************
  
-      INTEGER, INTENT(IN) :: NDIM, NUP, LOW
-      REAL, INTENT(IN) :: TL, TROOT, WAVENUM, WN3
-      REAL, INTENT(OUT) :: OMEGA
-      REAL, DIMENSION(NDIM, NDIM), INTENT(IN) :: EINST
+      DIMENSION EINST(NDIM,NDIM)
 
       REAL, EXTERNAL :: EXPINT1EXP
-       
-      REAL :: C1, U0, GAMMA
-
+      
 C***  C1 = H * C / K    ( CM * KELVIN )
       DATA C1 / 1.4388 /
 
@@ -26,11 +21,6 @@ C***  FORMULA  OF VAN REGEMORTER (1962, APJ 136, 906)
 C***           FORMULA WITH  G = 0.2
 C***           GAMMA = MAX(G,.276*EXP(U0)*E1(U0))
 C***            (E1: FIRST EXPONENTIAL INTEGRAL)
-
-
-C**     Keith Butler:
-C**     G = 0.2 for mainqn change, otherwise should be 0.7
-
 
       U0 = C1 * WAVENUM / TL
       GAMMA = AMAX1 (0.2, 0.276*EXPINT1EXP(U0))

@@ -1,8 +1,7 @@
       SUBROUTINE ADAPOP (POPNUM, ND, N, POPOLD, NDOLD, NOLD, NCHARG,
      >          NATOM, ABXYZ, NFIRST, NLAST, RNE, NTRANS, POPLTE, 
      >          BDEPART, ADPWEIGHT, RADIUS, ROLD, POPHELP, TAURCONT, 
-     >          TAURCONTOLD, POPLTE_OLD, ENTOT, ENTOTOLD, 
-     >          BTAUR, bUseENTOT, POPMIN) 
+     >          TAURCONTOLD, POPLTE_OLD, BTAUR, POPMIN) 
 C***********************************************************************
 C***  TRANSFORMATION OF POPULATION NUMBERS FROM OLD TO NEW MODEL ATOM
 C***  Radically simplified version: wrh 10-Aug-2007
@@ -12,31 +11,15 @@ C***    IF NTRANS(J) =  0 : POPNUM set to ZERO
 C***    IF NTRANS(J) >  0 : assign POPOLD with index NTRANS
 C***********************************************************************
  
-      IMPLICIT NONE
-      INCLUDE 'interfacebib.inc'
- 
-      INTEGER, INTENT(IN) :: N, NOLD, ND, NDOLD, NATOM
-      REAL, INTENT(IN) :: POPMIN
+      DIMENSION NCHARG(N), NTRANS(N), ADPWEIGHT(N)
+      DIMENSION ABXYZ(NATOM),NFIRST(NATOM),NLAST(NATOM)
+      DIMENSION RNE(ND), RADIUS(ND), TAURCONT(ND)
+      DIMENSION POPNUM(ND,N), POPLTE(ND,N)
+      DIMENSION POPOLD(ND,NOLD)
+      DIMENSION ROLD(NDOLD), TAURCONTOLD(NDOLD)
+      DIMENSION POPHELP(NDOLD,NOLD), POPLTE_OLD(NDOLD, NOLD)
+      LOGICAL BDEPART, BTAUR
 
-      INTEGER, DIMENSION(N) :: NCHARG, NTRANS
-      REAL, DIMENSION(N) :: ADPWEIGHT(N)      
-
-      INTEGER, DIMENSION(NATOM) :: NFIRST, NLAST
-      REAL, DIMENSION(NATOM) :: ABXYZ
-      
-      REAL, DIMENSION(ND) :: RNE, RADIUS, TAURCONT, ENTOT
-      REAL, DIMENSION(NDOLD) :: ROLD, TAURCONTOLD, ENTOTOLD, 
-     >                          ENTOTOLDLOG, POPHELPJLOG
-
-      REAL, DIMENSION(ND, N) :: POPNUM, POPLTE
-      REAL, DIMENSION(ND, NOLD) :: POPOLD
-      REAL, DIMENSION(NDOLD,NOLD) :: POPHELP, POPLTE_OLD
-
-      INTEGER :: L, J, NFIRNA, NLANA, NA
-      REAL :: SUM, POPJLOGL, ENTOTLOGL
-      
-      LOGICAL :: BDEPART, BTAUR, bUseENTOT
-      
 C***  The old popnumbers in POPHELP are interpolated with respect
 C***  to the depth coordinate and stored in POPOLD (which then has
 C***  still the old atomic levels, but the new radius grid)
@@ -71,31 +54,6 @@ C***  Interpolation on Tau-Grid
               ENDIF 
            ENDDO
          ENDDO
-      
-      ELSEIF (bUseENTOT) THEN
-        WRITE (0,*) 'Interpolation of Popnumbers over LOG density'
-        DO J=1, NOLD
-          !prepare necessary vectors
-          DO L=1, NDOLD
-            ENTOTOLDLOG(L) = LOG10(ENTOTOLD(L))
-            POPHELPJLOG(L) = LOG10(MAX(POPHELP(L,J), POPMIN))
-          ENDDO          
-          !Perform interpolation on log(n_tot)
-          dploop: DO L=1, ND
-            ENTOTLOGL = LOG10(ENTOT(L))
-            IF (ENTOTLOGL > ENTOTOLDLOG(NDOLD)) THEN
-              !more dense than old innermost value => take old inner boundary value
-              POPJLOGL = POPHELPJLOG(NDOLD)
-            ELSEIF (ENTOTLOGL < ENTOTOLDLOG(1)) THEN
-              !less dense than old outermost value => take old outer boundary value
-              POPJLOGL = POPHELPJLOG(1)
-            ELSE
-              CALL SPLINPOX(POPJLOGL, ENTOTLOGL,
-     >                     POPHELPJLOG, ENTOTOLDLOG, NDOLD)
-            ENDIF
-            POPOLD(L,J) = 10**(POPJLOGL)
-          ENDDO dploop
-        ENDDO              
       
       ELSE
 
@@ -149,14 +107,9 @@ C***  LOOP FOR EACH ELEMENT  -------------------------------------------
                SUM = SUM + POPNUM(L,J)
             ENDDO
             SUM = SUM / ABXYZ(NA)
-            IF (SUM /= 0.) THEN
+            IF (SUM .NE. 0.) THEN
                DO J=NFIRNA,NLANA
-                  !POPMIN ensurance test (ansander, 2014)
-                  IF (POPNUM(L,J) > POPMIN) THEN
-                    POPNUM(L,J) = POPNUM(L,J) / SUM
-                  ELSE
-                    POPNUM(L,J) = POPMIN
-                  ENDIF                   
+                  POPNUM(L,J) = POPNUM(L,J) / SUM
                ENDDO
             ENDIF
          ENDDO

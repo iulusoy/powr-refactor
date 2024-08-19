@@ -1,14 +1,12 @@
-      SUBROUTINE FREQUNORM (ND, MAXION, OPASMEAN, OPASMEANTC, SMEAN, 
-     >                  QFJMEAN, XJTOTL, OPAJMEAN, OPAJMEANTC, OPAPMEAN, 
+      SUBROUTINE FREQUNORM (ND, OPASMEAN, OPASMEANTC, SMEAN, QFJMEAN, 
+     >                  XJTOTL, OPAJMEAN, OPAJMEANTC, OPAPMEAN, 
      >                  QOPAHMEAN, HMEAN, EDDIHOUTJMEAN, 
      >                  RADIUS, RSTAR, DENSCON, 
-     >                  FTCOLI, FTCOLIB, WJC, WJC_MIN, 
+     >                  FTCOLI, WJC, WJC_MIN, 
      >                  FWTEST, NF, OPC, FTFE, LASTFE, 
      >                  LPLOT_WCHARM, XLAMBDA, OPAROSS, OPALAMBDAMEAN, 
      >                  ARAD, ACONT, ATHOM, ENTOT, ABXYZ, ATMASS, NATOM,
-     >                  T, GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2, TAUROSS,
-     >                  ARADELEM, ACONTELEM, ARADION, ACONTION,
-     >                  OPAROSSCONT, OPAROSSELEM, OPATOTELEM)
+     >                  T, GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2, TAUROSS)
 C*************************************************************
 C***  Some quantities which were intergrated in FREQUINT are
 C***    now normalized etc. 
@@ -16,32 +14,24 @@ C*************************************************************
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: ND, NF, NATOM, MAXION, LASTFE
+      INTEGER, INTENT(IN) :: ND, NF, NATOM, LASTFE
 
       REAL, DIMENSION(NATOM), INTENT(IN) :: ABXYZ, ATMASS
       REAL, DIMENSION(ND), INTENT(IN) :: ENTOT
       REAL, DIMENSION(ND), INTENT(OUT) :: TAUROSS
-      REAL, DIMENSION(ND), INTENT(INOUT) :: ARAD, ACONT, ATHOM,
-     >                                      OPAROSSCONT
-      REAL, DIMENSION(NATOM, ND), INTENT(INOUT) :: OPAROSSELEM, 
-     >                                             OPATOTELEM
-      REAL, DIMENSION(NATOM, ND-1), INTENT(INOUT) :: ARADELEM, 
-     >                                               ACONTELEM
-      REAL, DIMENSION(ND-1, NATOM, MAXION), INTENT(INOUT) :: ARADION, 
-     >                                                       ACONTION
-     
+      REAL, DIMENSION(ND), INTENT(INOUT) :: ARAD, ACONT, ATHOM
 
       REAL, DIMENSION(ND) :: OPASMEAN, SMEAN, QFJMEAN,
      >                       XJTOTL, OPAJMEAN, QOPAHMEAN,
      >                       OPASMEANTC, OPAJMEANTC, OPAPMEAN,
      >                       OPAROSS, OPALAMBDAMEAN, T,
-     >                       FTCOLI, FTCOLIB, RADIUS, HMEAN
+     >                       FTCOLI, RADIUS, HMEAN
       CHARACTER(8) :: OPC
       REAL, DIMENSION(ND,NF) :: WJC, WJC_MIN
       REAL, DIMENSION(ND,LASTFE) :: FTFE
       REAL, DIMENSION(NF) :: FWTEST, XLAMBDA
       
-      INTEGER :: K, KK, L, NA, ION, INDFE, LPLOT_WCHARM
+      INTEGER :: K, KK, L, NA, INDFE, LPLOT_WCHARM
       REAL :: ATMEAN, UNLU_TAUMAX, UNLU_TAUMAX2, TACCELERATE,
      >        TACCELERATE2, SDURCHB, FDAMP, ETAUROSS, GAMMAT,
      >        RSTAR, RINT, RL2, EWTOT, CC, EDDIHOUTJMEAN, FCOR,
@@ -50,10 +40,6 @@ C*************************************************************
 C***  tiefenabh. clumping nach goetz
       REAL, DIMENSION(ND) :: DENSCON
 
-      !File and channel handles (=KANAL)
-      INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
-      INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)      
-      
 C***  Maximum Value for Scharmer Weight: 1 - 1.E-10
 C***  corresponding to a maximum optical depth of ca. tau = 1E10 
       REAL, PARAMETER :: WJCMAX = 0.9999999999 
@@ -80,20 +66,11 @@ C***  STEBOL = STEFAN-BOLTZMANN CONSTANT / PI (ERG/CM**2/SEC/STERAD/KELVIN**4
         OPAJMEANTC(L) = DENSCON(L) * OPAJMEANTC(L) / (XJTOTL(L) * RSTAR)
         OPAPMEAN  (L) = DENSCON(L) * OPAPMEAN  (L) / (BTOTL * RSTAR)
         FTCOLI    (L) = DENSCON(L) * FTCOLI(L)
-        FTCOLIB   (L) = DENSCON(L) * FTCOLIB(L)
         DO INDFE=1, LASTFE
            FTFE(L,INDFE) = DENSCON(L) * FTFE(L,INDFE)
         ENDDO
 
-        OPAROSS(L) = 4.*STEBOL*T(L)*T(L)*T(L) / OPAROSS(L)
-        OPAROSSCONT(L) = 4.*STEBOL*T(L)*T(L)*T(L) / OPAROSSCONT(L) 
-        DO NA=1, NATOM
-          IF (OPAROSSELEM(NA,L) /= 0.) THEN
-            OPAROSSELEM(NA,L) = 4.*STEBOL*T(L)*T(L)*T(L) 
-     >                                        / OPAROSSELEM(NA,L) 
-          ENDIF
-          OPATOTELEM(NA,L) = OPATOTELEM(NA,L) / RSTAR 
-        ENDDO
+        OPAROSS(L) = 4.*STEBOL*T(L)*T(L)*T(L) / OPAROSS(L) 
 
         IF (L == ND) CYCLE
 
@@ -103,18 +80,6 @@ C***    RADIATIVE ACCELERATION IN CGS UNITS
         ARAD(L)  = PI4 * ARAD(L)  / (RSTAR*CLIGHT*RINT*RINT*EWTOT)
         ACONT(L) = PI4 * ACONT(L) / (RSTAR*CLIGHT*RINT*RINT*EWTOT)
         ATHOM(L) = PI4 * ATHOM(L) / (RSTAR*CLIGHT*RINT*RINT*EWTOT)
-        DO NA=1, NATOM
-          ARADELEM(NA,L)  = PI4 * ARADELEM(NA,L) / 
-     >                              (RSTAR*CLIGHT*RINT*RINT*EWTOT)
-          ACONTELEM(NA,L)  = PI4 * ACONTELEM(NA,L) / 
-     >                              (RSTAR*CLIGHT*RINT*RINT*EWTOT)
-          DO ION=1, MAXION
-            ARADION(L,NA,ION) = PI4 * ARADION(L, NA, ION) / 
-     >                              (RSTAR*CLIGHT*RINT*RINT*EWTOT)
-            ACONTION(L,NA,ION) = PI4 * ACONTION(L, NA, ION) / 
-     >                              (RSTAR*CLIGHT*RINT*RINT*EWTOT)
-          ENDDO
-        ENDDO
 
 C***    Note: QOPAHMEAN is with the average density (not: clump), because it 
 C***          enters a transfer eq. 

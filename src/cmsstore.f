@@ -19,11 +19,9 @@ C***                file need not to be closed when a new file is used
 C***  Version 3.1 :
 C***                MAXADR increased from 25600 to 256000 (2000 Records)
 C***                wrh 15-Mar-2005 16:33:59
-C***  Version 3.2 :
-C***                MSMAXCH increased from 3 to 5
 C*******************************************************************
 
-      PARAMETER (MSMAXCH = 5)
+      PARAMETER (MSMAXCH = 3)
 C***  NOTE: MAXADR MUST BE A MULTIPLE OF 128
 C***        (I.E. IADRL IN ROUTINE STORAGE)
       PARAMETER (MAXADR = 2000 * 128)

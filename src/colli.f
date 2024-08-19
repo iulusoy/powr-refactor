@@ -1,7 +1,7 @@
       SUBROUTINE COLLI(NDIM,N,ENLTE,TL,ENE,NCHARG,ELEVEL,EINST,CRATE,
      $                 EION,COCO,KEYCBB,WEIGHT,ALTESUM,NATOM,NOM,KODAT,
      $                 INDNUP,INDLOW,LASTIND, LASTINDAUTO, LASTINDALL,
-     $                 KONTNUP,KONTLOW,LASTKON,KEYCBF,IONGRND,MAXATOM)
+     $                 KONTNUP,KONTLOW,LASTKON,KEYCBF,IONGRND)
 C*******************************************************************************
 C***  COLLISIONAL TRANSITION RATES STORED IN MATRIX CRATE **********************
 C***  BOUND-BOUND: DEPENDING ON THE ELEMENT (HE, H, N, C, O)
@@ -13,19 +13,18 @@ C***  2) STEAL - POPZERO - NLTEPOP - COLLI   (for print rates option)
 C***  3) STEAL - LINPOP - LTEPOP - COMA      (for rate equations)
 C*******************************************************************************
  
-      INTEGER, INTENT(IN) :: NDIM, LASTIND, LASTKON, MAXATOM
-      REAL, DIMENSION(NDIM, NDIM) :: EINST, CRATE
-      REAL, DIMENSION(NDIM) :: ENLTE, ELEVEL, WEIGHT, EION
-      INTEGER, DIMENSION(NDIM) :: NCHARG, IONGRND
-      REAL, DIMENSION(4, NDIM) :: ALTESUM
-      INTEGER, DIMENSION(LASTIND) :: INDNUP, INDLOW
-      INTEGER, DIMENSION(LASTKON) :: KONTNUP, KONTLOW
+      DIMENSION EINST(NDIM,NDIM),CRATE(NDIM,NDIM)
+      DIMENSION ENLTE(NDIM),NCHARG(NDIM),ELEVEL(NDIM),WEIGHT(NDIM)
+      DIMENSION EION(NDIM),ALTESUM(4,NDIM)
+      DIMENSION IONGRND(NDIM)
+      DIMENSION INDNUP(LASTIND),INDLOW(LASTIND)
+      DIMENSION KONTNUP(LASTKON),KONTLOW(LASTKON)
 C***  ARRAY "KEYCBF" IS PROVIDED FOR FUTURE TESTS OF DIFFERENT COLLISIONAL
 C***  IONIZATION FORMULAES:
       DIMENSION KEYCBF(LASTKON)
-      INTEGER, DIMENSION(N) :: NOM
-      INTEGER, DIMENSION(MAXATOM) :: KODAT
-      CHARACTER(4), DIMENSION(LASTIND) :: KEYCBB
+      DIMENSION NOM(N)
+      DIMENSION KODAT(NATOM)
+      CHARACTER*4 KEYCBB(LASTIND)
 
 C***  SUPPRESS REPETITIVE WARNING OF NEGATIVE CROSS SECTIONS
       DATA CBBWARN / 0. /
@@ -37,22 +36,21 @@ C***  C1 = H * C / K    ( CM * ANGSTROEM )
       T32=TL*TROOT
  
 C***  INITIALIZE ALL ELEMENTS OF MATRIX "CRATE":
-      DO J=1,N
-        DO I=1,N
-          CRATE(I,J)=.0
-        ENDDO
-      ENDDO
+      DO 1 J=1,N
+      DO 1 I=1,N
+      CRATE(I,J)=.0
+    1 CONTINUE
  
 C***  LINE TRANSITIONS  *******************************************************
       DO 11 IND=1,LASTINDALL
 C***    Special treatment required for DRTRANSITS - see RADNET
 ccc     currently just neglected
         IF (IND .GT. LASTIND .AND. IND .LE. LASTINDAUTO) CYCLE
-        NUP=INDNUP(IND)
-        LOW=INDLOW(IND)
-        WAVENUM=ELEVEL(NUP)-ELEVEL(LOW)
-        WN2=WAVENUM*WAVENUM
-        WN3=WN2*WAVENUM
+      NUP=INDNUP(IND)
+      LOW=INDLOW(IND)
+      WAVENUM=ELEVEL(NUP)-ELEVEL(LOW)
+      WN2=WAVENUM*WAVENUM
+      WN3=WN2*WAVENUM
  
 C***  'NONE': TRANSITIONS WITH UNKNOWN COLLISIONAL COEFFICIENTS
 C***          (COLLISIONAL CROSS SECTION SIGMA(LOW,UP) IS SET TO  PI*A0**2)
@@ -118,7 +116,7 @@ c        endif
    11 CONTINUE
 
 C***  This is a modification added 24-Aug-2010 by helge + wrh
-C***  - see WR-Memo 20100826.txt
+C***  - see WR-Memo 100825.txt
 C***  Here we assign a collisonal rate coefficient for those superlines 
 C***  which have ZERO radiative cross-section and were therefore
 C***  skipped in the index numbering (i.e. no call of CBBFE occured)
@@ -175,7 +173,6 @@ C***     UPPER LEVEL IS THE GROUND LEVEL OF THE PARENT ION
          NUP=IONGRND(LOW)
          EDGE=ELEVEL(NUP)+EION(LOW)-ELEVEL(LOW)
          X=1000./TL
-         EXPFAC=EXP(-C1*EDGE/TL)
          FOFT=(ALTESUM(3,LOW)*X+ALTESUM(2,LOW))*X
          FOFT=10.**FOFT
          AOFT=ALTESUM(1,LOW)*FOFT

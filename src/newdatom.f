@@ -11,9 +11,9 @@ C***  are to be included.
 C***
 C**********************************************************************
       PARAMETER (NDIM=1000) !Maximale Zahl der Levels
-      PARAMETER (MAXION=27)
+      PARAMETER (MAXION=20)
       CHARACTER LEVEL(NDIM, MAXION)*10
-      CHARACTER ZEILE*80, NAMEION*5(MAXION), FILENAME*255 
+      CHARACTER ZEILE*80, NAMEION(MAXION)*5, FILENAME*255 
       CHARACTER ELEMENT*2 !Elementsymbol
       CHARACTER IONDEGREE(MAXION)*10 !vorkommende Ionen
       CHARACTER HIGHESTION*10, ROMAN(20)*5
@@ -62,11 +62,14 @@ C     Einlesen des Steuerfiles
       
 C     Gesamtes Steuerfile als Kommentar oben drueber schreiben, d.h.
 C     einlesen und ausgeben
-      CALL DATE(CDATE)
-      CALL TIME(CTIME)
+ccc      CALL DATE(CDATE)
+ccc      CALL TIME(CTIME)
+      CALL DATE_AND_TIME (DATE=CDATE, TIME=CTIME)
+
       WRITE (99,'(A)') 
-     > '* This DATOM-FILE has been created at ' // CDATE 
-     >                  // '' // CTIME
+     > '* This DATOM-FILE has been created at ' //
+     >     CDATE(1:4) // '/' // CDATE(5:6) // '/' // CDATE(7:8) // ' ' 
+     >  // CTIME(1:2) // ':' // CTIME(3:4) // ':' // CTIME(5:6)  
       WRITE (99,'(A)') '* with the program NEWDATOM' 
       WRITE (99,'(A)') '*'
       WRITE (99,'(A)') '* NEWDATOM_INPUT was'       

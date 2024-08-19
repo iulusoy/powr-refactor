@@ -1,10 +1,10 @@
-      SUBROUTINE PLOTT (TPLOTOPT,ND,R,TAUROSS,T,ENTOT,
-     >                  MODHEAD,JOBNUM,KANAL,BINBOX,UNLUTECLINE)
-C***********************************************************************
+      SUBROUTINE PLOTT (TPLOTOPT,ND,R,TAUROSS,T,MODHEAD,JOBNUM,KANAL,
+     >                  BINBOX,UNLUTECLINE)
+C******************************************************************************
 C***  DIRECT TRANSFER OF THE TEMPERATURE STRATIFICATION
 C***  DEFAULT: T(R) VERSUS LOG(R/R*-1)
 C***  TPLTAU=.TRUE.: T(R) VERSUS LOG(TAUROSS)
-C***********************************************************************
+C******************************************************************************
  
       IMPLICIT NONE
 
@@ -12,12 +12,12 @@ C***********************************************************************
       INTEGER, INTENT(IN) :: ND, JOBNUM, KANAL
 
       REAL, DIMENSION(NDMAX) :: X, Y
-      REAL, DIMENSION(ND) :: R, TAUROSS, T, ENTOT
-      LOGICAL :: TPLTAU, TPLENTOT, BINBOX, BCOMPARTIBLE
+      REAL, DIMENSION(ND) :: R, TAUROSS, T
+      LOGICAL :: TPLTAU, BINBOX, BCOMPARTIBLE
       CHARACTER(70) :: HEAD1, HEAD2
       CHARACTER(100) :: MODHEAD
       CHARACTER(8) :: CENTER, BUFFER8
-      CHARACTER(40) :: CUROPT, NEXTOPT, XLABEL
+      CHARACTER(40) :: CUROPT, NEXTOPT
       CHARACTER(*) :: UNLUTECLINE
       CHARACTER(256) :: TPLOTOPT
       INTEGER, PARAMETER :: NPARMAX = 40
@@ -36,7 +36,6 @@ C***********************************************************************
       YMAX = 0.
       ACTPAR = '0.0'
       TPLTAU = .FALSE.
-      TPLENTOT = .FALSE.
       BCOMPARTIBLE = .FALSE.    !if true, the old CARDS format is also interpreted
 
 C***  READ CARDS LINE
@@ -107,8 +106,6 @@ C***  Get actual parameters
               ENDIF
             CASE ('TAU', 'TAUR')
               TPLTAU = .TRUE.
-            CASE ('ENTOT')
-              TPLENTOT = .TRUE.
           ENDSELECT
         ENDDO
       ENDIF
@@ -196,11 +193,6 @@ C***  TRANSFER ALL DATA (WITH OPTION "KASDEF INBOX")
           X(L)=LOG10(TAUROSS(LMIN-1+L))
           Y(L)=T(LMIN-1+L)/1.E3
         ENDDO
-      ELSEIF (TPLENTOT) THEN
-        DO L=1, NDL
-          X(L)=LOG10(ENTOT(LMIN-1+L))
-          Y(L)=T(LMIN-1+L)/1.E3
-        ENDDO
       ELSE
         DO L=1, NDL
           X(L)=LOG10(R(LMAX+1-L)-1.)
@@ -234,9 +226,6 @@ C***  PLOT PARAMETER
       IF (TPLTAU) THEN
          HEAD1=' WR TEMPERATURE STRATIFICATION T(R) VERSUS LOG(TAUROSS)'
          HEAD2(30:65)=' TEMPERATURE STRATIFICATION T(TAU-R)'
-      ELSEIF (TPLENTOT) THEN
-         HEAD1=' WR TEMPERATURE STRATIFICATION T(R) VS LOG(n&Ttot&M)'
-         HEAD2(30:68)=' TEMPERATURE STRATIFICATION T(n&Ttot&M)'
       ELSE
          HEAD1=' WR TEMPERATURE STRATIFICATION T(R) VERSUS LOG(R/R*-1)'
          HEAD2(30:61)=' TEMPERATURE STRATIFICATION T(R)'
@@ -292,11 +281,11 @@ c        WRITE (KANAL, '(A)') 'KASDEF COLOR=1'
 
       IF (TPLTAU) THEN
         WRITE (KANAL, '(A)') 'KASDEF COLOR=2'
-        WRITE (KANAL, '(A,G15.7,A)')
+        WRITE (KANAL, '(A,F9.3,A)')
      >    'KASDEF SYM XMAX ', T(ND)/1000., ' 0. 0. 0.3 8'
         IF (R(1) > RMAX) THEN
           !draw outer circle only if outside of plot
-          WRITE (KANAL, '(A,G15.7,A)')
+          WRITE (KANAL, '(A,F9.3,A)')
      >      'KASDEF SYM XMIN ', T(1)/1000., ' 0. 0. 0.3 8'
         ENDIF
         WRITE (KANAL, '(A)') 'KASDEF COLOR=1'
@@ -309,23 +298,18 @@ c        WRITE (KANAL, '(A)') 'KASDEF COLOR=1'
       ELSE
 C***  MARKIERUNG DER TIEFENPUNKTE 10, 20, 30, USW. 
         WRITE (KANAL, '(A)') 'KASDEF COLOR=2'
-        WRITE (KANAL, '(A,G15.7,A)')
+        WRITE (KANAL, '(A,F9.3,A)')
      >    'KASDEF SYM XMIN ', T(ND)/1000., ' 0. 0. 0.3 8'
         IF (R(1) > RMAX) THEN
           !draw outer circle only if outside of plot
-          WRITE (KANAL, '(A,G15.7,A)')
+          WRITE (KANAL, '(A,F9.3,A)')
      >      'KASDEF SYM XMAX ', T(1)/1000., ' 0. 0. 0.3 8'
         ENDIF
         WRITE (KANAL, '(A)') 'KASDEF COLOR=1'
 C***        
-        IF (TPLENTOT) THEN
-          XLABEL = 'log (n&Ttot&M)'
-        ELSE
-          XLABEL = 'log (R/R&T*&M - 1)'
-        ENDIF
 
          CALL PLOTANF (KANAL,HEAD1,HEAD2
-     $        ,CENTER// XLABEL
+     $        ,CENTER//'log (R/R&T*&M - 1)'
      $        ,CENTER//'T / kK'
      $        ,XSCALE,XMIN,XMAX,XTICK,XABST,.0
      $        ,YSCALE,YMIN,YMAX,YTICK,YABST,.0

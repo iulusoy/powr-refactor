@@ -1,4 +1,4 @@
-      SUBROUTINE PREPRAY (Z, COSPHI, P, ND, NDDIM, NP, JP, XO, LTOT, 
+      SUBROUTINE PREPRAY (Z, COSPHI, P, ND, NDDIM, NP, JP, XO, LTOT,
      >                   PWEIGHT, CORE, VDU, R,
      $                   OPAL, ETAL, RRAY, OPARAY, ETARAY,
      $                   ETACRAY, OPALRAY, ETALRAY, NFLDIM, ZRAY,
@@ -35,7 +35,7 @@ C***********************************************************************
       DIMENSION DELXLAP(NBLINE)
 
       DIMENSION VDU(NDDIM,MAXMOD), R(ND)
-      DIMENSION Z(ND),P(NP), ZINTER(2)
+      DIMENSION Z(ND),P(NP), ZINTER(4)
       REAL, DIMENSION (NDDIM,NFLDIM,MAXMOD) :: ETACK, ETACCK, OPACK
       REAL, DIMENSION(NFLDIM,MAXMOD) :: BCORE, DBDR
       DIMENSION POROLENGTH(ND), POROLENGTHRAY(NDADDIM)
@@ -75,9 +75,9 @@ C***     while L is only within the range for the front hemisphere
 C***    Check if current point lies in second-model domain
         IMOD=1
         IF (NMOD .EQ. 2) THEN
-           IF ( (ZRAY(LL)-ZINTER(1))*(ZRAY(LL)-ZINTER(2)) .LT. .0) THEN
-              IMOD=2
-           ENDIF
+           IF ( (ZRAY(LL)-ZINTER(1))*(ZRAY(LL)-ZINTER(2)) .LT. .0
+     >          .OR. (ZRAY(LL)-ZINTER(3))*(ZRAY(LL)-ZINTER(4)) .LT. .0
+     >         ) IMOD=2
         ENDIF
 
         RRECIP = 1. / R(L)

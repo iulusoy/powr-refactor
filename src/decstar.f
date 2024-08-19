@@ -1,21 +1,18 @@
       SUBROUTINE DECSTAR (MODHEAD, FM, RSTAR, VDOP, RMAX, TTABLE, 
      >                    NDDIM, OLDTEMP, MAXATOM, NATOM, ABXYZ, KODAT,
      >                    VPLOT, ATMASS, XDATA, MAXXDAT, OLDFGRID, 
-     >                    THIN, ThinCard, GLOG, GEFFLOG, GEDD, 
-     >                    bSaveGEFF, XMSTAR, WRTYPE, TAUMAX, TAUACC,
+     >                    THIN, ThinCard, GLOG, GEFFLOG, GEDD, bSaveGEFF,
+     >                    XMSTAR, WRTYPE, TAUMAX, TAUACC,
      >                    bTauFix, BTWOT, TFAC, DENSCON_LINE, BLACKEDGE, 
      >                    bOLDSTART, RadiusGridParameters, XMDOT, XLOGL,
      >                    RTRANS, BTAUR, DENSCON_FIX, MASSORIGIN, 
-     >                    LRTinput, ELEMENT, iOldStratification, 
-     >                    bHYDROSOLVE, GEddFix, bOldMdot, VoldMod, 
-     >                    bOVTauMax, MLRELATION, NC, VTURBND, 
-     >                    VTURB_LINE, iOLDRAD, RADGAMMASTART, 
-     >                    fHYDROSTART, bFULLHYDROSTAT, bGAMMARADMEAN, 
-     >                    cVEXTEND, bGREYSTART, GEFFKEY, POPMIN, 
-     >                    XLAMBLUE, LTESTART, bOLDMODEL, XMDOTold, 
-     >                    XMSTARold, RSTARold, VNDold, VFINALold, 
-     >                    bForceDCUpdate, bOLDJ, bOVTauCut, bDCSCALE,
-     >                    TEFFold, XLOGLold, MDOTINPUT, DRLINES_CARD)
+     >                    LRTinput, ELEMENT, bOldStratification, 
+     >                    bHYDROSOLVE, GEddFix, 
+     >                    MLRELATION, NC, VTURB, 
+     >                    bOLDRAD, RADGAMMASTART, fHYDROSTART, 
+     >                    bFULLHYDROSTAT, bGAMMARADMEAN, GEFFKEY,
+     >                    bGREYSTART, XLAMBLUE, MDOTINPUT, LTESTART, 
+     >                    DRLINES_CARD)
 C***********************************************************************
 C***  DECODES INPUT CARDS, CALLED FROM WRSTART
 C***********************************************************************
@@ -26,63 +23,59 @@ C***  COMMON/VELPAR/ TRANSFERS VELOCITY-FIELD PARAMETERS TO FUNCTION WRVEL
 C***  The second line has additional parameters for the 2-beta-law 
 C***     -- wrh  6-Apr-2006 17:21:57
       COMMON/VELPAR/ VFINAL,VMIN,BETA,VPAR1,VPAR2,RCON,HSCALE,
-     >     BETA2, BETA2FRACTION, VPAR1_2, VPAR2_2, RONSET,
-     >     bSMOCO, VCON, VOFF
+     >     BETA2, BETA2FRACTION, VPAR1_2, VPAR2_2
 
 C***  COMMON /COMTEFF/  TRANSFERS THE EFF. TEMPERATURE TO: 
 C***                    WRSTART, GREY, PRIMOD, DECFREQ, DTDR, JSTART 
       COMMON /COMTEFF/ TEFF,TMIN,TMODIFY,SPHERIC
-     
+
 C***  Operating system:
       COMMON / COMOS / OPSYS
       CHARACTER(8) :: OPSYS
 
       REAL :: FM, RSTAR, VDOP, RMAX, RTRANS, TEFF, 
-     >          TMIN, TMODIFY, TFAC, RONSET,
-     >          VMIN, VFINAL, BETA, VPAR1, VPAR2, VCON,
-     >          RCON, HSCALE, BETA2, BETA2FRACTION, VOFF,
-     >          VPAR1_2, VPAR2_2, fHYDROSTART, RSTARold,
-     >          XMDOT, XMSTAR, XMSTARG, XLOGL, XMSTARold,
-     >          ABUND, ABREST, DENSUM, SUM, XMDOTold, VNDold,
-     >          XHY, YHE, XC, XO, tempREAL, POPMIN, 
-     >          VFINALold, XLAMBLUE, XMDOTTRANS,
-     >          XLOGLold, TEFFOLD
+     >          TMIN, TMODIFY, TFAC,
+     >          VMIN, VFINAL, BETA, VPAR1, VPAR2,
+     >          RCON, HSCALE, BETA2, BETA2FRACTION,
+     >          VPAR1_2, VPAR2_2, fHYDROSTART,
+     >          XMDOT, XMSTAR, XMSTARG, XLOGL,
+     >          ABUND, ABREST, DENSUM, SUM,
+     >          XHY, YHE, XC, XO, tempREAL, VTURB, XLAMBLUE, XMDOTTRANS
 
       INTEGER :: NDDIM, MAXATOM, NATOM, MAXXDAT,
      >           MASSORIGIN, NPAR, IDXA, IDX,
-     >           KHY, KHE, KC, KO, IERR, MFORM, NC, 
-     >           LcalcCond, RcalcCond
-      INTEGER, INTENT(OUT) :: GEddFix, LRTinput, iOldStratification, 
-     >                        iOLDRAD, MDOTINPUT
+     >           KHY, KHE, KC, KO, IERR, MFORM, NC, LcalcCond
+      INTEGER, INTENT(OUT) :: GEddFix, LRTinput, MDOTINPUT
 
       REAL, DIMENSION(MAXATOM) :: ABXYZ, ATMASS
       REAL, DIMENSION(MAXXDAT) :: XDATA
       INTEGER, DIMENSION(MAXATOM) :: KODAT
       INTEGER, DIMENSION(8) :: DTVALUES
       LOGICAL :: LTESTART, TTABLE, SPHERIC, 
-     >           OLDTEMP, VPLOT, OLDFGRID, bOLDMODEL, bOLDJ,
+     >           OLDTEMP, VPLOT, OLDFGRID,
      >           ABMASS,ABNUMB,THIN, BTWOT, RMAX_IN_RSUN, BTAUR
       LOGICAL, INTENT(OUT) :: bSaveGEFF, bOLDSTART, bGREYSTART,
-     >                        bTauFix, bForceDCUpdate, bOVTauCut,
-     >                        bHYDROSOLVE, bOldMdot, bOVTauMax,
-     >                        bFULLHYDROSTAT, bGAMMARADMEAN, bDCSCALE
-      LOGICAL :: bCalcGLOGfromM, bLRTcomplete, bSMOCO
+     >                        bOldStratification, bTauFix, 
+     >                        bHYDROSOLVE, 
+     >                        bFULLHYDROSTAT, bGAMMARADMEAN, bOLDRAD
+      LOGICAL bCalcGLOGfromM, bLRTcomplete
       CHARACTER(100) :: MODHEAD
-      CHARACTER(8)  :: DAT, TIM, GEFFKEY, cVEXTEND
+      CHARACTER(8)  :: DAT, TIM, GEFFKEY
+      CHARACTER TIM1*8, TIM2*10
       CHARACTER(80) :: KARTE, ACTPAR, NEXTPAR, ThinCard
-      CHARACTER(120) :: DRLINES_CARD
       CHARACTER(2)  :: WRTYPE
       CHARACTER(20) :: ACTPAR2
       CHARACTER(10) :: SYS, NODE, REL, VER, MACH
       CHARACTER(33) :: HOST
-      CHARACTER*(*) :: DENSCON_LINE, VTURB_LINE
+      CHARACTER*(*) :: DENSCON_LINE
       CHARACTER(10), DIMENSION(NATOM) :: ELEMENT
       CHARACTER(80), DIMENSION(3) :: RadiusGridParameters     !contains all RADIUS-GRID CARDS (for subr. RGRID)
       CHARACTER(9) :: MLRELATION
+      CHARACTER*80 DRLINES_CARD
 
       REAL :: BLACKEDGE, DENSCON_FIX
       REAL :: GLOG, GEFFLOG, GEDD, q, QLOG, RADGAMMASTART
-      REAL :: TAUMAX, TAUACC, VoldMod, VTURBND
+      REAL :: TAUMAX, TAUACC
 
       !Laufvariablen und co.
       INTEGER :: I, K, NA, NZ, IPAR,
@@ -109,8 +102,6 @@ C***  DEFAULT VALUES **********
       RSTAR=-1.
       RMAX=-1.
       XLOGL = -99.
-      XMSTAR = -99.
-      GLOG = -99.
       RTRANS = -99.
       QLOG = -99.
       VDOP=-1.
@@ -136,17 +127,9 @@ C***  DEFAULT VALUES **********
       BTWOT = .FALSE.
       DENSCON_FIX = 1.
       DENSCON_LINE = ' '
-      VTURB_LINE = ' '
-      DRLINES_CARD = ''
       BLACKEDGE = .0
       BTAUR = .FALSE.
       BETA2FRACTION = .0
-      VCON = 1.0      
-      bSMOCO = .FALSE.
-      bForceDCUpdate = .FALSE.
-      bDCSCALE = .FALSE.
-      
-      q = -1.0
       GEDD = -1.0
       XLAMBLUE = -1. 
 C***  Number of core-rays
@@ -158,39 +141,29 @@ C***  nedative default value indicates that GEFF has not been set in CARDS
       bSaveGEFF = .FALSE.    !Determines if GEFFLOG is fixed in the MODEL file
       bCalcGLOGfromM = .FALSE.
       bOLDSTART = .FALSE.   !true if OLDSTART CARDS option has been set
+      DRLINES_CARD = ''
+
+ccc   wrstart used the subroutine GREY for establishing the first tau-scale
+ccc   (Rosseland mean, continuum opacities only). Andreas Sander
+ccc   suggested to use the subr. TAUSCAL for calculating the Rosseland mean. 
+ccc   To my opinion, this should be identical, but Andreas says results
+ccc   differ. Till this is settled, the switch for
+ccc   the new version is de-activated by setting the switch to TRUE
       bGREYSTART = .FALSE.
-      bOLDJ = .FALSE.       !true if radiation field XJC from old model is used 
-      iOldStratification = 0  !> 0 if stratification (ND, VELO, RADIUS, DENSCON) from old model should be kept (@todo: also MDOT?)
+ccc      bGREYSTART = .TRUE.
+
+      bOldStratification = .FALSE.  !true if stratification (ND, VELO, RADIUS, DENSCON) from old model should be kept (@todo: also MDOT?)
       bHYDROSOLVE = .FALSE. !true if hydro iteration will be done in STEAL
-      bOldMdot = .FALSE.
-      bOVTauMax = .FALSE.   !true if option TAUMAX has been set on OLD STRATIFICATION card
-      bOVTauCut = .FALSE.
-      cVEXTEND = ' '
       fHYDROSTART = -99.    !starting from OLD MODEL using v infered from hydro (fraction > 0.)
-      VoldMod = 1.
       bFULLHYDROSTAT = .FALSE.
       bGAMMARADMEAN = .FALSE.
-      iOLDRAD = 0
+      bOLDRAD = .FALSE.
       RADGAMMASTART = -99.
-      POPMIN = 1.E-25           !default value should be the same as in STEAL -> DECSTE
       GEFFKEY = '        '
 C***  Mass-Luminosity relation default: 
       MFORM = 2     ! 1 = Langer (1989); 2 = Graefener et al. (2011) 
       WRTYPE = ''   ! default: automatic choice of type for M-L relation
-C***  LcalcCont = Codenumber for the conditions to calculate the Luminosity
-C***    0 =
-C***    1 = Mass input given
-C***    2 = Eddington-Gamma input given
-C***    3 = 1 + 2 = Mass and Eddington-Gamma input given 
-C***                -> L can be determined if R is given
       LcalcCond = 0
-     
-C***  RcalcCond = Codenumber for the calculation of the radius
-C***    0 = not yet defined
-C***    1 = direct input
-C***    2 = LRT relation
-C***    4 = inferred from M and log g
-      RcalcCond = 0
 
 C***  MASSORIGIN = Codenumber for source of the stellar mass (for PRIPARAM)
 C***    0 = Mass-luminosity relation   
@@ -198,7 +171,7 @@ C***    1 = input
 C***    2 = log g   
 C***    3 = log geff plus Eddington Gamma
       MASSORIGIN = 0
-      VTURBND = .0
+      VTURB = .0
 
 C***  MDOTINPUT: origin of the mass-loss rate
 C      MDOTINPUT = -1 : not specified --> ERROR
@@ -210,24 +183,12 @@ C      MDOTINPUT = 4 :  LOG Q specified
 
 
 C***  CONSTRUCT MODEL HEADER  *********
-      IF (OPSYS .EQ. 'DEC/UNIX') THEN
-        CALL MY_DATE (DAT)
-C        CALL DATE_AND_TIME(VALUES=DTVALUES)
-C        WRITE(UNIT=DAT,FMT='(I4,"/",I2,"/",I2)') 
-C     >          DTVALUES(1), DTVALUES(2), DTVALUES(3)
-        CALL MY_CLOCK(TIM)
-      ELSE IF (OPSYS .EQ. 'CRAY') THEN
-        !CALL DATE (DAT)
-        CALL DATE_AND_TIME(VALUES=DTVALUES)
-        WRITE(UNIT=DAT,FMT='(I4,"/",I2,"/",I2)') 
-     >          DTVALUES(1), DTVALUES(2), DTVALUES(3)
-        !CALL DATE_AND_TIME(DATE=DAT)
-        CALL CLOCK(TIM)
-      ELSE
-        WRITE (0,*) 'OPSYS NOT RECOGNIZED'
-        WRITE (0,*) 'OPSYS=', OPSYS
-        STOP 'ERROR IN SUBR. DECSTAR'
-      ENDIF
+        CALL DATE_AND_TIME(DATE=TIM1, TIME=TIM2)
+        WRITE (DAT,'(A)') 
+     >       TIM1(3:4) // '/' // TIM1(5:6) // '/' // TIM1(7:8)
+        WRITE (TIM,'(A)') 
+     >       TIM2(1:2) // ':' // TIM2(3:4) // ':' // TIM2(5:6)
+
       MODHEAD='MODEL START'
       MODHEAD(13:)=DAT
       MODHEAD(25:)=TIM
@@ -278,10 +239,10 @@ C***  CHECK IF SYSTEM IS INSTALLED CORRECTLY
       IF (KARTE(:5) .EQ. 'TABLE') THEN
 C                         =====
             TTABLE=.TRUE.
-      
-      ELSE IF (ACTPAR(:6) .EQ. 'DRLINE') THEN
-C                               ======  
-            DRLINES_CARD = KARTE
+
+      ELSEIF (ACTPAR(:7) .EQ. 'DRLINES' ) THEN
+C                              =======
+         DRLINES_CARD = KARTE
 
       ELSE IF ((KARTE(:4) == 'THIN') .OR.
      >         (KARTE(:9) == 'HYDROSTAT')) THEN
@@ -291,7 +252,7 @@ C                              ====
             IF (NPAR > 2) THEN
               DO IPAR=3, NPAR
                 CALL SARGV(ThinCard,IPAR,ACTPAR) 
-                IF (ACTPAR(1:4) == 'FULL') THEN
+                IF (ACTPAR == 'FULL') THEN
                   bFULLHYDROSTAT = .TRUE.
                 ENDIF
                 IF (ACTPAR == 'MEAN') THEN
@@ -314,96 +275,21 @@ C                            =========
       ELSE IF (KARTE(:8) == 'OLDSTART') THEN
 C                            ========
             bOLDSTART = .TRUE.
-            IF (NPAR > 1) THEN  
-              DO IPAR=2, NPAR
-                CALL SARGV (KARTE, IPAR, ACTPAR)
-C                IF (ACTPAR == 'DEPART') THEN
-C                  write info here!
-C                ENDIF
-C                IF (ACTPAR == 'TAU') THEN
-C                  write info here!
-C                ENDIF
-ccc             possible further values: DEPART, TAU (only read by ADAPTER currently)               
-              ENDDO
-           ENDIF
-           IF (.NOT. bOLDMODEL) GOTO 95
-              
-      ELSE IF (KARTE(:10) == 'HYDROSTART') THEN
-C                             ==========
-         fHYDROSTART = 1.
-        IF (NPAR > 1) THEN
-          CALL SARGV (KARTE,2,ACTPAR)
-          READ (ACTPAR, '(F10.0)', ERR=99) fHYDROSTART
-          IF (fHYDROSTART > 1. .OR. fHYDROSTART < 0.) THEN
-            WRITE (hCPR,'(A)') 'INVALID DAMPING VALUE FOR HYDROSTART'
-            GOTO 92
-          ENDIF
-        ENDIF
 
       ELSE IF (KARTE(:5) .EQ. 'OLD T') THEN
 C                              =====
-           OLDTEMP=.TRUE.
-           IF (KARTE(:9) .EQ. 'OLD T TAU') BTAUR = .TRUE.
-           IF (.NOT. bOLDMODEL) GOTO 95
-            
+            OLDTEMP=.TRUE.
+            IF (KARTE(:9) .EQ. 'OLD T TAU') BTAUR = .TRUE.
 
       ELSE IF (KARTE(:9) .EQ. 'OLD FGRID') THEN
 C                              =========
-           OLDFGRID = .TRUE.
-           IF (.NOT. bOLDMODEL) GOTO 95
-           
+            OLDFGRID = .TRUE.
+
       ELSE IF ((KARTE(:9) .EQ. 'OLD STRAT')
-C                               =========
-     >     .OR. (KARTE(:5) .EQ. 'OLD V')) THEN
-C                                ======   
-        IF (.NOT. bOLDMODEL) GOTO 95
-        iOldStratification = 1
-        CALL SARGV (KARTE, 2, ACTPAR)
-        IF (NPAR > 2) THEN
-          DO i=3, NPAR 
-            CALL SARGV (KARTE, i, ACTPAR)
-            SELECTCASE (ACTPAR)
-              CASE ('VFINAL', 'VINF')
-                IF (NPAR >= (i+1)) THEN
-                  CALL SARGV (KARTE, i+1, NEXTPAR)
-                  READ (NEXTPAR, '(F10.0)', IOSTAT=IERR) tempREAL
-                  IF (IERR == 0) THEN
-                    VoldMod = tempREAL
-                    !store abolute value as negative number, modificator as positive
-                    VoldMod = -1. * VoldMod
-                  ENDIF
-                ENDIF
-              CASE ('MOD', 'VMOD', 'MODFAK')
-                IF (NPAR >= (i+1)) THEN
-                  CALL SARGV (KARTE, i+1, NEXTPAR)
-                  READ (NEXTPAR, '(F10.0)', IOSTAT=IERR) tempREAL
-                  IF (IERR == 0) THEN
-                    !store abolute value as negative number, modificator as positive
-                    VoldMod = tempREAL
-                  ENDIF
-                ENDIF
-              CASE ('GRID')
-                iOldStratification = 2
-              CASE ('TAU') 
-                cVEXTEND = 'TAU'
-              CASE ('EXTRAP') 
-                cVEXTEND = 'EXTRAP'
-              CASE ('SCALE', 'STRETCH')
-                cVEXTEND = 'STRETCH'
-              CASE ('DCNEW', 'DENSCON-UPDATE')
-                bForceDCUpdate = .TRUE.
-              CASE ('DCSCALE', 'DENSCON-SCALE')
-                bDCSCALE = .TRUE.
-              CASE ('MDOT', 'KEEPMDOT')
-                bOldMdot = .TRUE.
-              CASE ('TAUCUT')
-                bOVTauCut = .TRUE.
-              CASE ('TAUMAX')
-C***            revised Mar 2019: still iterate for TAUMAX by shifting V up/down to "hit" TAUMAX
-                bOVTauMax = .TRUE.
-            ENDSELECT
-          ENDDO
-        ENDIF
+                               !=========
+     >    .OR. (KARTE(:5) .EQ. 'OLD V')) THEN
+                                !=====   
+         bOldStratification = .TRUE.
             
       ELSE IF (KARTE(:7) .EQ. 'TMODIFY') THEN
 C                              =======
@@ -422,7 +308,7 @@ C                              ====
       ELSE IF (KARTE(:8) .EQ. 'LTESTART') THEN
 C                              ========
          LTESTART=.TRUE.
-         IF (NPAR >= 3) THEN 
+         IF (NPAR >= 3) THEN
             CALL SARGV (KARTE, 2, ACTPAR)
             IF (ACTPAR .EQ. 'BLACKEDGE') THEN
                CALL SARGV (KARTE, 3, ACTPAR)
@@ -443,8 +329,8 @@ C                           ======
          CALL SARGV (KARTE, 2, ACTPAR)
          IDXA = IDX(ACTPAR)
          IF (ACTPAR(IDXA-2:IDXA) .EQ. 'DEX') THEN
-             READ (ACTPAR(:IDXA-3), '(F20.0)',ERR=92) RTRANS
-             RTRANS = 10.**RTRANS
+            READ (ACTPAR(:IDXA-3), '(F20.0)',ERR=92) RTRANS
+            RTRANS = 10.**RTRANS
          ELSE
             READ (ACTPAR, '(F20.0)',ERR=92) RTRANS
          ENDIF
@@ -458,41 +344,23 @@ C                              =====
       
       ELSE IF (ACTPAR .EQ. 'RSTAR') THEN
 C                           =====
-        CALL SARGV (KARTE, 2, ACTPAR)
-        IF (ACTPAR == 'OLD') THEN
-          IF (.NOT. bOLDMODEL) GOTO 95
-          RSTAR = RSTARold/RSUN
-          WRITE (hCPR,'(A,F8.4)')
-     >      'RSTAR TAKEN FROM OLD MODEL: ', RSTAR
-        ELSE 
-          READ (ACTPAR, '(F20.0)',ERR=92) RSTAR
-        ENDIF
-        RcalcCond = 1
+      CALL SARGV (KARTE, 2, ACTPAR)
+      READ (ACTPAR, '(F20.0)',ERR=92) RSTAR
  
       ELSE IF (KARTE(:5) .EQ. 'LOG L') THEN
 C                              =====
-        CALL SARGV (KARTE, 3, ACTPAR)
-        IF (ACTPAR == 'OLD') THEN
-          IF (.NOT. bOLDMODEL) GOTO 95
-          XLOGL = XLOGLold
-          WRITE (hCPR,'(A,F8.4)')
-     >      'LUMINOSITY TAKEN FROM OLD MODEL: log L/Lsun = ', XLOGL
-        ELSE 
-          READ (ACTPAR, '(F20.0)',ERR=92) XLOGL
-        ENDIF
+      CALL SARGV (KARTE, 3, ACTPAR)
+      READ (ACTPAR, '(F20.0)',ERR=92) XLOGL
   
       ELSE IF (KARTE(:6) .EQ. 'VELPAR') THEN
 C                              ======
-         VMIN = VNDold
-         VFINAL = VFINALold
-         CALL DECVELPAR(KARTE, VFINAL, VMIN, BETA, RMAX, VOFF)         
+         CALL DECVELPAR(KARTE, VFINAL, VMIN, BETA, RMAX)
          
       ELSE IF (ACTPAR .EQ. '2BETALAW') THEN
-         CALL DEC2BETA(KARTE, BETA2, BETA2FRACTION, RONSET)
-c         CALL SARGV (KARTE,3,ACTPAR)
-c         READ (ACTPAR, '(F10.0)', ERR=99) BETA2 
-c         CALL SARGV (KARTE,5,ACTPAR)
-c         READ (ACTPAR, '(F10.0)', ERR=99) BETA2FRACTION 
+         CALL SARGV (KARTE,3,ACTPAR)
+         READ (ACTPAR, '(F10.0)', ERR=99) BETA2 
+         CALL SARGV (KARTE,5,ACTPAR)
+         READ (ACTPAR, '(F10.0)', ERR=99) BETA2FRACTION 
  
       ELSE IF (KARTE(:4) .EQ. 'VDOP') THEN
 C                              ====
@@ -506,16 +374,8 @@ C                              ========
       ELSE IF (ACTPAR .EQ. 'MDOT') THEN
 C                           ====
         CALL SARGV (KARTE, 2, ACTPAR)
-        IF (ACTPAR == 'OLD') THEN
-          IF (.NOT. bOLDMODEL) GOTO 95
-          IF (XMDOTold < -100.) GOTO 96
-          XMDOT = XMDOTold
-          WRITE (hCPR,'(A,F8.4)')
-     >      'MASS LOSS RATE TAKEN FROM OLD MODEL: ', XMDOT
-        ELSE 
-          READ (ACTPAR, '(F20.0)',ERR=92) XMDOT
-        ENDIF
-        MDOTINPUT = 1
+        READ (ACTPAR, '(F20.0)',ERR=92) XMDOT
+        MDOTINPUT = 1 
 
       ELSE IF (ACTPAR(1:5) == 'MDOTT' .OR. ACTPAR == 'MDTRANS') THEN
 C                              =====                  =======
@@ -526,20 +386,7 @@ C                              =====                  =======
       ELSE IF (ACTPAR .EQ. 'TEFF') THEN
 C                           ====
         CALL SARGV (KARTE, 2, ACTPAR)
-        IF (ACTPAR == 'OLD') THEN
-          IF (.NOT. bOLDMODEL) GOTO 95
-          TEFF = TEFFold
-          WRITE (hCPR,'(A,F8.4)')
-     >      'TSTAR (in CARDS: TEFF) TAKEN FROM OLD MODEL: ', TEFF
-        ELSE
-          IDXA = IDX(ACTPAR)
-          IF (ACTPAR(IDXA-2:IDXA) == 'DEX') THEN
-            READ (ACTPAR(:IDXA-3), '(F20.0)',ERR=92) TEFF
-            TEFF = 10.**TEFF
-          ELSE
-            READ (ACTPAR, '(F20.0)',ERR=92) TEFF
-          ENDIF
-        ENDIF
+        READ (ACTPAR, '(F20.0)',ERR=92) TEFF
 
       ELSE IF (ACTPAR .EQ. 'NCORE') THEN
 C                           =====
@@ -551,26 +398,12 @@ C                              =====
         CALL SARGV (KARTE, 2, ACTPAR)
         IF (ACTPAR .NE. '?') THEN
           IF (MASSORIGIN .NE. 0) THEN
-            IF (RcalcCond > 0) THEN
-              WRITE (0, '(A)') '*** DOUBLE DEFINITION OF STELLAR MASS'
-              GOTO 92
-            ELSE
-              RcalcCond = 4
-            ENDIF
-          ELSE
-            MASSORIGIN = 1
-            LcalcCond = LcalcCond + 1
+            WRITE (0, '(A)') '*** DOUBLE DEFINITION OF STELLAR MASS'
+            GOTO 92
           ENDIF
-
-          IF (ACTPAR == 'OLD') THEN
-            IF (.NOT. bOLDMODEL) GOTO 95
-            XMSTAR = XMSTARold
-            WRITE (hCPR,'(A,F8.4)')
-     >        'STELLAR MASS TAKEN FROM OLD MODEL: ', XMSTAR
-          ELSE 
-            READ (ACTPAR, '(F20.0)', ERR=92) XMSTAR
-          ENDIF
-
+          READ (ACTPAR, '(F20.0)', ERR=92) XMSTAR
+          MASSORIGIN = 1
+          LcalcCond = LcalcCond + 1
         ENDIF
  
       ELSE IF ((KARTE(:10) .EQ. 'LOG G_GRAV') .OR.
@@ -580,16 +413,11 @@ C                              =====
         CALL SARGV (KARTE, 3, ACTPAR)
         IF (ACTPAR .NE. '?') THEN
           IF (MASSORIGIN .NE. 0) THEN
-            IF (RcalcCond > 0) THEN
-              WRITE (0, '(A)') '*** DOUBLE DEFINITION OF STELLAR MASS'
-              GOTO 92
-            ELSE
-              RcalcCond = 4
-            ENDIF
-          ELSE
-            MASSORIGIN = 2
+            WRITE (0, '(A)') '*** DOUBLE DEFINITION OF STELLAR MASS'
+            GOTO 92
           ENDIF
           READ (ACTPAR, '(F20.0)', ERR=92) GLOG
+          MASSORIGIN = 2
         ENDIF
  
       ELSE IF ((KARTE(:9) == 'LOG G_EFF') .OR.
@@ -648,31 +476,18 @@ C                         ===============
           LcalcCond = LcalcCond + 2
         ENDIF
 
-      ELSE IF (ACTPAR == 'QION-START') THEN
-
-        CALL SARGV (KARTE, 2, ACTPAR)
-        IF (ACTPAR /= 'AUTO') THEN
-          READ (ACTPAR, '(F20.0)', ERR=92) q
-        ENDIF
- 
       ELSE IF (ACTPAR == 'RADGAMMA-START') THEN
 C                         ==============
         CALL SARGV (KARTE, 2, ACTPAR)
-        IF (ACTPAR == 'CONT') THEN
-C***      Approximate Gamma_rad via continuum opacities        
-          iOLDRAD = 1
-        ELSEIF (ACTPAR == 'OLD') THEN
-C***      Take Gamma_rad from old MODEL
-          IF (.NOT. bOLDMODEL) GOTO 95
-          iOLDRAD = 2
+        IF (ACTPAR /= 'OLD') THEN
+          READ (ACTPAR, '(F20.0)', ERR=92) RADGAMMASTART
+        ELSE
+          bOLDRAD = .TRUE.
           IF (NPAR > 2) THEN
             CALL SARGV (KARTE, 3, ACTPAR)
             !Use MEAN value only? (for WRSTART)
             IF (ACTPAR == 'MEAN') bGAMMARADMEAN = .TRUE.
           ENDIF
-        ELSE 
-C***      Take explicit given value        
-          READ (ACTPAR, '(F20.0)', ERR=92) RADGAMMASTART        
         ENDIF  
 
       ELSE IF (KARTE(:7) == 'MLANGER') THEN
@@ -732,7 +547,7 @@ C                ENDIF
 
 
       ELSE IF (ACTPAR == 'TAUFIX') THEN
-C                         ======
+C                           ======
         bTauFix = .TRUE.
         IF (NPAR > 1) THEN
           CALL SARGV (KARTE, 2, ACTPAR)
@@ -768,35 +583,33 @@ C                           ======
             WRITE (0, *) '*** Valid types are: OB, WN, WC'
             GOTO 92
         ENDIF
-        
-      ELSE IF (ACTPAR == 'VTURB') THEN
-        VTURB_LINE = KARTE
+C***    VTURB enters the hydrostatic equation via 
+C***          P_gas = rho * (v_sound^2 + v_turb^2)
+C***          and, therefore, differs from the definition of v_mic
+C***          (hitherto only in FORMAL) for the line broadening:
+C***          v_dop = sqrt( v_th^2 + v_mic^2) 
+C***          Hence: v_mic = sqrt(2) * v_turb
+      ELSE IF (ACTPAR .EQ. 'VTURB') THEN
         IF (NPAR .GT. 1) THEN
            CALL SARGV (KARTE, 2, ACTPAR2)
-           READ (ACTPAR2,'(F20.0)',ERR=98) VTURBND
+           READ (ACTPAR2,'(F20.0)',ERR=98) VTURB
         ELSE
            GOTO 97
         ENDIF
-        
-      ELSE IF (ACTPAR == 'VMIC') THEN
-        VTURB_LINE = KARTE
+      ELSE IF (ACTPAR .EQ. 'VMIC') THEN
         IF (NPAR .GT. 1) THEN
            CALL SARGV (KARTE, 2, ACTPAR2)
-           READ (ACTPAR2,'(F20.0)',ERR=98) VTURBND
-           VTURBND = VTURBND / SQRT(2.)
+           READ (ACTPAR2,'(F20.0)',ERR=98) VTURB
+           VTURB = VTURB / SQRT(2.) 
         ELSE
            GOTO 97
         ENDIF
-        
-      ELSE IF (ACTPAR == 'POPMIN') THEN
-C                         ======
-        CALL SARGV (KARTE, 2, ACTPAR)
-        READ (ACTPAR, '(F20.0)',ERR=92) POPMIN
-        
-      ELSE IF (ACTPAR(:8) == 'BLUEMOST') THEN
-C                             ========
-        CALL SARGV (KARTE, 2, ACTPAR2)
-        READ (ACTPAR2, '(F20.0)',ERR=92) XLAMBLUE
+
+      ELSE IF (ACTPAR(:8) .EQ. 'BLUEMOST') THEN
+C                           ========
+         CALL SARGV (KARTE, 2, ACTPAR2)
+         READ (ACTPAR2, '(F20.0)',ERR=92) XLAMBLUE
+
 
 C*********** SPECIAL BLOCK FOR X-RAYS  **************************
       ELSE IF (ACTPAR .EQ. 'XRAY') THEN
@@ -847,16 +660,8 @@ C***  BLACK EDGE IN THE RADIATION FIELD FOR NEW-START
             IF (ACTPAR .EQ. 'BLACKEDGE') THEN
                CALL SARGV (KARTE, 3, ACTPAR)
                READ (ACTPAR, '(F10.0)', ERR=92) BLACKEDGE
-            ELSEIF (ACTPAR == 'OLD') THEN
-               bOLDJ = .TRUE.
-               IF (.NOT. bOLDMODEL) GOTO 95
             ENDIF
          ENDIF
-
-      ELSE IF (KARTE(:5) == 'OLD J') THEN
-         LTESTART = .FALSE.
-         bOLDJ = .TRUE.
-         IF (.NOT. bOLDMODEL) GOTO 95
 
       ELSE IF (ACTPAR .EQ. 'SPECIAL_OUTER_POINTS') THEN
          RadiusGridParameters(2) = KARTE
@@ -889,11 +694,25 @@ C***     NZ > 0 means that an element of this name is known
                      GOTO 92
                   ENDIF
                   ABXYZ(K)=ABUND
-                  IF (KARTE(21:30) .NE. ' ') THEN
-                     ABMASS=.TRUE.
-                  ELSE
+C*                Default: by number 
+                  IF (NPAR .EQ. 2) THEN
+                     IF (ABMASS) GOTO 91
                      ABNUMB=.TRUE.
                   ENDIF
+C*                Check for "mass" or "number"
+                  DO IPAR=3, NPAR
+                     CALL SARGV (KARTE, IPAR, ACTPAR2)
+                     CALL LOWERCASE (ACTPAR2)
+                     IF (ACTPAR2(:4) .EQ. 'mass' .OR. 
+     >                   ACTPAR2(:5) .EQ. '(mass') THEN
+                        IF (ABNUMB) GOTO 91
+                        ABMASS=.TRUE.
+                     ELSEIF (ACTPAR2(:6) .EQ. 'number' .OR. 
+     >                       ACTPAR2(:7) .EQ. '(number') THEN
+                        IF (ABMASS) GOTO 91
+                        ABNUMB=.TRUE.
+                     ENDIF
+                  ENDDO
                   EXIT
                ENDIF
             ENDDO
@@ -915,14 +734,6 @@ C***     NZ > 0 means that an element of this name is known
       CLOSE (1)
 C******************************************************************
 
-C***  ERROR STOP IN CASE OF MIXED TYPES (BY NUMBER / MASS FRACTION) OF
-C***  ABUNDANCE VALUES
-      IF (ABMASS .AND. ABNUMB) THEN
-        WRITE (0,*) 
-     >  'ALL abundances must be given EITHER by mass OR by number!'
-         GOTO 92
-      ENDIF
-
 C***  COMPUTATION OF THE RELATIVE ABUNDANCE (BY NUMBER OR MASS FRACTION)
 C***  OF HELIUM
       ABREST=0.
@@ -934,7 +745,6 @@ C***  OF HELIUM
 
       IF (ABREST .GT. 1.) THEN
          WRITE(hCPR,'(A)') 'REL. ABUNDANCES add up to more than 100%'
-         WRITE(hCPR,*) ' SUM of non-HE elements: ', ABREST
          STOP 'ERROR detected in DECSTAR'
       ENDIF
 
@@ -1011,35 +821,26 @@ C***   this type may be used for the M-L relation
          ENDIF
       ENDIF      
 
-      IF (q < 0.) THEN
 C***  Start approximation for q (number of free electrons per mass unit)
-        !@todo: Set Q depending on type of star or s.th. like that
-        !q = n_e / (AMU n_i) aber diese Groessen sind erst spaeter bekannt
-        !using the following approximations:
-        IF (XHY >= 0.5) THEN
-          q = 0.88     !H-rich Of/WN Star (fully ionized solar comp.)
-        ELSEIF (XHY >= 0.1) THEN
-          q = 0.39    !WNL
-        ELSEIF (XC >= 0.2) THEN
-          IF (XO > 0.1) THEN
-            q = 0.37  !WO
-          ELSE
-            q = 0.21  !WC 
-          ENDIF
+      !@todo: Set Q depending on type of star or s.th. like that
+      !q = n_e / (AMU n_i) aber diese Groessen sind erst spaeter bekannt
+      !using the following approximations:
+      IF (XHY >= 0.5) THEN
+        q = 0.88     !H-rich Of/WN Star (fully ionized solar comp.)
+      ELSEIF (XHY >= 0.1) THEN
+        q = 0.39    !WNL
+      ELSEIF (XC >= 0.2) THEN
+        IF (XO > 0.1) THEN
+          q = 0.37  !WO
         ELSE
-          q = 0.25    !WNE
+          q = 0.21  !WC 
         ENDIF
+      ELSE
+        q = 0.25    !WNE
       ENDIF
+
 
 C***  CHECK OF MISSING SPECIFICATIONS
-
-C***  Rstar has not been specified in the CARDS
-C***    but can be inferred from LOG GGRAV and MSTAR            
-      IF (RSTAR < .0 .AND. XMSTAR > 0. .AND. GLOG > 0.) THEN
-        RSTAR = SQRT(GCONST * XMSTAR * XMSUN / 10.**GLOG)
-        RSTAR = RSTAR / RSUN
-        RcalcCond = 4
-      ENDIF
 
       bLRTcomplete = .FALSE.
       IF (TEFF < .0) THEN
@@ -1071,20 +872,17 @@ C***    but can be inferred from LOG GGRAV and MSTAR
             STOP 'ERROR'
       ENDIF
 
-
       IF (.NOT. bLRTcomplete) THEN
         !This is only called if TEFF has been set in the CARDS file
         IF (RSTAR < .0) THEN
-          !Rstar has not been specified in the CARDS and could not be inferred from log g and M
+          !Rstar has not been specified in the CARDS
           IF (XLOGL .NE. -99.) THEN
             RSTAR = 10.**(0.5*XLOGL) / (TEFF/TEFFSUN)**2
-            RcalcCond = 2
             LRTinput = 2
           ELSEIF (LcalcCond == 3) THEN
             !In the rare case that MSTAR and EDDINGTON-GAMMA are given, L can be calculated:
             XLOGL = LOG10( GEDD * XMSTAR / ( 10**(-4.51) * q ) )
             RSTAR = 10.**(0.5*XLOGL) / (TEFF/TEFFSUN)**2
-            RcalcCond = 2
             LRTinput = 4
           ELSE
               WRITE(hCPR,'(A)') 
@@ -1174,8 +972,7 @@ C***  Calculate XMDOT from transformed mass-loss rate
  
 C***  OPTION 'OLDTEMP' OVERWRITES OTHER OPTIONS:
       IF (OLDTEMP) THEN
-ccc        De-activated by ansander, 17-03-2021 
-ccc         TTABLE=.FALSE.
+         TTABLE=.FALSE.
          SPHERIC=.FALSE.
          TMIN=.0
       ENDIF
@@ -1194,11 +991,10 @@ C***  COMPUTATION OF THE MASS FLUX
 
      
       !Warning if full a_rad integration should be performed, but no good start is given
-      IF (bFULLHYDROSTAT .AND. (iOldStratification == 0)
-     >      .AND. (iOLDRAD == 0) .AND. RADGAMMASTART < 0.) THEN
+      IF (bFULLHYDROSTAT .AND. (.NOT. bOldStratification)
+     >      .AND. (.NOT. bOLDRAD) .AND. RADGAMMASTART < 0.) THEN
         WRITE (hCPR,'(A)') 'WARNING: HYDROSTATIC INTEGRATION'
-     >                          // ' will have a poor start. ' 
-     >      // 'Set RADGAMMA-START card to improve the situation!'
+     >                          // ' will have a poor start'
       ENDIF
       
       !System g/M, geff, GEDD ueberbestimmt        
@@ -1262,7 +1058,7 @@ C***        WC type: Langer (mandatory)
          !LOG G vorgegeben oder aus LOG GEFF und GEDD berechnet
          XMSTARG = 10.**GLOG * RSTAR * RSTAR / GCONST 
          XMSTAR = XMSTARG / XMSUN
-      ELSEIF (RcalcCond .NE. 4) THEN
+      ELSE
          !Masse direkt vorgegeben
          bCalcGLOGfromM = .TRUE.
       ENDIF
@@ -1337,7 +1133,7 @@ C***  Consistency check between GEFF keyword and HYDROSTATIC INTEGRATION
       ENDIF
   
   
-      IF (iOldStratification > 0) THEN
+      IF (bOldStratification) THEN
         THIN = .FALSE.      !Ignore HYDROSTATIC INTEGRATION in WRSTART if OLD STRAT is used
       ENDIF
   
@@ -1346,21 +1142,18 @@ C***  Consistency check between GEFF keyword and HYDROSTATIC INTEGRATION
 
 C***  ERROR EXITS ****************************************************
 
+   91 CONTINUE
+      WRITE (0,*) 'ERROR: ' //  
+     >  'ALL abundances must be given EITHER by mass OR by number!'
+      WRITE (0,*)   
+     >   'Default if Element line has no further option: by number' 
+      GOTO 92
+
    92 CONTINUE
       WRITE (0,*)'DECSTAR: ERROR WHILE DECODING THE FOLLOWING LINE:'
       WRITE (0,*) KARTE
       STOP 'ERROR'
 
-   95 WRITE (hCPR,'(A)') 'DECSTAR: OLD MODEL REQUIRED BUT NOT FOUND!'
-      WRITE (hCPR,'(A)') 'AN OLD MODEL IS REQUIRED DUE TO THE LINE: '
-      WRITE (hCPR,'(A)') KARTE(:IDX(KARTE))
-      STOP 'FATAL ERROR IN DECSTAR'
-
-   96 WRITE (hCPR,'(A)') 'DECSTAR: OLD MODEL DOES NOT CONTAIN MDOT!'
-      WRITE (hCPR,'(A)') 'AN OLD MODEL IS REQUIRED DUE TO THE LINE: '
-      WRITE (hCPR,'(A)') KARTE(:IDX(KARTE))
-      STOP 'FATAL ERROR IN DECSTAR'
-      
    97 WRITE (0,'(A)') '*** ERROR: PARAMETER MISSING'
       WRITE (0,'(A)') 'THE ERROR OCCURED IN THE FOLLOWING LINE: '
       WRITE (0,'(A)') KARTE(:IDX(KARTE))

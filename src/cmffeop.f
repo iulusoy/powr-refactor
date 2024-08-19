@@ -1,54 +1,34 @@
       SUBROUTINE CMFFEOP (XLAMK, ND, N, INDFEACT, MAXFEACT, LASTFE,
-     >                    SIGMAFE, OPAFE, ETAFE, INDEXMAX, INDRB,
+     >                    SIGMAFE, OPAFE, ETAFE, INDRB,
      >                    IFRBSTA, IFRBEND, IFENUP, IFELOW,
      >                    CLIGHT, VDOPFE, DXFE, XLAM0FE,
      >                    ELEVEL, WEIGHT, RSTAR, POPNUM, ENTOT,
-     >                    SIGMAACT, OPAFEI, ETAFEI,
-     >                    OPAFEION, ETAFEION, T, IVERS_FE_EXPFAC, 
-     >                    TEFF, NCHARG, MAXION, bFELASER, bNoIronLaser)
+     >                    SIGMAACT, OPAFEI, ETAFEI, T, IVERS_FE_EXPFAC, 
+     >                    TEFF)
 
 C***********************************************************************
 C***  NON-LTE IRON OPACITY AT GIVEN FREQUENCY FOR ALL DEPTH POINTS
 C***  CALLED FROM: COLI and FORMAL -> FORMCMF
 C***********************************************************************
-      IMPLICIT NONE
+ 
 
-      INTEGER, INTENT(IN) :: ND, N, MAXION, LASTFE, INDEXMAX,
-     >                       IVERS_FE_EXPFAC, MAXFEACT
-      REAL, INTENT(IN) :: TEFF, RSTAR, CLIGHT, XLAMK, XLAM0FE, DXFE, 
-     >                    VDOPFE
-      LOGICAL, INTENT(IN) :: bNoIronLaser
+      DIMENSION SIGMAFE(1), INDRB(LASTFE)
+      DIMENSION IFRBSTA(LASTFE), IFRBEND(LASTFE)
+      DIMENSION IFENUP(LASTFE), IFELOW(LASTFE)
+      DIMENSION OPAFE(ND), ETAFE(ND)
+      DIMENSION POPNUM(ND,N), WEIGHT(N), ENTOT(ND)
+      DIMENSION INDFEACT(LASTFE), SIGMAACT(LASTFE)
+      DIMENSION OPAFEI(ND,LASTFE), ETAFEI(ND,LASTFE)
+      DIMENSION ELEVEL(N), T(ND)
 
-      REAL, DIMENSION(INDEXMAX) :: SIGMAFE
-      INTEGER, DIMENSION(LASTFE) :: IFRBSTA, IFRBEND, IFENUP, IFELOW,
-     >                              INDFEACT, INDRB
-      INTEGER, DIMENSION(N) :: IFRBSSTA, IFRBSEND, INDFESACT,
-     >                         INDRBS, IFES
-      REAL, DIMENSION(ND) :: OPAFE, ETAFE, ENTOT, T
-      REAL, DIMENSION(ND, MAXION) :: OPAFEION, ETAFEION
-      REAL, DIMENSION(ND,N) :: POPNUM, POPLTE
-      REAL, DIMENSION(LASTFE) :: SIGMAACT
-      REAL, DIMENSION(ND,LASTFE) :: OPAFEI, ETAFEI
-      REAL, DIMENSION(N) :: ELEVEL, WEIGHT
-      LOGICAL, DIMENSION(ND) :: bFELASER
-      INTEGER, DIMENSION(N) :: NCHARG
-
-      REAL :: SIGMA, SIGMAR, PLASER, ENUP, ENLOW, SUM, G, EMINDU,
-     >        DELTA, SIGMA1, SIGMA2, WAVNUM0, WAVNUM03, XINDF,
-     >        WEIGHTLU, WAVNUMK, WAVNUMK3
-      INTEGER :: L, ION, INDF, INDFSTART, NUP, LOW, IND, INDACT
-            
-     
-C***  Numerical parameters     
-      REAL, PARAMETER :: EXPMAX = 500.
-     
-C***  Physical constants
-      REAL, PARAMETER :: C1 = 1.4388        !C1 = H * C / K    ( CM * ANGSTROEM )
-      REAL, PARAMETER :: C2 = 3.9724E-16    !C2 = 2 * H * C     ( CGS UNITS )
+C***  C1 = H * C / K    ( CM * ANGSTROEM )
+      DATA C1 / 1.4388 /
+C***  C2 = 2 * H * C     ( CGS UNITS )
+      DATA C2 / 3.9724E-16 /
 
 C***  CALCULATE FE-FREQUECY-INDEX
-      XINDF = - LOG10(XLAM0FE/XLAMK) /
-     >          LOG10(1. + VDOPFE*DXFE/CLIGHT)
+      XINDF = - ALOG10(XLAM0FE/XLAMK) /
+     >          ALOG10(1. + VDOPFE*DXFE/CLIGHT)
 
 C***  WAVENUMBERS IN KAYSER ( = CM**-1)
       WAVNUMK = 1.E8 / XLAMK
@@ -58,10 +38,6 @@ C***  PRESET OPAFE, ETAFE
       DO L=1, ND
          OPAFE(L) = 0.
          ETAFE(L) = 0.
-         DO ION=1, MAXION
-           OPAFEION(L, ION) = 0.
-           ETAFEION(L, ION) = 0.
-         ENDDO
       ENDDO
       
 C***  LOOP OVER ACTIVE FE-LINES
@@ -70,7 +46,6 @@ C***  LOOP OVER ACTIVE FE-LINES
          IND = INDFEACT(INDACT)
          LOW = IFELOW(IND)
          NUP = IFENUP(IND)
-         ION = NCHARG(LOW) + 1
          WEIGHTLU = WEIGHT(LOW) / WEIGHT(NUP)
          WAVNUM0 = ELEVEL(NUP) - ELEVEL(LOW)
          WAVNUM03 = WAVNUM0 * WAVNUM0 * WAVNUM0 
@@ -98,8 +73,6 @@ ccc            integration!!
 C***    STORE SIGMA FOR LATER USE
          SIGMAACT(INDACT) = SIGMA
 
-         IF (SIGMA <= 0.) CYCLE
-         
 C***    CALCULATE 'OPA' AND 'ETA' OVER DEPTH INDEX 'L' 
          DO 20 L=1, ND
             ENUP  = POPNUM(L,NUP) * ENTOT(L)
@@ -128,22 +101,10 @@ C***     2: TRADITIONAL - exp factor with Te (standard till 17-Feb-2018)
             ENDIF
 ccc         in the preceding stament WAVNUM03 has been used by Goetz
 
-            PLASER = ENUP/WEIGHT(NUP) - ENLOW/WEIGHT(LOW)
-            IF (bNoIronLaser .AND. PLASER > 0.) THEN
-              !skip level
-            ELSEIF (OPAFEI(L,IND) .GT. 0.) THEN
+            IF (OPAFEI(L,IND) .GT. 0.) THEN
                OPAFE(L) = OPAFE(L) + OPAFEI(L,IND)
                ETAFE(L) = ETAFE(L) + ETAFEI(L,IND)
-               OPAFEION(L,ION) = OPAFEION(L,ION) + OPAFEI(L,IND) 
-               ETAFEION(L,ION) = ETAFEION(L,ION) + ETAFEI(L,IND) 
-                              
-              IF (PLASER > 0. .AND. (.NOT. bFELASER(L))) THEN
-c                WRITE (hCPR,*) 'FE POP INVERSION AT L = ', L
-                bFELASER(L) = .TRUE.
-              ENDIF
-            
             ENDIF
-            
  20      CONTINUE
 
  10   CONTINUE

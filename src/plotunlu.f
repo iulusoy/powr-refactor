@@ -1,16 +1,14 @@
       SUBROUTINE PLOTUNLU (KANAL, PLOTOPT, MODHEAD, JOBNUM, 
-     >                    ND, T, TNEW, bKUBAT, bLOCAL, 
-     >                    bINT, bRMAX, bTDIFFUS, DTLOCAL, DTINT,
-     >                    DTRMAX, DTKUBAT, EXPTAUTCL)
-C***********************************************************************
+     >                    ND, T, TNEW, DUNLU_LOC, DUNLU_TB, bTDIFFUS,
+     >                    DTLOCAL, DTINT, DTRMAX, DTKUBAT)
+C*****************************************************************
 C***  PLOT of temperature corrections from UNSOELD-LUCY procedure
-C***********************************************************************
+C*****************************************************************
 
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: NDMAX = 200
       INTEGER, INTENT(IN) :: ND, KANAL, JOBNUM
-      REAL, INTENT(IN) :: EXPTAUTCL
 
       CHARACTER PLOTOPT*(*)
       CHARACTER(100) :: MODHEAD
@@ -19,21 +17,16 @@ C***********************************************************************
       CHARACTER(8) :: CENTER
 
       REAL, DIMENSION(NDMAX) :: X, TCORR
-      REAL, DIMENSION(ND) :: DTLOCAL, DTINT, DTRMAX, DTKUBAT,
-     >                       T, TNEW
+      REAL, DIMENSION(ND) :: DTLOCAL, DTINT, DTRMAX, DTKUBAT, T, TNEW
 
       INTEGER :: L, I, NPAR, NDin
-      REAL :: XLABOFF
+      REAL :: XLABOFF, DUNLU_LOC, DUNLU_TB
       
-      LOGICAL :: bKUBAT, bLOCAL, bUNLU, bINT, bRMAX,
-     >           bPlotKUBAT, bPlotLOCAL, bPlotINT, 
-     >           bPlotRMAX, bTDIFFUS
+      LOGICAL :: bTDIFFUS, bPlotKUBAT, bPlotLOCAL
 
 C***  STEBOL = STEFAN-BOLTZMANN CONSTANT / PI (ERG/CM**2/SEC/STERAD/KELVIN**4
       REAL, PARAMETER :: STEBOL = 1.8046E-5
 
-      bUNLU = .TRUE.
-      
       IF (ND > NDMAX) THEN
         WRITE (0, '(A)') 'DIMENSION INSUFFICIENT - UNLU-PLOT SUPPRESSED'
         WRITE (0, '(A)') 'NON-FATAL ERROR IN SUBROUTINE PLOTUNLU'
@@ -41,10 +34,8 @@ C***  STEBOL = STEFAN-BOLTZMANN CONSTANT / PI (ERG/CM**2/SEC/STERAD/KELVIN**4
       ENDIF
 
 C***  Decode possible options
-      bPlotKUBAT = bKUBAT
-      bPlotLOCAL = bLOCAL
-      bPlotINT = bINT
-      bPlotRMAX = bRMAX
+      bPlotKUBAT = DUNLU_TB  .GT. .0
+      bPlotLOCAL = DUNLU_LOC .GT. .0
       CALL SARGC (PLOTOPT, NPAR)
       IF (NPAR > 2) THEN
         parloop: DO I=3, NPAR
@@ -52,17 +43,11 @@ C***  Decode possible options
           SELECTCASE(CUROPT)
             CASE ('LOCAL', 'TE')
               bPlotLOCAL = .TRUE.
-            CASE ('INT', 'STROM', 'FLUXCON')
-              bPlotINT = .TRUE.
-            CASE ('RMAX', 'OUT')
-              bPlotRMAX = .TRUE.
             CASE ('TBALANCE', 'TB', 'KUBAT')
               bPlotKUBAT = .TRUE.
             CASE ('ALLTERMS', 'ALL')
               bPlotKUBAT = .TRUE.
               bPlotLOCAL = .TRUE.
-              bPLotINT = .TRUE.
-              bPlotRMAX = .TRUE.
           ENDSELECT
         ENDDO parloop
       ENDIF
@@ -87,16 +72,7 @@ C***  Decode possible options
       WRITE (KANAL, '(A)') 
      >         'KASDEF LINUN XMIN 0. XMAX 0.  0. 0.'
 
-C***  PLOT EXPTAU value from TEMPCORR if used
-      IF (EXPTAUTCL > 0.) THEN
-         WRITE (KANAL,'(A)') '\COLOR=2'
-         WRITE (KANAL,'(A,F8.4,A)')           
-     >     '\SYM ', EXPTAUTCL, ' YMAX 0. 0. 1. 11 CFILL=2'
-      ENDIF
-
-      IF (bUNLU) THEN
-        !Unsoeld-Lucy-Terms
-        IF (bKUBAT .AND. bLOCAL) THEN
+        IF (bPlotKUBAT .AND. bPlotLOCAL) THEN
           WRITE (KANAL,'(A)') '\COLOR=4'
           WRITE (KANAL,'(A,F8.4,A)') 
      >      '\LINUN 0. YMIN  5. YMIN  ', XLABOFF, ' 3.0'
@@ -104,16 +80,15 @@ C***  PLOT EXPTAU value from TEMPCORR if used
           WRITE (KANAL,'(A,F8.4,A)') 
      >     '\LINUN 0. YMIN 2.5 YMIN  ', XLABOFF, ' 3.0'
           WRITE (KANAL,'(A,F8.4,A)') 
-     >      '\LUN   7. YMIN ', XLABOFF, 
-     >                     ' M3.0 0.3 &1Local (&9TB&1,&4TE&1)'
-        ELSEIF (bKUBAT) THEN
+     >      '\LUN   7. YMIN ', XLABOFF, ' M3.0 0.3 &1Local (&9TB&1,&4TE&1)'
+        ELSEIF (bPlotKUBAT) THEN
           WRITE (KANAL,'(A)') '\COLOR=9'
           WRITE (KANAL,'(A,F8.4,A)') 
      >      '\LINUN 0. YMIN  5. YMIN  ', XLABOFF, ' 3.0'
           WRITE (KANAL,'(A,F8.4,A)') 
      >      '\LUN   7. YMIN ', XLABOFF, ' M3.0 0.3 Local (TB)'
-        ELSEIF (bLOCAL) THEN
-          WRITE (KANAL,'(A)') '\COLOR=4'
+        ELSEIF (bPlotLOCAL) THEN
+        WRITE (KANAL,'(A)') '\COLOR=4'
           WRITE (KANAL,'(A,F8.4,A)') 
      >      '\LINUN 0. YMIN  5. YMIN  ', XLABOFF, ' 3.0'
           WRITE (KANAL,'(A,F8.4,A)') 
@@ -122,18 +97,15 @@ C***  PLOT EXPTAU value from TEMPCORR if used
         
         WRITE (KANAL,'(A)') '\COLOR=1'
         WRITE (KANAL,'(A,F8.4,A)') 
-     >    '\LINUN 0. YMIN  5. YMIN  ', XLABOFF, 
-     >                                ' 2.4 SYMBOL=9 SIZE=0.2'
+     >    '\LINUN 0. YMIN  5. YMIN  ', XLABOFF, ' 2.4 SYMBOL=9 SIZE=0.2'
         WRITE (KANAL,'(A,F8.4,A)') 
      >    '\LUN   7. YMIN          ', XLABOFF, ' M2.4 0.3 Int'
 
         WRITE (KANAL,'(A)') '\COLOR=1'
         WRITE (KANAL,'(A,F8.4,A)') 
-     >    '\LINUN 0. YMIN  5. YMIN  ', XLABOFF, 
-     >                               ' 1.8 SYMBOL=10 SIZE=0.2'
+     >    '\LINUN 0. YMIN  5. YMIN  ', XLABOFF, ' 1.8 SYMBOL=10 SIZE=0.2'
         WRITE (KANAL,'(A,F8.4,A)') 
      >    '\LUN   7. YMIN          ', XLABOFF, ' M1.8 0.3 Rmax'
-      ENDIF
 
       WRITE (KANAL,'(A)') '\COLOR=2'
       WRITE (KANAL,'(A)') '\PEN=4'
@@ -163,12 +135,8 @@ C***  PLOT EXPTAU value from TEMPCORR if used
       IF (bPlotKUBAT) THEN
         CALL PLOTCONS (KANAL, X, DTKUBAT, NDin, 'SYMBOL=5 COLOR=9')
       ENDIF
-      IF (bPlotINT) THEN
-        CALL PLOTCONS (KANAL, X, DTINT , NDin, 'SYMBOL=9 SIZE=0.2')
-      ENDIF
-      IF (bPlotRMAX) THEN
-        CALL PLOTCONS (KANAL, X, DTRMAX, NDin, 'SYMBOL=10 SIZE=0.2')
-      ENDIF 
+      CALL PLOTCONS (KANAL, X, DTINT , NDin, 'SYMBOL=9 SIZE=0.2')
+      CALL PLOTCONS (KANAL, X, DTRMAX, NDin, 'SYMBOL=10 SIZE=0.2')
 
       RETURN
       END

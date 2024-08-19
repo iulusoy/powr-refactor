@@ -1,7 +1,7 @@
       SUBROUTINE GREY (ND,T,RADIUS,XLAMBDA,FWEIGHT,NF,ENTOT,RNE,RSTAR,
      $            ALPHA,SEXPO,
      $            ADDCON1, ADDCON2, ADDCON3, 
-     >            IGAUNT,POPNUM,TAUROSS,R23,TEXIST,NDIM,N,
+     $            IGAUNT,POPNUM,TAUROSS,R23,TEXIST,NDIM,N,
      $            LEVEL,NCHARG,WEIGHT,ELEVEL,EION,EINST,ENLTE,KODAT,
      $            ABXYZ,NOM,NFIRST,NLAST,NATOM,EXPFAC,SIGMAKI,NFEDGE,
      $            OPAC,ETAC,SIGMAFF,MAXION,MAXATOM,SIGMATHK,EDGEK,
@@ -41,8 +41,6 @@ C***********************************************************************
 C***  Operating system:
       COMMON / COMOS / OPSYS
       CHARACTER*8 OPSYS
-
-      INTEGER, PARAMETER :: ITER23MAX = 50
 
       DIMENSION XLAMBDA(NF),FWEIGHT(NF),EXPFAC(NF)
       DIMENSION SIGMAKI(NF,LASTKON)
@@ -234,9 +232,9 @@ C***  CALCULATE RADIUS R23 WHERE TAUROSS=2/3
       R23COM=R23
       TAU1=1.
       IF (TAUROSS(ND) .LT. TAU1  ) THEN
-      R1COM=1.
+      R1 COM=1.
          ELSE
-         CALL LIPO (R1COM,TAU1 ,RADIUS,TAUROSS,ND)
+         CALL LIPO (R1 COM,TAU1 ,RADIUS,TAUROSS,ND)
          ENDIF
       TAU13=0.333333333333
       IF (TAUROSS(ND) .LT. TAU13 ) THEN
@@ -246,9 +244,9 @@ C***  CALCULATE RADIUS R23 WHERE TAUROSS=2/3
          ENDIF
  
       IF (ITER .LE. 1 .OR. 
-     >    (DTMAX .GT. 10. .AND. ITER .LE. ITER23MAX)) GOTO 100
+     >    (DTMAX .GT. 10. .AND. ITER .LE. 20)) GOTO 100
 C      IF (DTMAX .GT. 10.) GOTO 100
-      IF (ITER .GT. ITER23MAX) THEN
+      IF (ITER .GT. 20) THEN
         WRITE (0,*) 'Max Number of Iterations exceeded in Subr. GREY'
       ENDIF
  

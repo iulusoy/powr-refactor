@@ -7,8 +7,7 @@ C***  NDIM   = ROW DIMENSION OF TOTAL MATRIX
 C***  NMAX   = MAXIMUM VALUE OF NDIM
 C**********************************************************************
 
-c      PARAMETER (NMAX=2000)
-      PARAMETER (NMAX=4000)
+      PARAMETER (NMAX=2000)
       DIMENSION A(NDIM,NDIM)
       CHARACTER*4 CKEY
 
@@ -16,8 +15,7 @@ C***  Dimensum must be greater-equal 2*NMAX
 C***  If DEC-DXML Routines are used, it should be 64*NPDIM
 C***  Here NPDIM=94 is assumed ==> 94 * 64 = 6016
 C***  Or, for solving the statistical equations NDIM=300 ==> 300 * 64 = 19200
-C      PARAMETER (NDIMSC = 19200)
-      PARAMETER (NDIMSC = NMAX * 64)
+      PARAMETER (NDIMSC = 19200)
       DIMENSION SCRATCH(NDIMSC)
 
 C***  Array for special for the Use in DEC-DXML-Routines 
@@ -46,7 +44,7 @@ C***  disable owninv for testing
       IF (CKEY(1:3) .EQ. 'OWN' .OR. CKEY(1:4) .EQ. 'OWNL') THEN
         CALL OWNINV(N, NDIM, A, CKEY) 
       ELSE
-          if (ndim .gt. NMAX) then
+          if (ndim .gt. 300) then
             write (0,*) '*** obsolete program branch'
             write (0,*) '*** check DIMENSION SCRATCH'
             stop '*** FATAL ERROR in SUBR. INV' 

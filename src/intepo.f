@@ -1,15 +1,11 @@
-      SUBROUTINE INTEPO (ND,N,RNE,NCHARG,POPNUM,ENTOT,NATOM,
-     >                   NALIM, IONLIM, ABXYZ, NFIRST, NLAST,
-     >                   IFRO, ITO, MODE, NOPOP)
+      SUBROUTINE INTEPO (ND,N,RNE,NCHARG,POPNUM,ENTOT,NATOM,ABXYZ,
+     $                   NFIRST,NLAST,IFRO,ITO,MODE,NOPOP)
 C***********************************************************************
 C***  LINEAR INTERPOLATION BETWEEN GIVEN DENSITY POINTS OR 
 C***  EXTRAPOLATION FROM A GIVEN DENSITY POINT TO INNER OR OUTER BOUNDARY
 C***
 C***  THE ELECTRON DENSITY IS UPDATED ACCORDING TO THE NEW POPNUMBERS
-C***
-C***  note: limitation to ION blocks not yet implemented (only ATOM blocks)
 C***********************************************************************
-      INTEGER, INTENT(IN) :: ND, N, NATOM, NALIM, IONLIM
  
       DIMENSION RNE(ND),NCHARG(N),POPNUM(ND,N),ENTOT(ND)
       DIMENSION ABXYZ(NATOM),NFIRST(NATOM),NLAST(NATOM)
@@ -47,7 +43,6 @@ C***  LOOP OVER ALL DEPTH POINTS  --------------------------------------
 
 C***  LOOP FOR EACH ELEMENT  ------------------------------
       DO 1 NA=1,NATOM
-      IF (NALIM > 0 .AND. NA /= NALIM) CYCLE        !ATOM limitation (useful with DM split)
       NFIRNA=NFIRST(NA)
       NLANA=NLAST(NA)
       POPSUM=.0

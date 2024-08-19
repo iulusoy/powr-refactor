@@ -1,6 +1,6 @@
-      SUBROUTINE SECONDMODEL_PREP (ZINTER, NPHI, P, NP, NPDIM, NPHIMAX, 
-     >     PHIARR, PHIWEIGHT, PHI_VEC, SECONDMODEL_LINE, 
-     >     JPFIRST, JPLAST, LPHISTA_ORIG, LPHIEND_ORIG)
+      SUBROUTINE SECONDMODEL_PREP (ZINTER, NPHI, P, NP, NPDIM, NPHIMAX,
+     >     PHIARR, PHIWEIGHT, PHI_VEC, SECONDMODEL_LINE,
+     >     JPFIRST, JPLAST, LPHISTA_ORIG, LPHIEND_ORIG, THETA)
 C******************************************************************
 C***  CALCULATES THE POINTS OF INTERSECTION FOR EITHER:
 C***  - THE CONE geometry:
@@ -16,7 +16,7 @@ C***  The pre-existing set of angle points is enlarged to cover the
 C***  cone, but not wasting points outside
 C******************************************************************
 
-      DIMENSION ZINTER(2, NPDIM, NPHIMAX), P(NP)
+      DIMENSION ZINTER(4, NPDIM, NPHIMAX), P(NP)
       DIMENSION PHIARR(NPHIMAX,NPDIM), PHIWEIGHT(NPHIMAX,NPDIM)
       DIMENSION NPHI(NPDIM)
       DIMENSION PHI_VEC(NPHIMAX)
@@ -39,6 +39,7 @@ C***  Defaults
       DATA RSPHERE   / -999. /
       DATA DSPHERE   / -999. /
 
+      THETA = .0 ! used for suppressing calc of luminosity_combined
       RMAX = P(NP)
 
 C***  Decode parameters from input line
@@ -136,12 +137,13 @@ C***  Check for mandatory parameters
             GOTO 99
          ENDIF
 
-         IF (CONEI_DEG - THETA_DEG .LE. .0) THEN
+         CONEI_MINUS_THETA = CONEI_DEG - THETA_DEG
+         IF (ABS(CONEI_MINUS_THETA) .LT. 0.1) THEN
             WRITE (0,'(A, /, A, F6.1, A, F6.1, A)') '***** ERROR: ' //
      >       ' Invalid choice of geometry:', 'THETA=', THETA_DEG,
      >       'deg,  CONE-Inclination=', CONEI_DEG, 'deg'
             WRITE (0,'(A)') '***** ERROR: ' //
-     >       'Cone MUST be seen from the side'
+     >       'those two angles must differ by more than 0.1 degree'
             GOTO 99
          ENDIF
 
@@ -160,10 +162,13 @@ C***  Check for mandatory parameters
 
 C***  Preparation for the CONE case
       IF (SHAPE .EQ. 'CONE') THEN
-         SINI = SIN(CONEI)
-         COSI = COS(CONEI)
-         COTMINUS = 1. / TAN(CONEI-THETA) 
-         COTPLUS  = 1. / TAN(CONEI+THETA) 
+         SINI = SIN (CONEI)
+         COSI = COS (CONEI)
+         COST = COS (THETA)
+         ECC  = COSI / COST
+         ECC2 = ECC * ECC
+         COTMINUS = 1. / TAN (CONEI-THETA)
+         COTPLUS  = 1. / TAN (CONEI+THETA)
 
 C***  Preparation for the SPHERE case
       ELSEIF (SHAPE .EQ. 'SPHERE') THEN
@@ -178,19 +183,21 @@ C***  Preparation for the SPHERE case
       MAXNPHI = 0
       NPHISUM = 0
 
+C***************************************************************
 C***  Loop over impact parameters
+C***************************************************************
       DO JP=1, NP-1
 
-C***  The angle-points will be established  
+C***     The angle-points will be established
 
-C***  Only 1 angle point for JP=1 (center)
+C***     Only 1 angle point for JP=1 (center)
          IF (JP .EQ. 1) THEN
             PHI_VEC_TEMP(1) = .0
             NPHI_TEMP = 1
             GOTO 10
          ENDIF         
 
-C***  Preparation of angle points
+C***     Preparation of angle points for JP > 1
          IF (NPHI(JP) .EQ. 1) THEN
             PHI_VEC(1) = .0
             PHI_VEC(2) = 2.*PI
@@ -200,7 +207,7 @@ C***  Preparation of angle points
 C**     Copy pre-existing phi points (from wind rotation)
             NPHI_JP = NPHI(JP)
             DO LPHI=1, NPHI_JP
-               PHI_VEC(LPHI) = PHIARR (LPHI,JP)
+               PHI_VEC(LPHI) = PHIARR(LPHI,JP)
             ENDDO
 
 C**         mirror the list to the southern hemisphere 
@@ -211,8 +218,8 @@ C**         mirror the list to the southern hemisphere
      >          /, 'NPHIMAX= ', I6)
                STOP '*** FATAL ERROR in subr. SECONDMODEL_PREP'
             ENDIF
-            DO LPHI=1, NPHI_JP-1         
-               PHI_VEC(2*NPHI_JP-LPHI) = 2.*PI -  PHI_VEC(LPHI)
+            DO LPHI=1, NPHI_JP - 1
+               PHI_VEC(2 * NPHI_JP-LPHI) = 2. * PI - PHI_VEC(LPHI)
             ENDDO
             NPHI_JP = 2 * NPHI_JP - 1
          ENDIF
@@ -250,8 +257,8 @@ C***        Error stop if vector PHI_VEC_TEMP too short
               STOP '*** FATAL INTERNAL ERROR in subr. SECONDMODEL_PREP'
             ENDIF
 
-            IF (PHI_VEC(LPHI+1) .LT. PHI_NEXT .OR.
-     >          PHI_NEXT .GE. 2*PI) THEN
+            IF (PHI_VEC(LPHI + 1) .LT. PHI_NEXT .OR.
+     >          PHI_NEXT .GE. 2 * PI) THEN
                LPHI = LPHI + 1
                PHI_VEC_TEMP(LPHI_TEMP) = PHI_VEC(LPHI) 
                BPHI_ORIG(LPHI_TEMP) = .TRUE.
@@ -267,80 +274,117 @@ C***        Error stop if vector PHI_VEC_TEMP too short
    10    CONTINUE
 C***     Angle points are now in PHI_VEC_TEMP
 
-C********Loop over all angle points at current JP to find intersections **
+C***     Rays are limited to the RMAX sphere;
+         ZMAX2 = RMAX2 - P(JP)*P(JP)
+         ZMAX2 = MAX (.0, ZMAX2)
+         ZMAX = SQRT(ZMAX2)
+C***     Core Rays end at the stellar core
+         IF (P(JP) .LT. 1.) THEN
+            ZMIN = SQRT (1. - P(JP)*P(JP))
+         ELSE 
+            ZMIN = -ZMAX
+         ENDIF
+
+C***     Loop over all angle points at current JP to find intersections **
          DO LPHI_TEMP=1, NPHI_TEMP
             PHI = PHI_VEC_TEMP (LPHI_TEMP)
-            X0  = P(JP) * COS(PHI)
+            X0  = P(JP) * COS (PHI)
             X02 = X0 * X0
-            Y0  = P(JP) * SIN(PHI)
-            Y02 = Y0 * Y0 
+            Y0  = P(JP) * SIN (PHI)
+            Y02 = Y0 * Y0
 
+            Z1 = .0
+            Z2 = .0
+            Z3 = .0
+            Z4 = .0
+
+C*************************************************************
 C***        Intersection points with cone
+C*************************************************************
             IF (SHAPE .EQ. 'CONE') THEN
-              ZM = 0.5 * Y0 * (COTPLUS + COTMINUS)
-              AAXIS = 0.5 * Y0 * (COTPLUS - COTMINUS)
-              AAXIS2 = AAXIS * AAXIS
-              BAXIS2 = (Y02 + ZM**2) * (TAN(THETA))**2
-              IF (X02 .GE. BAXIS2) THEN
-                 Z1 = .0
-                 Z2 = .0
-              ELSE
-                 TERM2 = AAXIS2 * (1- X02/BAXIS2)
-                 TERM2 = SQRT(TERM2)
-                 Z1 = ZM + TERM2
-                 Z2 = ZM - TERM2
-              ENDIF
+               ZM = 0.5 * Y0 * (COTPLUS + COTMINUS)
+               AAXIS = 0.5 * Y0 * (COTPLUS - COTMINUS)
+               AAXIS2 = AAXIS * AAXIS
 
+C***           GEOMETRY OF ELLIPSE
+               IF (CONEI_MINUS_THETA .GT. .0) THEN
+                  BAXIS2 = AAXIS2  - ECC2 * AAXIS2
+                  IF (X02 .LE. BAXIS2) THEN
+                    TERM2 = AAXIS2 - X02/(1. - ECC2)
+                    TERM2 = SQRT(TERM2)
+                    Z1 = ZM + TERM2
+                    Z2 = ZM - TERM2
+                  ENDIF
+
+C***           GEOMETRY OF HYPERBOLA
+               ELSE
+                  TERM3 = AAXIS2 + X02 / (ECC2 - 1.)
+                  TERM3 = SQRT (TERM3)
+                  Z1 = ZMAX
+                  Z2 = ZM + TERM3
+                  Z3 = ZM - TERM3
+                  Z4 = -ZMAX
+               ENDIF
+
+C*************************************************************
 C***        Intersection points with sphere
+C*************************************************************
             ELSEIF (SHAPE .EQ. 'SPHERE') THEN
-              XM = DSPHERE * COSD * SINA
-              YM = DSPHERE * SIND
-              ZM = DSPHERE * COSD * COSA
-              DX2 = (X0-XM)**2
-              DY2 = (Y0-YM)**2
-              TERM2 = RSPHERE2 - DX2 - DY2
-              IF (TERM2 .LE. .0) THEN
-                 Z1 = .0
-                 Z2 = .0
-              ELSE
-                 TERM2 = SQRT(TERM2)
-                 Z1 = ZM + TERM2
-                 Z2 = ZM - TERM2
-              ENDIF
-      
+               XM = DSPHERE * COSD * SINA
+               YM = DSPHERE * SIND
+               ZM = DSPHERE * COSD * COSA
+               DX2 = (X0-XM)**2
+               DY2 = (Y0-YM)**2
+               TERM2 = RSPHERE2 - DX2 - DY2
+
+               IF (TERM2 .GT. .0) THEN
+                  TERM2 = SQRT(TERM2)
+                  Z1 = ZM + TERM2
+                  Z2 = ZM - TERM2
+               ENDIF
             ELSE
-              STOP '*** Internal ERROR in SECONDMODEL_PREP: unknown SHAPE'
+               STOP '*** Fatal ERROR in SECONDMODEL_PREP: unknown SHAPE'
             ENDIF
 
-C**         Clipping the intersection line at the RMAX sphere
-            ZMAX2 = RMAX2 - X02 - Y02
-            ZMAX2 = MAX (.0, ZMAX2)
-            ZMAX = SQRT (ZMAX2)
-            IF (Z2 .GE. ZMAX .OR. Z1 .LE. -ZMAX) THEN
-C**            Intersection interval is entirely outside RMAX sphere
-               Z1 = .0
-               Z2 = .0
-            ELSE
-               Z1 = MIN (Z1,  ZMAX)
-               Z2 = MAX (Z2, -ZMAX)
-            ENDIF
-
-C**         Core rays:
-            IF (P(JP) .LT. 1.) THEN
-C**            Intersection lines behind the stellar disc are obscured
-               ZMIN = SQRT (1. - P(JP)*P(JP))
-               IF (Z1 .LE. ZMIN) THEN
+C********************************************************************
+C***        All geometries: 
+C**         Clipping the intersection line(s) to (ZMIN,ZMAX) 
+C********************************************************************
+            IF (Z1 .NE. .0 .OR. Z2 .NE. .0) THEN
+C***           First intersection interval entirely outside (ZMIN,ZMAX)
+               IF (Z2 .GE. ZMAX .OR. Z1 .LE. ZMIN) THEN
                   Z1 = .0
                   Z2 = .0
                ELSE
-                  Z2 = ZMIN
+                  Z1 = MIN (Z1, ZMAX)
+                  Z2 = MAX (Z2, ZMIN)
                ENDIF
             ENDIF
+C***        Same for second intersection interval (if existing)
+            IF (Z3 .NE. .0 .OR. Z4 .NE. .0) THEN
+               IF (Z4 .GE. ZMAX .OR. Z3 .LE. ZMIN) THEN
+                  Z3 = .0
+                  Z4 = .0
+               ELSE
+                  Z3 = MIN (Z3, ZMAX)
+                  Z4 = MAX (Z4, ZMIN)
+               ENDIF
+            ENDIF
+
+C**************************************************************
+C***  Calculation and clipping of intersection interval(s) done       
+C**************************************************************
+
+C**************************************************************
+C***  Check if the current angle-point might be skipped 
+C**************************************************************
 
 C***        First angle point is always kept
             IF (LPHI_TEMP .LE. 1) THEN
                ZINTER(1, JP, 1) = Z1
                ZINTER(2, JP, 1) = Z2
+               ZINTER(3, JP, 1) = Z3
+               ZINTER(4, JP, 1) = Z4
                PHIARR(1,JP) = PHI_VEC_TEMP(1)
                LPHI = 1
                BPHI_ORIG_LAST = .TRUE.
@@ -350,15 +394,22 @@ C***        Only if last OR current phi intersects -> increase counter;
 C***        else overwrite last point
 C***        "original" angle points are also kept and not overwritten
 C***        additionally, first non-intersection points are not overwritten
-              DZ = Z2 - Z1
-              DZLAST = ZINTER(2, JP, LPHI) - ZINTER(1, JP, LPHI)
-              IF (DZ .NE. .0 .OR. DZLAST .NE. .0 .OR. BPHI_ORIG_LAST) 
-     >           LPHI = LPHI + 1
+              DZ1 = Z2 - Z1
+              DZ2 = Z4 - Z3
+              DZLAST1 = ZINTER(2, JP, LPHI) - ZINTER(1, JP, LPHI)
+              DZLAST2 = ZINTER(4, JP, LPHI) - ZINTER(3, JP, LPHI)
+              IF ((DZ1 .NE. .0) .OR. (DZLAST1 .NE. .0) .OR.
+     >            (DZ2 .NE. .0) .OR. (DZLAST2 .NE. .0) .OR.
+     >             BPHI_ORIG_LAST) LPHI = LPHI + 1
               ZINTER(1, JP, LPHI) = Z1
               ZINTER(2, JP, LPHI) = Z2
+              ZINTER(3, JP, LPHI) = Z3
+              ZINTER(4, JP, LPHI) = Z4
               PHIARR(LPHI,JP) = PHI_VEC_TEMP(LPHI_TEMP)
 C**           If last point was inside cone, do not overwrite it
-              BPHI_ORIG_LAST= BPHI_ORIG(LPHI_TEMP) .OR. (DZLAST .NE. .0)
+              BPHI_ORIG_LAST=BPHI_ORIG(LPHI_TEMP).OR.(DZLAST1 .NE. .0)
+     >                      .OR. (DZLAST2 .NE. .0) .OR. (DZ1 .NE. .0)
+     >                      .OR. (DZ2 .NE. .0)
             ENDIF
 
          ENDDO ! phi-loop, index LPHI_TEMP -----------------------------
@@ -379,10 +430,17 @@ C***  Output of data cube for visualization with gnuplot
          DO LPHI = 1, NPHI(J)
             X0 = P(J)/P(NP) * COS(PHIARR(LPHI,J))
             Y0 = P(J)/P(NP) * SIN(PHIARR(LPHI,J))
-            IF (ZINTER(1,J,LPHI) .NE. .0 .OR.
-     >          ZINTER(1,J,LPHI) .NE. .0) THEN
+            IF ((ZINTER(1,J,LPHI) .NE. .0) .OR.
+     >          (ZINTER(2,J,LPHI) .NE. .0)) THEN
                   WRITE (20, *) X0, Y0, ZINTER(1,J,LPHI)/P(NP)
                   WRITE (20, *) X0, Y0, ZINTER(2,J,LPHI)/P(NP)
+                  WRITE (20, *) '   '
+                  WRITE (20, *) '   '
+            ENDIF
+            IF ((ZINTER(3,J,LPHI) .NE. .0) .OR.
+     >          (ZINTER(4,J,LPHI) .NE. .0)) THEN
+                  WRITE (20, *) X0, Y0, ZINTER(3,J,LPHI)/P(NP)
+                  WRITE (20, *) X0, Y0, ZINTER(4,J,LPHI)/P(NP)
                   WRITE (20, *) '   '
                   WRITE (20, *) '   '
             ENDIF
@@ -434,7 +492,7 @@ C***       but omitting the factors 0.5 at all weights
              PHIWEIGHT(LPHI,JP) = PHIARR(LPHI+1,JP) - PHIARR(LPHI-1,JP)
            ENDDO
            PHIWEIGHT(NPHI(JP),JP) = PHIARR(NPHI(JP),JP)
-     >                           - PHIARR(NPHI(JP)-1,JP)
+     >                           - PHIARR(NPHI(JP) - 1,JP)
         ENDIF
 
       ENDDO

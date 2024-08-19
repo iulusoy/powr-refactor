@@ -1,6 +1,6 @@
       SUBROUTINE FEDAT (ROUTINE, INDEXMAX, NFEREADMAX, IONLOW, IONTOP,
-     &                  MAXATOM, NDIM, MAXIND, MAXKONT, NATOM,      
-     &                  N, LASTFE, LASTKON, LASTINDAUTO, MAXFEIND, 
+     &                  MAXATOM, NDIM, MAXIND, MAXKONT,       
+     &                  NATOM, N, LASTFE, LASTKON, LASTINDAUTO, MAXFEIND, 
      &                  EINST, SIGMAFE, INDRB, INDRF, IFENUP, 
      &                  IFELOW, INDNUP, INDLOW, KONTNUP, KONTLOW,
      &                  LEVEL, ELEMENT, SYMBOL, ATMASS, STAGE,
@@ -21,87 +21,63 @@ C ***    FROM A MASS-STORAGE FILE CREATED BY THE IRON-PACKAGE (TAPE 21)
 C ***
 C **********************************************************************
 
-      IMPLICIT NONE
-
 C***  Local dimensions:
 C***  Maximum number of bound-bound transitions within one ion
-c      PARAMETER ( NBBMAX  = 400 )
-      INTEGER, PARAMETER :: NBBMAX = 999  !taken from CREATMS (from blanket program)
+      PARAMETER ( NBBMAX  = 400 )
 C***  NIONMAX must cover the number of Iron Ionization stages in the FEDAT file
-      INTEGER, PARAMETER :: NIONMAX = 27
+      PARAMETER ( NIONMAX =  25 )
 C***  NROMMAX: Roman Numbers encoded: cf. DATA-Statement for ROMNUM 
-      INTEGER, PARAMETER :: NROMMAX = 27
+      PARAMETER ( NROMMAX = 25)
 C***  Local arrays
-      INTEGER, DIMENSION(NIONMAX) :: NB, NTRA, NTRB
-      INTEGER, DIMENSION(NBBMAX) :: NX_A, NX_B
-      CHARACTER(2) :: CIONBUFFER
-      CHARACTER(5), DIMENSION(NROMMAX) :: ROMNUM 
-      CHARACTER(16), DIMENSION(NBBMAX) :: NAMARRAY
-      CHARACTER(16) :: NAMBUFFER
-      CHARACTER(LEN=8) :: NAME
-      CHARACTER(LEN=24) :: GENER
-      CHARACTER(LEN=40) :: IONNAME(NIONMAX)
-      CHARACTER(LEN=3) :: ISTR
-      
+      DIMENSION NB(NIONMAX), NTRA(NIONMAX), NTRB(NIONMAX)
+      DIMENSION NX_A(NBBMAX), NX_B(NBBMAX)
+      CHARACTER ROMNUM(NROMMAX)*4, NAMARRAY(2,NBBMAX)*8
+      CHARACTER(LEN=8)  NAME
+      CHARACTER(LEN=24) GENER
+      CHARACTER(LEN=40) IONNAME(NIONMAX)
+      CHARACTER(LEN=3)  ISTR
+
 C***  Maximum number of superlevels within the same ion
-      INTEGER, PARAMETER :: MAXLEVEL = 100
-      CHARACTER(LEN=8), DIMENSION(MAXLEVEL) :: LEVNAMES
+      PARAMETER ( MAXLEVEL = 100 )
+      CHARACTER(LEN=8) LEVNAMES(MAXLEVEL)
 
-      LOGICAL :: BEXTEND
+      LOGICAL BEXTEND
 
-      INTEGER, INTENT(IN) :: IONLOW, IONTOP, NATOM, NDIM,
-     >                       MAXIND, MAXATOM, MAXKONT, MAXFEIND, 
-     >                       INDEXMAX, NFEREADMAX, LASTINDAUTO
-      INTEGER, INTENT(INOUT) :: N, LASTFE, LASTKON
-      
 C***  Formal Parameters
       CHARACTER(LEN=*)  ROUTINE
-      CHARACTER(LEN=2), DIMENSION(MAXATOM) :: SYMBOL
-      CHARACTER(LEN=10), DIMENSION(MAXATOM) :: ELEMENT
-      CHARACTER(LEN=10), DIMENSION(NDIM) :: LEVEL
+      CHARACTER(LEN=2)  SYMBOL(MAXATOM)       
+      CHARACTER(LEN=10) ELEMENT(MAXATOM), LEVEL(NDIM)
       
-      INTEGER, DIMENSION(MAXATOM) :: KODAT, NFIRST, NLAST
-      REAL, DIMENSION(MAXATOM) :: ATMASS, STAGE
-      INTEGER, DIMENSION(NDIM) :: NCHARG, NOM
-      REAL, DIMENSION(NDIM) :: EION, ELEVEL, WEIGHT
-      REAL, DIMENSION(NDIM,NDIM) :: EINST
-      INTEGER, DIMENSION(MAXKONT) :: KONTNUP, KONTLOW
+      DIMENSION KODAT(MAXATOM),ATMASS(MAXATOM),STAGE(MAXATOM)
+      DIMENSION NFIRST(MAXATOM),NLAST(MAXATOM)
+      DIMENSION NCHARG(NDIM),EION(NDIM),NOM(NDIM)
+      DIMENSION ELEVEL(NDIM),WEIGHT(NDIM), EINST(NDIM,NDIM)
+      DIMENSION KONTNUP(MAXKONT),KONTLOW(MAXKONT)
 
 C***  The following arrays are ONLY used in STEAL, WRSTART 
 C***  -> not necessary to define these arrays and MAXIND in other calls 
-      INTEGER, DIMENSION(MAXIND) :: INDNUP, INDLOW
-      CHARACTER(LEN=4), DIMENSION(MAXIND) :: KEYCBB
+      DIMENSION INDNUP(MAXIND),INDLOW(MAXIND)
+      CHARACTER(LEN=4)  KEYCBB(MAXIND)
 
 C***  IRON-SPECIFIC ARRAYS; MAXFEIND = MAX. NUMBER OF IRON SUPERLINES
-      INTEGER, DIMENSION(MAXFEIND) :: INDRB, INDRF, IFENUP, IFELOW,
-     >                                IFRBSTA, IFRBEND
-      REAL, DIMENSION(MAXFEIND) :: SIGMAINT
-      REAL, DIMENSION(INDEXMAX) :: SIGMAFE
-      REAL, DIMENSION(NFEREADMAX) :: FEDUMMY
-      
-      REAL :: SIGMAUL, SIGMALU, SIGMAINTCUR,
-     >        WLOW, XF, XFOLD, DSIGMA, XLAM, XLOGSTEP, DXFE, 
-     >        XLAM0FE, VDOPFE, XBAK, WNUP, XLAMCMIND
-      INTEGER :: INDEX, INDEXS, LOWION, NUPION, I, J, K, NION,
-     >           NDATA, LEVCOUNT, ILAM, NUP, LOW, INDSTA,
-     >           INDEND, INDSELF, IND, IFREQRBSTA, IFREQRBEND,
-     >           NOLD, KONT, IADR, MAXADR, IERR, NTEST, IBAK,
-     >           NREADIN, IERRLEVNAM, KZEROS, KZEROE
-      
-      LOGICAL :: bFEINFO, bFEULSEP, bINTRA
+      DIMENSION INDRB(MAXFEIND), INDRF(MAXFEIND) 
+      DIMENSION IFENUP(MAXFEIND), IFELOW(MAXFEIND)
+      DIMENSION IFRBSTA(MAXFEIND), IFRBEND(MAXFEIND), SIGMAINT(MAXFEIND)
+      DIMENSION SIGMAFE(INDEXMAX) 
+      DIMENSION FEDUMMY(NFEREADMAX) 
 
-C***  Constants:
-      REAL, PARAMETER :: CLIGHT = 2.99792458E10   !C in cm/s
-      REAL, PARAMETER :: PI8 = 25.1327412288      !PI8 = 8*PI
-      REAL, PARAMETER :: FSIG = 2.6540E-2         !PI*e^2/m/c in CGS units
-      
+C***  C in cm/s
+      DATA CLIGHT /2.99792458E10/
+C***  PI8 = 8*PI
+      DATA PI8 /25.1327412288/
+C***  PI*e^2/m/c in CGS units
+      DATA FSIG /2.6540E-2/
 C***  Roman Numbers for Level names
-      DATA ROMNUM / 'I....', 'II...', 'III..', 'IV...', 'V....', 
-     >              'VI...', 'VII..', 'VIII.', 'IX...', 'X....',
-     >              'XI...', 'XII..', 'XIII.', 'XIV..', 'XV...',
-     >              'XVI..', 'XVII.', 'XVIII', 'XIX..', 'XX...',
-     >              'XXI..', 'XXII.', 'XXIII', 'XXIV.', 'XXV..',
-     >              'XXVI.', 'XXVII' /
+      DATA ROMNUM / 'I...', 'II..', 'III.', 'IV..', 'V...', 
+     >              'VI..', 'VII.', 'VIII', 'IX..', 'X...',
+     >              'XI..', 'XII.', 'XIII', 'XIV.', 'XV..',
+     >              'XVI.', 'XVII', 'XIIX', 'XIX.', 'XX..', 
+     >              'XXI.', 'XXII', '23..', 'XXIV', 'XXV.' /
 
       CALL OPENMS(21,IADR,MAXADR,1,IERR)
 
@@ -113,7 +89,6 @@ C***  NION = Number of Iron Ionization stages in the FEDAT Data file
       CALL READMS (21, NION,    1,      'NION    ', IERR)
       IF (NION .GT. NIONMAX .OR. IONTOP .GT. NIONMAX) THEN
          WRITE (0,'(A)') '*** Local dimension NIONMAX insufficient !' 
-         WRITE (0,*) NION, IONTOP, NIONMAX
          STOP            '*** ERROR STOP IN FEDAT *********'
       ENDIF
 
@@ -133,7 +108,6 @@ C *** INITIALIZE COUNTERS
       LEVCOUNT = N
       IND      = 0
       KONT     = LASTKON
-
 
 C *** READ NUMBER OF SUPERLEVELS PER IONIZATION STAGE
         CALL READMS (21, NB, NION, 'NLEV    ', IERR)
@@ -165,8 +139,6 @@ C ***   REDUCTION TO 1 LEVEL FOR HIGHEST AND LOWEST IONISATIION STAGE
         IF (N+NB(I) .GT. NDIM) THEN
            WRITE (0,'(A)') '*** Dimension NDIM insufficient !' 
            WRITE (0,'(A,I4)') '*** Present value NDIM = ', NDIM
-           WRITE (0,'(A,I4)') '*** Required value = ', N+NB(I)
-           WRITE (0,*)  I, N, NB(I)
            STOP            '*** ERROR STOP IN FEDAT *********'
         ENDIF
 
@@ -208,7 +180,6 @@ C***       READ NUMBER OF DATA-POINTS PER CROSS-SECTION (PRESENT ION I)
            WEIGHT(LEVCOUNT+1) = 1.
         ENDIF
 
-        
 C***  CREATE SUPERLEVEL NAMES, READ CHARGES AND IONIZATION ENERGIES      
         DO J=1,NB(I)
           N = LEVCOUNT+J
@@ -228,12 +199,11 @@ C***        For the extended Level no IONNAME exists
 C***        level names are already prepared in the FEDAT file
             LEVEL(N) = SYMBOL(NATOM) // LEVNAMES(J)
           ELSE
-C***        use default level names if no predefined names are available
             IF (NCHARG(N)+1 .GT. NROMMAX) THEN
-            WRITE(0,'(A)') '*** Roman Number for Ion. stage not known' 
+              WRITE (0,'(A)') '*** Roman Number for Ion. stage not known' 
               STOP            '*** ERROR STOP IN FEDAT *********'
             ENDIF
-            LEVEL(N)=SYMBOL(NATOM) // ' ' // ROMNUM(NCHARG(N)+1) // '.'
+            LEVEL(N) = SYMBOL(NATOM) // ' ' // ROMNUM(NCHARG(N)+1) // '.'
             WRITE (LEVEL(N)(9:10),'(I2)') J
             IF (J .LE. 9) LEVEL(N)(9:9) = '.'
           ENDIF 
@@ -244,9 +214,6 @@ C***        use default level names if no predefined names are available
           NLAST(NATOM) = N
         ENDIF
                 
-        NAME = 'A' // IONNAME(I)(2:4) // 'NAM ' 
-        CALL READMS (21, NAMARRAY, 2*NTRA(I), NAME, IERR)
-                
 C**********************************************************************
 C***    STORE RBB TRANSITION-DATA IN ONE-DIMENSIONAL ARRAY >>SIGMAFE<<
 C***    LOOP OVER ALL BOUND-BOUND TRANSITIONS
@@ -256,11 +223,11 @@ C***      NO BB-TRANSITIONS FOR HIGHEST AND LOWEST IONISATION STAGES
           IF ((I .GE. IONTOP).OR.(I .LE. IONLOW)) GOTO 20
 
 C***      READ LEVEL NUMBERS ASSOCIATED WITH TRANSITION          
-          CIONBUFFER = NAMARRAY(J)(3:4)
-          READ (UNIT=CIONBUFFER,FMT='(I2)') LOWION 
-          CIONBUFFER = NAMARRAY(J)(6:7)
-          READ (UNIT=CIONBUFFER,FMT='(I2)') NUPION
+          NAME = 'A' // IONNAME(I)(2:4) // 'NAM ' 
+          CALL READMS (21, NAMARRAY, 2*NTRA(I), NAME, IERR)
+          READ (NAMARRAY(1,J)(3:4),'(I2)') LOWION 
           LOW=LOWION+LEVCOUNT
+          READ (NAMARRAY(1,J)(6:7),'(I2)') NUPION
           NUP=NUPION+LEVCOUNT
 
 C***      OMIT TRANSITION IF LOW=NUP
@@ -274,17 +241,17 @@ C***      BB-TRANSITION INDEX FOR IRON LINES (STARTING FROM 1)
           ENDIF     
 
 C***      CREATE POINTER TO STARTING INDEX OF RBB TRANSITION-DATA         
-          INDSTA = INDEX+1
+          INDRB(IND) = INDEX+1
           NDATA = NX_A(J)
           IF (NDATA+2 .GT. NFEREADMAX) THEN
-            WRITE(0,'(A)') '*** Dim. NFEREADMAX insufficient for b-b!' 
+              WRITE (0,'(A)') '*** Dim. NFEREADMAX insufficient for b-b!' 
               WRITE (0,'(A, I10)') 
      >          '*** dimensioned: NFEREADMAX = ', NFEREADMAX
               WRITE (0,'(A, I10)') 
      >          '*** required   : NFEREADMAX = ', NDATA+2
               STOP            '*** ERROR STOP IN FEDAT *********'
           ENDIF
-          INDEND = INDSTA+NDATA
+          INDEND = INDRB(IND)+NDATA
           IF (INDEND .GE. INDEXMAX) THEN 
               WRITE (0,'(A)') '*** Dimension INDEXMAX insufficient !' 
               WRITE (0,'(A, I10)') 
@@ -304,46 +271,27 @@ C ***   READ TRANSITION DATA
           CALL READMS (21, FEDUMMY, NDATA+2, NAME, IERR)
 
 C ***   STORE FREQUENCY INDICES
-          IFREQRBSTA = - INT(FEDUMMY(2))
-          IFREQRBEND = - INT(FEDUMMY(1))
+          IFRBSTA(IND) = - INT(FEDUMMY(2))
+          IFRBEND(IND) = - INT(FEDUMMY(1))
 
 C ***   STORE CROSS-SECTIONS IN ARRAY >>SIGMAFE<<          
           XLOGSTEP = ALOG10(1. + VDOPFE*1.E5*DXFE/CLIGHT)
-          SIGMAINTCUR = 0.
-          KZEROS = 0
-          KZEROE = 0
+          SIGMAINT(IND) = 0.
+          WLOW = WEIGHT(LOW)
+          WNUP = WEIGHT(NUP)
+          XLAMCMIND = 1./(ELEVEL(NUP) - ELEVEL(LOW))
           DO K=1,NDATA
 C***        Calculation of Lambda and Nu in cgs
-             ILAM = IFREQRBSTA + K - 1
+             ILAM = IFRBSTA(IND) + K - 1
              XLAM = XLAM0FE*1.E-8 * 10.**(ILAM*XLOGSTEP)
              XF   = CLIGHT / XLAM
 C ***       CROSS-SECTION
-               SIGMAFE(INDEX+K) = FEDUMMY(NDATA-K+3) 
-C***           Determine zero cross section regions at start and end
-               IF (SIGMAFE(INDEX+K) <= 0.) THEN
-                 IF (KZEROS >= 0) KZEROS = KZEROS + 1
-                 KZEROE = KZEROE + 1
-               ELSE 
-C***             Non-zero cross section found:
-                 IF (K == 1) THEN
-C***               The first entry in the array is already non-zero.
-C***               Therefore stop all further increasements of KZEROS by
-C***               setting the counter to a negative value:
-                   KZEROS = -1
-                 ELSEIF (KZEROS > 0) THEN
-C***               To stop further increasing of KZEROS after the first time
-C***               this has occured, multiply the result with -1.
-                   KZEROS = -1. * KZEROS
-                 ENDIF
-C***             Reset KZEROE since the formet part with zero cross-section
-C***             was definately not at the end of the cross section array.
-                 KZEROE = 0
-               ENDIF
- 
-C ***          INTEGRATION OF EINSTEIN-COEFFICIENT AND NORM FOR SIGMA
-               IF (K .GT. 1) THEN
-                 DSIGMA = (SIGMAFE(INDEX+K)+SIGMAFE(INDEX+K-1))/2.
-                 SIGMAINTCUR = SIGMAINTCUR + DSIGMA * (XFOLD - XF)
+             SIGMAFE(INDEX+K) = FEDUMMY(NDATA-K+3)
+
+C ***       INTEGRATION OF EINSTEIN-COEFFICIENT AND NORM FOR SIGMA
+             IF (K .GT. 1) THEN
+                DSIGMA = (SIGMAFE(INDEX+K)+SIGMAFE(INDEX+K-1))/2.
+                SIGMAINT(IND) = SIGMAINT(IND) + DSIGMA * (XFOLD - XF)
 ccc the following statement is deactivated in libcr_cl version 16-Feb-1999
 C***           NU^2 - Term is now accounted for
 ccc             XNU = XLAMCMIND/XLAM
@@ -359,53 +307,18 @@ ccc     >                          + XNUMID2 * DSIGMA * (XFOLD - XF)
 ccc             XNUOLD= XNU
           ENDDO
 
+          EINST(NUP,LOW) = SIGMAINT(IND) * 
+     >                     PI8*WLOW/WNUP/(XLAMCMIND*XLAMCMIND)
 
-C***      Band-Band transition 
-          INDRB(IND) = INDSTA
-            
-          IFRBSTA(IND) = IFREQRBSTA
-          IFRBEND(IND) = IFREQRBEND
-C***      Remove empty cross sections regions from pointer range
-C***      (leaves only at maximum one zero entry at beginning and end)
-!             IF (ABS(KZEROS) > 0.) THEN
-!               DO K=1, ABS(KZEROS)-1
-!                 IF (SIGMAFE(INDEX+K) > 0.) STOP 'FATAL: KREDUCINGS FAILED!'
-!               ENDDO
-! c              WRITE (0,*) 'STA: ', IFREQRBSTA, KZEROS
-!               IFRBSTA(IND) = IFREQRBSTA + ABS(KZEROS) - 1
-!               INDRB(IND) = INDSTA + ABS(KZEROS) - 1
-!             ENDIF
-!             IF (ABS(KZEROE) > 0.) THEN
-!               DO K=NDATA, NDATA-ABS(KZEROE)+1, -1
-!                 IF (SIGMAFE(INDEX+K) > 0.) STOP 'FATAL: KREDUCINGE FAILED!'
-!               ENDDO
-! c              WRITE (0,*) 'END: ', IFREQRBEND, KZEROE
-!               IFRBEND(IND) = IFREQRBEND - ABS(KZEROE) + 1
-!             ENDIF
-            
-            
-          SIGMAINT(IND) = SIGMAINTCUR                  
-                    
-          XLAMCMIND = 1./(ELEVEL(NUP) - ELEVEL(LOW))
-          WLOW = WEIGHT(LOW)
-          WNUP = WEIGHT(NUP)
-
-          EINST(NUP,LOW) = SIGMAINTCUR * 
-     >                       PI8*WLOW/WNUP/(XLAMCMIND*XLAMCMIND)
-            
-                    
-C***      enhance index for next cross section reading     
           INDEX = INDEND
 
+
  20    CONTINUE
- 
  21    CONTINUE
 
 C **********************************************************************
 C *** STORE RBF TRANSITION-DATA IN ARRAY >>EINST<< 
 C *** LOOP OVER ALL BOUND-FREE TRANSITIONS
-        NAME = 'B' // IONNAME(I)(2:4) // 'NAM'
-        CALL READMS (21, NAMARRAY, 2*NTRB(I), NAME, IERR)
 
         DO 30 J=1, NTRB(I)
 
@@ -413,7 +326,9 @@ C ***   NO BF-TRANSITION FOR HIGHEST IONISATION STAGE
           IF (I .EQ. IONTOP) GOTO 30
 
 C ***   READ LEVEL NUMBERS ASSOCIATED WITH TRANSITION          
-          READ (NAMARRAY(J)(6:7),'(I2)') LOWION
+          NAME = 'B' // IONNAME(I)(2:4) // 'NAM'
+          CALL READMS (21, NAMARRAY, 2*NTRB(I), NAME, IERR)
+          READ (NAMARRAY(1,J)(6:7),'(I2)') LOWION
           LOW = LOWION + LEVCOUNT
           NUP = LEVCOUNT + NB(I) + 1
 

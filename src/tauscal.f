@@ -3,27 +3,19 @@
      $                   ELEVEL,EION,EINST,ALPHA,SEXPO,
      $                   ADDCON1, ADDCON2, ADDCON3, 
      $                   IGAUNT,NOM,NF,
-     >                   XLAMBDA,FWEIGHT,TAUTHOM,TAUROSS,MAXATOM,MAXION,
-     >                    SIGMATHK,SEXPOK,EDGEK,KODAT,KONTNUP,KONTLOW,
-     >                    LASTKON, DENSCON, FILLFAC, POPMIN)
+     $                   XLAMBDA,FWEIGHT,TAUTHOM,TAUROSS,
+     $                   MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,
+     $                   KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC)
 C***********************************************************************
 C***  CALCULATION OF THE NLTE OPTICAL DEPTH SCALES (ROSSELAND, THOMSON)
 C***   for continuum opacities
 C***
-C***   called from 
-C***     STEAL -> HYDROSOLVE -> TAUSCAL (3x)
-C***     STEAL -> HYDROSOLVE -> HDSOLUTION -> TAUSCAL 
-C***     STEAL -> HYDROSOLVE -> HYDROVELO -> CALCTAUCONTMAX -> TAUSCAL 
-C***     STEAL -> ENSURETAUMAX -> TAUSCAL (2x)
-C***     STEAL -> TAUSCAL (2x)
-C***     WRSTART -> TAUSCAL
-C***  
 C***  note: this routine updates the EN vector
 C***********************************************************************
  
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: ND, NDIM, N, MAXATOM, MAXION, LASTKON, NF
+      INTEGER, INTENT(IN) :: ND, NDIM, N, MAXATOM, LASTKON, NF
       REAL, INTENT(IN) :: RSTAR
 
       REAL, DIMENSION(ND), INTENT(IN) :: RADIUS, RNE, ENTOT, T
@@ -35,7 +27,7 @@ C***********************************************************************
       REAL, DIMENSION(N, N), INTENT(IN) :: EINST
       REAL, DIMENSION(LASTKON), INTENT(IN) :: 
      >                ALPHA, SEXPO, ADDCON1, ADDCON2, ADDCON3
-      REAL, DIMENSION(MAXATOM, MAXION), INTENT(IN) :: 
+      REAL, DIMENSION(MAXATOM, MAXATOM), INTENT(IN) :: 
      >                SIGMATHK, SEXPOK, EDGEK
       REAL, DIMENSION(NF), INTENT(IN) :: FWEIGHT, XLAMBDA
       CHARACTER(10), DIMENSION(N), INTENT(IN) :: LEVEL(NDIM)
@@ -50,7 +42,7 @@ C*** tiefenabh. clumping nach goetz
  
       INTEGER :: L, I
       REAL :: TL, RL, ENTOTDENSL, RNEL, OPAMEAN, DR, RM1, 
-     >        ENELM1, ENEL, OPARM1, OPARL, ENEMEAN, POPMIN
+     >        ENELM1, ENEL, OPARM1, OPARL, ENEMEAN, aOPARL
       LOGICAL :: bUseOPAROSSpre
 
 C***  SIGMAE = ELCTRON SCATTERING CROSS SECTION  ( CM**2 )
@@ -78,16 +70,12 @@ C***    Calculate opacities for clump density
      >                  ALPHA,SEXPO,
      >                  ADDCON1, ADDCON2, ADDCON3, 
      >                  IGAUNT,NF,XLAMBDA,FWEIGHT,NOM,
-     >                  MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,
-     >                  RL,KONTNUP,KONTLOW,LASTKON,POPMIN)
-ccc        WRITE(0,*) 'L, OPARL ', L, OPARL
+     >                  MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,RL,
+     >                  KONTNUP,KONTLOW,LASTKON)
         IF (OPARL <= 0.) THEN
           WRITE(0,*) " WARNING: negative Opacity ", OPARL
-C          WRITE(0,*) '   taking absolute value... '
-C          OPARL = ABS(OPARL)
-C***       Absolute of negative value might still be desasterous
-C***       -> use Thomson only (recalculated here)
-           OPARL = SIGMAE * ENEL
+          WRITE(0,*) '   taking absolute value... '
+          OPARL = ABS(OPARL)
         ENDIF
         OPARL = OPARL * FILLFAC(L) !downscale opacity with filling factor
         IF (L > 1) THEN

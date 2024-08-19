@@ -5,10 +5,10 @@
      >        OPAK, ETAK, OPAK_OLD, 
      >        XJL, XHL, XKL, XNL, 
      >        CWM0, CWM1, CWM2, CWM3, 
-     >        XHO, XHI, XNO, XNI,
+     >        XHO, XHI, XNO, XNI, 
      >        Z, PPP, 
      >        IPLOT, BPLOT2, IW_COLIRAY_IPLUS, IVERS, 
-     >        XHOM, XHOP, XNOM, XNOP, OPA, bWARNK)
+     >        XHOM, XHOP, XNOM, XNOP, OPA)
 
 C***********************************************************************
 C***  LINE RADIATION TRANSFER IN THE COMOVING FRAME WITH A GIVEN SOURCE 
@@ -20,7 +20,7 @@ C***  OF THE LINE, XJLMEAN = J-NUE-BAR
 C***  Output: The Intensities XIPLUS and XIMINUS 
 C***********************************************************************
 
-c      INCLUDE 'interfacebib.inc'
+      INCLUDE 'interfacebib.inc'
 
       DIMENSION RADIUS(ND), Z(ND), PPP(ND)
       DIMENSION ETAK(ND), OPAK(ND), OPAK_OLD(ND), OPA(ND)
@@ -28,17 +28,13 @@ c      INCLUDE 'interfacebib.inc'
       DIMENSION XJL(ND), XHL(ND), XKL(ND), XNL(ND)
       DIMENSION CWM0(ND,NP), CWM1(ND,NP), CWM2(ND,NP), CWM3(ND,NP)
       DIMENSION XIPLUS(ND), XIPLUS_OLD(ND), XIMINUS(ND), XIMINUS_OLD(ND)
-      
-      LOGICAL :: PLOT, BPLOT2, bWARNK
-      
-      REAL :: XHID, TAUBOUND
+
+      LOGICAL PLOT, BPLOT2
 
       SAVE XIMINUS_OUT
-      SAVE CMWTEST 
 
       LMAX=MIN0(NP+1-JP,ND)
-      
-      
+
 C***  Outer Boundary
 C***  All versions are independent of angle, 
 C***     i.e. I-minus must be set only once per frequency
@@ -148,7 +144,7 @@ C***  Non-Core-Rays
         XIPLUS(LMAX) = XIMINUS(LMAX)
       ELSE
 C***  Core-Rays
-c        XIPLUS(LMAX) = BCORE + DBDR*Z(ND)/OPAK(ND) * FluxCor
+C        XIPLUS(LMAX) = BCORE + DBDR*Z(ND)/OPAK(ND) 
         XIPLUS(LMAX) = BCORE + 3.*XHID*Z(ND) 
 
         IF (XIPLUS(LMAX) .LT. 0.) THEN
@@ -156,8 +152,6 @@ c        XIPLUS(LMAX) = BCORE + DBDR*Z(ND)/OPAK(ND) * FluxCor
            IW_COLIRAY_IPLUS = IW_COLIRAY_IPLUS + 1
         ENDIF
       ENDIF
-      
-      rMINI = -1.E-300
 
 C***  Outward Integration of XIPLUS
       DO L=LMAX-1, 1, -1
@@ -174,7 +168,6 @@ ccc          CALL SPLINPO_FAST_SAME_X
 ccc     >        (S_HAT, Z_HAT, S_OLD, Z, LMAX, L+1, .FALSE.)
           OPAK_HAT   = P*OPAK_OLD(L)   + Q*OPAK_OLD(L+1)
           TAU1       = 0.5*(OPAK(L) + OPAK_HAT) * Q * DZ
-          IBRANCH = 1
         ELSE          
           Q = PPDZ
           P = 1. - Q
@@ -182,7 +175,6 @@ ccc     >        (S_HAT, Z_HAT, S_OLD, Z, LMAX, L+1, .FALSE.)
           S_HAT      = P*S(L+1)      + Q*S_OLD(L+1)
           OPAK_HAT   = P*OPAK(L+1)   + Q*OPAK_OLD(L+1)
           TAU1       = 0.5*(OPAK(L) + OPAK_HAT) * DZ
-          IBRANCH = 2
         ENDIF
         EXPTAU1 = EXP(-TAU1)
         IF (ABS(TAU1) .GT. 1.0E-8) THEN
@@ -203,14 +195,6 @@ C***  ADD THE RADIATION FIELD TO XJL, XHL, XKL and XNL
         XKL(L) = XKL(L) + 0.5*(XIPLUS(L)+XIMINUS(L)) * CWM2(L,JP)
         XHL(L) = XHL(L) + 0.5*(XIPLUS(L)-XIMINUS(L)) * CWM1(L,JP)
         XNL(L) = XNL(L) + 0.5*(XIPLUS(L)-XIMINUS(L)) * CWM3(L,JP)
-        
-        IF (XKL(L) < 0. .AND. .NOT. bWARNK) THEN
-          WRITE (0,'(A,2I4,4(3X,G20.10))') ' L, XKL, XJL', L, JP,
-     >        XKL(L), XJL(L), CWM0(L,JP), CWM2(L,JP)
-          WRITE (0,*) 'WARNING: NEGATIVE XKL IN COLI -> SHORTRAY'
-          bWARNK = .TRUE.
-        ENDIF
-        
       ENDDO
 
       IF (BPLOT2) THEN
@@ -222,7 +206,12 @@ C***  ADD THE RADIATION FIELD TO XJL, XHL, XKL and XNL
 
 C***  Add the radiation field to XHO, XHI, XNO and XNI
       IF (LMAX .EQ. ND) THEN
-        XHI = XHI + 0.5*(XIPLUS(ND)+XIMINUS(ND)) * CWM1(ND,JP)     !special H (H_spec) for inner boundary 
+C***    Since 09 Feb 2016: special H (H_spec) for inner boundary
+C***    Note the unusual definition of an intensity-like core with
+C***    a flux-like weight. This allows to eliminate the backwards
+C***    Intensity I- at the inner boundary in the moment equations.
+        XHI = XHI + 0.5*(XIPLUS(ND)+XIMINUS(ND)) * CWM1(ND,JP)  
+C***    Currently XNI = XNL(ND) is unused
         XNI = XNI + 0.5*(XIPLUS(ND)-XIMINUS(ND)) * CWM3(ND,JP)
       ENDIF
       XHO  = XHO  + 0.5*(XIPLUS(1)-XIMINUS(1)) * CWM1(1,JP)
@@ -231,12 +220,6 @@ C***  Add the radiation field to XHO, XHI, XNO and XNI
       XHOP = XHOP + 0.5*(XIPLUS(1)           ) * CWM1(1,JP)
       XNOM = XNOM + 0.5*(         -XIMINUS(1)) * CWM3(1,JP)
       XNOP = XNOP + 0.5*(XIPLUS(1)           ) * CWM3(1,JP)
-      
-      IF (JP == 1) THEN
-        CMWTEST = 0.
-      ENDIF
-      CMWTEST = CMWTEST + CWM1(1,JP)
-         
 
       RETURN
       END

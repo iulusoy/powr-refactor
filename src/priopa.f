@@ -7,9 +7,12 @@ C***********************************************************************
       DIMENSION OPA(ND),ETA(ND),THOMSON(ND),R(ND),IWARN(ND)
       CHARACTER*10 MAINPRO(ND),MAINLEV(ND)
       CHARACTER MODHEAD*100
- 
-      IF (IHELP.EQ.5HIHELP) GOTO 1
-      IHELP=5HIHELP
+      DATA IHELP / 0 /
+
+C***  Header shold be printed only at first call
+      IF (IHELP .NE. 0) GOTO 1
+      IHELP = 1
+
       PRINT 2,MODHEAD,JOBNUM
     2 FORMAT (1X,A,20X,'JOB NO.',I3,//,10X,
      $ 'CONTINUOUS OPACITY, EMISSIVITY AND SOURCE FUNCTION',

@@ -1,14 +1,12 @@
-      SUBROUTINE TEMPCORR (TOLD, TNEW, ND, RADIUS, VELO, TEFF, 
-     >           VTURB, XMU, RSTAR, HTOTL, XJTOTL, HTOTCMF0, 
-     >           HTOTCMF0ADV, FTCOLI, DTLOCAL, DTINT, DTRMAX, FLUXERR,
+      SUBROUTINE TEMPCORR (TOLD, TNEW, ND, RADIUS, TEFF, 
+     >           HTOTL, XJTOTL, HTOTCMF0, 
+     >           FTCOLI, DTLOCAL, DTINT, DTRMAX, FLUXERR,
      >           OPASMEANTC, QFJMEAN, OPAJMEANTC, OPAPMEAN,
-     >           QOPAHMEAN, QOPAHMEANL, OPARND,
-     >           EDDIHOUTJMEAN, HMEAN, HTOTCUT, SMEAN, HTOTOUTMINUS, 
-     >           HTOTND, DTDRIN, UNLUTECLINE, DUNLU_LOC, DUNLU_RMAX, 
-     >           DUNLU_INT, DUNLU_TB, TBTAU, TAUINT, EXPTAUL,
-     >           OPALAMBDAMEAN, TAUROSS, ARAD, DTKUBAT, 
-     >           bKUBAT, bLOCAL, bINT, bRMAX, bINCADV,
-     >           bTDIFFUS, HNDCORFAC, CORRS, FLUXEPS)
+     >           QOPAHMEAN, EDDIHOUTJMEAN,
+     >           HTOTOUTMINUS, HTOTND, OPARND, DTDRIN, UNLUTECLINE, 
+     >           DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB,
+     >           TBTAU, TAUINT, OPALAMBDAMEAN, TAUROSS, ARAD,
+     >           DTKUBAT, bTDIFFUS, HNDCORFAC, SMEAN, CORRS, FLUXEPS)          
 C***********************************************************************
 C***  THIS SUBROUTINE APPLIES DIRECTLY A TEMPERATURE CORRECTION, 
 C***  FOLLOWING THE UNSOELD-LUCY METHOD
@@ -18,30 +16,23 @@ C***  Called from: STEAL
 C***********************************************************************
 
       IMPLICIT NONE
-      INCLUDE 'interfacebib.inc'
 
       INTEGER, INTENT(IN) :: ND
       REAL, DIMENSION(ND) :: RADIUS, TOLD, TNEW, XJTOTL,
      >                       DTLOCAL, DTINT, DTRMAX, DTKUBAT, 
      >                       TAUROSS, FTCOLI, HTOTCMF0, CORRS, FLUXERR,
-     >                       QOPAHMEAN, QOPAHMEANL, OPASMEANTC, HMEAN,
+     >                       QOPAHMEAN, OPASMEANTC, 
      >                       QFJMEAN, OPAJMEANTC, OPALAMBDAMEAN, 
-     >                       OPAPMEAN, SMEAN, VELO, XMU, VTURB,
-     >                       HTOTCMF0ADV
-      REAL, DIMENSION(ND-1) :: ARAD, HTOTL, HTOTCUT
-
-C***  Local, depth-dependent arrays
-      INTEGER, PARAMETER :: NDTCMAX = 120
-      REAL, DIMENSION(NDTCMAX) :: XL
+     >                       OPAPMEAN, SMEAN
+      REAL, DIMENSION(ND-1) :: ARAD, HTOTL
       
-      REAL, INTENT(IN) :: RSTAR, TEFF, FLUXEPS
+      REAL, INTENT(IN) :: TEFF, FLUXEPS, HTOTND, OPARND
+      REAL, INTENT(INOUT) :: DTDRIN
       
-      LOGICAL :: BSMOOTHTC, BWARNTMIN, bKUBAT, 
-     >           bOldFormat, bLOCAL, bFixOut, bINTUseOutTCor,
-     >           bINTinonly, bLOCinonly, bINMONO, bTDIFFUS,
-     >           bDAMPOUT, bRMN, bDTOUTPUT, bOPAPMEAN,
-     >           bPOSINT, bSKIPCORR, bINT2POINT, bOUTFLX,
-     >           bOBEXTRAP, bCUTINT, bINT, bRMAX, bINCADV
+      LOGICAL :: BSMOOTHTC, BMONOTONIC, BWARNTMIN, bKUBAT,  
+     >           bOldFormat, bLOCAL, bOPAPMEAN, bINT2POINT, 
+     >           bSKIPCORR, bOBEXTRAP
+      LOGICAL, INTENT(IN) :: bTDIFFUS
       
       INTEGER, PARAMETER :: NPARMAX = 40
       
@@ -49,69 +40,46 @@ C***  Local, depth-dependent arrays
       CHARACTER(4) :: EDMETHOD
       CHARACTER(40), DIMENSION(NPARMAX) :: ACTPAR
       
-      INTEGER :: I, NPAR, IPAR, L, Lmono, LMINTMIN, LMAXTMIN, 
-     >           NTMIN, IMONOTONIC, Linner, Lsonic, LOCMIN, LOCMAX,
-     >           LCUTCORRUSE, IMONOCOUNT, iAUTOEXPTAU
+      INTEGER :: I, NPAR, IPAR, L, LMINTMIN, LMAXTMIN, NTMIN, Linner,
+     >           LOCMIN, LOCMAX, LCUTCORRUSE, iAUTOEXPTAU
       REAL :: TMIN, CORRMAX, CUTCORR, DUNLU_LOC, DUNLU_RMAX, DUNLU_INT, 
      >        DHINTSUM, TREF, OPAMEAN, RL2, RL2M, DHRMAX, DHRMAX1, DH,
      >        DTB1, DTB, DTBTEFF, WRH, TNEW4, TOLD4, WRADIUS, QC,
      >        QS, TLEFT, TNEWL, F, RELCORR, HTOTOUTMINUS, EDDIHOUTJMEAN,
-     >        DHINT, DHCORRSUM, DT, DT1, DT2, DT3, DT4, CMAX, 
+     >        DHINT, DHCORRSUM, DT, DT1, DT2, DT3, DT4, DT5, CMAX, 
      >        DUNLU, EXPTAU, TM, DTDRTRUE, TAUINT,
-     >        DUNLU_TB, rfKUBAT, rfa, rfb, taurfmin, TBTAU, FINTMIN,
-     >        tempREAL, AS, FTIMAX, DE_LOC, DE_INT, DE_RMAX, DE_TB,
-     >        HTOTND, OPARND, HCUR, HNDCORFAC, DTJMB,
-     >        QFJM, FTCOLINORM, DTDRIN, HTOTOUTSUB,
+     >        DUNLU_TB, rfKUBAT, taurfmin, TBTAU, FINTMIN,
+     >        tempREAL, DE_LOC, DE_INT, DE_RMAX, DE_TB, HNDCORFAC, 
      >        TAVERAGE, DAMP, DAMPKUBAT, FLUXERRFAC, CLIMIT, FTEPS,
-     >        AUTOFLUXTAU, HTOTCMF0OUT, HTOTCMF0LM,
-     >        CONVEPS, EXPTAUL
+     >        AUTOFLUXTAU
        
 
       REAL, PARAMETER :: PI4 = 12.5663706144    !PI4 = 4*PI
       REAL, PARAMETER :: STEBOLDPI = 1.8046E-5  !STEFAN-BOLTZMANN CONSTANT (CGS-UNITS) / PI
-      REAL, PARAMETER :: BOLTZK = 1.3807E-16    !BOLTZMANN CONSTANT on cgs units
       REAL, PARAMETER :: AMU = 1.6605E-24       !Atomic mass unit (gramm) = m_H
 
       !File and channel handles (=KANAL)
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
       INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
       
-
-      IF (ND > NDTCMAX) THEN
-        WRITE (hCPR,'(A)') 'TEMPCORR: FATAL ERROR ******'
-        WRITE (hCPR,'(A)') 'TEMPCORR: NDTCMAX INSUFFICIENT'
-        WRITE (hCPR,'(2(A,I4))') 'ND = ', ND, ', NDTCMAX = ', NDTCMAX
-        STOP 'FATAL ERROR IN STEAL->TEMPCORR'
-      ENDIF
       
 C***  Decode parameters of UNLUTEC option card
 
 C***  Default values
       BSMOOTHTC  = .FALSE.
-      IMONOTONIC = 0
+      BMONOTONIC = .FALSE.
       BWARNTMIN  = .FALSE. 
-      bFixOut = .FALSE.
-      bDAMPOUT = .FALSE.
-      bINTinonly = .FALSE.
-      bLOCinonly = .FALSE.
       CORRMAX = 0.
       CUTCORR = .0
+      FLUXERRFAC  = .0
       TMIN = 6000.
-      bINMONO = .FALSE.
-      bRMN = .FALSE.
-      bPOSINT = .FALSE.
       bSKIPCORR = .FALSE.
       EXPTAU = 0.
       iAUTOEXPTAU = -1
       FTEPS = 0.01        !Default flux epsilon for automatic flux-tau
       bOBEXTRAP = .FALSE. !Default: Do not extrapolate T for outer boundary
-      bCUTINT = .FALSE.
-      bOUTFLX = .FALSE.
-      FLUXERRFAC = -1.
-      CONVEPS = -1.       !Default: Never define T-stratification as converged
 
       bOldFormat = .TRUE.
-      bDTOUTPUT = .FALSE.
 C***  range where TBALANCE correction is gradually switched off
       TBTAU = 0.1
       taurfmin = 0.01       
@@ -123,8 +91,6 @@ C***  test version: T-correction from INT term is distributed over
 C***                the two depth points L-1 and L
       bINT2POINT = .FALSE.
 
-C***  Default: Use outer T corrections for inner INT correction estimates      
-      bINTUseOutTCor = .TRUE.
 C***  Damping of the flux (INT) term      
       TAUINT = -99.
       FINTMIN = -99.
@@ -142,8 +108,6 @@ C***  Check if UNLUTEC line has old or new format
           CASE ('LOCAL', 'LOC', 'INT', 'OUT', 'RMAX')
             bOldFormat = .FALSE.
           CASE ('BALANCE', 'TBALANCE', 'TB')
-            bOldFormat = .FALSE.
-          CASE ('PRINT')
             bOldFormat = .FALSE.
         ENDSELECT
       ENDDO
@@ -172,10 +136,7 @@ C***    Defaults
             BSMOOTHTC = .TRUE.
             IPAR = IPAR + 1
           ELSE IF (ACTPAR(IPAR) .EQ. 'MONOTONIC') THEN
-            IMONOTONIC = 1
-            IPAR = IPAR + 1
-          ELSE IF (ACTPAR(IPAR) == 'MONOINNER') THEN
-            IMONOTONIC = 2
+            BMONOTONIC = .TRUE.
             IPAR = IPAR + 1
 
           ELSE IF (ACTPAR(IPAR) .EQ. 'CORRMAX') THEN
@@ -282,10 +243,7 @@ C***          sets custom tau-value for switching off TB method
               IPAR = IPAR + 1
 
             CASE ('MONO', 'MONOTONIC')
-              IMONOTONIC = 1
-              IPAR = IPAR + 1
-            CASE ('MONOINNER', 'MONOSONIC', 'MI')
-              IMONOTONIC = 2
+              BMONOTONIC = .TRUE.
               IPAR = IPAR + 1
             CASE ('EXPTAU', 'COSTAU')
               IF (IPAR+1 > NPAR) THEN
@@ -329,62 +287,22 @@ C***          sets custom epsilon for automatic flux-tau
               ENDIF
               READ (ACTPAR(IPAR+1),'(F10.0)', ERR=1) tempREAL
               IF (tempREAL > 0.) THEN
-                FTEPS = -1. * tempREAL
+                FTEPS = -1. * FTEPS
               ELSE 
                 WRITE (hCPR,*) 'Error when decoding FTEPS'
                 STOP 'ERROR in Subr. TEMPCORR'
               ENDIF
               IPAR = IPAR + 2              
-            CASE ('FIXOUT')
-              bFixOut = .TRUE.
-              IPAR = IPAR + 1
-            CASE ('DAMPOUT')
-              bDAMPOUT = .TRUE.
-              IPAR = IPAR + 1
-            CASE ('FIXINTOUT')
-              bINTinonly = .TRUE.
-              IPAR = IPAR + 1
-            CASE ('FIXLOCOUT')
-              bLOCinonly = .TRUE.
-              IPAR = IPAR + 1
             CASE ('OBEX', 'OBEXTRAP')
               bOBEXTRAP = .TRUE.
               IPAR = IPAR + 1
-                            
-            CASE ('PRINT')
-              bDTOUTPUT = .TRUE.
-              IPAR = IPAR + 1
-              
-            CASE ('RMN')
-              bRMN = .TRUE.
-              IPAR = IPAR + 1
-              
-            CASE ('NOINTOTC')            
-              bINTUseOutTCor = .FALSE.
-              IPAR = IPAR + 1
-
+                                                        
             CASE ('SKIPNEGFLUX')
               IF (MINVAL(ARAD) <= 0. .OR. MINVAL(HTOTL) <= 0.) THEN
                 bSKIPCORR = .TRUE.
               ENDIF
               IPAR = IPAR + 1
-              
-            CASE ('POSINT')
-              bPOSINT = .TRUE.
-              IPAR = IPAR + 1
-
-            CASE ('INT2POINT')
-              bINT2POINT = .TRUE.
-              IPAR = IPAR + 1
-              
-            CASE ('INTCUT')
-              bCUTINT = .TRUE.
-              IPAR = IPAR + 1
-
-            CASE ('OUTFLX')
-              bOUTFLX = .TRUE.
-              IPAR = IPAR + 1
-              
+                            
             CASE ('CORRMAX', 'CM')
               IF (IPAR+1 > NPAR) THEN
                 WRITE (hCPR,*) 'Error when decoding CORRMAX'
@@ -408,9 +326,7 @@ C***          sets custom epsilon for automatic flux-tau
               ENDIF
               READ (ACTPAR(IPAR+1),'(F10.0)', ERR=1) CUTCORR
               IPAR = IPAR + 2
-            CASE ('INMONO')
-              bINMONO = .TRUE.
-              IPAR = IPAR + 1
+
             CASE ('TMIN')
               IF (IPAR+1 > NPAR) THEN
                 WRITE (hCPR,*) 'Error when decoding TMIN'
@@ -432,23 +348,6 @@ C***          sets custom epsilon for automatic flux-tau
               ENDIF
               READ (ACTPAR(IPAR+1),'(F10.0)', ERR=1) TAUINT
               IPAR = IPAR + 2    
-            CASE ('CONVEPS')
-              IF (IPAR+1 > NPAR) THEN
-                WRITE (hCPR,*) 'Error when decoding CONVEPS'
-                STOP 'ERROR in Subr. TEMPCORR'
-              ENDIF
-              IF (ACTPAR(IPAR+1)(1:4) == 'FLUX') THEN
-                IF (FLUXEPS > 0.) THEN
-                  CONVEPS = FLUXEPS
-                ELSE
-                  WRITE (hCPR,*) 'Error when decoding CONVEPS: ' //
-     >              'FLUX option invalid as no FLUXEPS was specified'
-                  STOP 'ERROR in Subr. TEMPCORR'
-                ENDIF
-              ELSE
-                READ (ACTPAR(IPAR+1),'(F10.0)', ERR=1) CONVEPS
-              ENDIF
-              IPAR = IPAR + 2
             CASE DEFAULT
               !unknown parameter => skip
               IPAR = IPAR + 1
@@ -472,24 +371,8 @@ C***  end of decoding UNLUTEC options * * * * * * * * * * * * * * * * *
 C***********************************************************************
 C***    Prepare third Term of Unsoeld-Lucy-Procedure: outer Boundary
 C***********************************************************************
-      IF (bOUTFLX) THEN
-C***    Include HTOTOUTMINUS as now calculated in COLI->FREQUINT -- ansander, Oct 2023
-        HTOTOUTSUB = HTOTOUTMINUS
-      ELSE
-C***    In the standard branch, HTOTOUTMINUS defined, but not calculated in COLI
-C***    To achieve the same result as the previous code we thus need zero substraction.
-        HTOTOUTSUB = 0.
-      ENDIF
-      IF (bINCADV) THEN
-        DHRMAX1 = (HTOTCMF0ADV(1) - HTOTOUTSUB) / EDDIHOUTJMEAN -
-     >             XJTOTL(1)
-      ELSE
-        DHRMAX1 = (HTOTCMF0(1) - HTOTOUTSUB) / EDDIHOUTJMEAN -
-     >             XJTOTL(1)
-      ENDIF
-C***  This might be better (but I do not remember why)     
-c      DHRMAX1 = (HTOTCMF0(2) - HTOTOUTSUB) / EDDIHOUTJMEAN -
-c     >           XJTOTL(1)
+      DHRMAX1 = (HTOTCMF0(1) - HTOTOUTMINUS) / EDDIHOUTJMEAN -
+     >           XJTOTL(1)
       DHINTSUM = .0
 
 C**********************************************************************
@@ -525,16 +408,8 @@ C***    while a positive is the fallback given at the start of this routine
 C***    No direct input via UNLUTEC, but FLUXEPS card is specified:
         FTEPS = FLUXEPS
       ENDIF
-      IF (bINCADV) THEN
-        CALL TEMPCORR_FLUXERR(FLUXERR, ND, HTOTL, HTOTCMF0ADV,
-     >                        FTEPS, TAUROSS, AUTOFLUXTAU)
-      ELSEIF (bPOSINT) THEN
-        CALL TEMPCORR_FLUXERR(FLUXERR, ND, HMEAN, HTOTCMF0,
-     >                        FTEPS, TAUROSS, AUTOFLUXTAU)
-      ELSE
-        CALL TEMPCORR_FLUXERR(FLUXERR, ND, HTOTL, HTOTCMF0,
-     >                        FTEPS, TAUROSS, AUTOFLUXTAU)
-      ENDIF
+      CALL TEMPCORR_FLUXERR(FLUXERR, ND, HTOTL, HTOTCMF0,
+     >                      FTEPS, TAUROSS, AUTOFLUXTAU)
 C***  Apply AUTOFLUXTAU is EXPTAU=AUTO in UNLUTEC card:
       IF (iAUTOEXPTAU >= 0) THEN
         IF (EXPTAU < 0.) THEN
@@ -572,7 +447,7 @@ C***      TREF as mean with neighbouring points
                     
 C***      Fill factors for optional additional exponential damping
           CALL TEMPCORR_EXPDAMP(EXPTAU, EDMETHOD, TAUROSS, 
-     >                          bSKIPCORR, bDAMPOUT,
+     >                          bSKIPCORR, 
      >                          L, ND, DE_LOC, DE_INT, DE_RMAX, DE_TB)          
           
 C******************************************************************
@@ -606,34 +481,22 @@ C***         and not the source-fuction weighted opacity OPASMEANTC
      >       (TREF * TREF * TREF * 4. * STEBOLDPI * OPAMEAN * 1000.)
 
 
-C***    Flux consistency: integral term ("Strom-Iteration")            
 C***    The corrections of the previously treated depth points 
 C***      are integrated in dhcorrsum and also taken into account
 ccc this is not described in the UNLU paper, and might be questioned!
 ccc  wrh  4-Jul-2016
 
           RL2 = RADIUS(L) * RADIUS(L)
-         
           IF (L .EQ. 1) THEN
             DHINT = .0
             DHCORRSUM = .0
           ELSE
-            IF (bINCADV) THEN
-              HTOTCMF0LM = HTOTCMF0ADV(L-1)
-            ELSE
-              HTOTCMF0LM = HTOTCMF0(L-1)
-            ENDIF
-            IF (bCUTINT) THEN
-              DH = HTOTCUT(L-1) - HTOTCMF0LM
-            ELSEIF (bPOSINT) THEN
-              DH = HMEAN(L-1) - HTOTCMF0LM
-            ELSE
-              DH = HTOTL(L-1) - HTOTCMF0LM
-            ENDIF
+
+            DH = HTOTL(L-1) - HTOTCMF0(L-1)
             WRADIUS = RADIUS(L) - RADIUS(L-1)
-            
+
 C***        Already performed corrections 
-            IF (L .GT. 2 .AND. bINTUseOutTCor) THEN 
+            IF (L .GT. 2) THEN 
              TNEW4 = TNEW(L-1) * TNEW(L-1) * TNEW(L-1) * TNEW(L-1) 
              TOLD4 = TOLD(L-1) * TOLD(L-1) * TOLD(L-1) * TOLD(L-1)  
              RL2M = RADIUS(L-1) * RADIUS(L-1)
@@ -649,11 +512,6 @@ C***        Already performed corrections
              DH = DH + DHCORRSUM
             ENDIF 
 
-C***        Optional switch-off for corrections in the outer part             
-            IF (bINTinonly .AND. TAUROSS(L) < TBTAU) THEN
-              DH = 0.
-            ENDIF
-            
             DHINTSUM = DHINTSUM + DH * WRADIUS * QOPAHMEAN(L-1)          
 C***        Factors outside integral
             DHINT = OPAJMEANTC(L) * DHINTSUM / (RL2 * QFJMEAN(L))
@@ -691,11 +549,7 @@ C***     Special DTB conversion for 3rd term using TEFF as reference
      >           / (QFJMEAN(L) * RL2) 
 
 C***      Damping of the RMAX (i.e. 3rd) term with same factor as 2nd
-          IF (bRMN) THEN
-            DTRMAX(L)  = DAMP * DHRMAX  * DTB     ! stored for PLOT UNLU
-          ELSE
-            DTRMAX(L)  = DAMP * DHRMAX  * DTBTEFF ! stored for PLOT UNLU
-          ENDIF
+          DTRMAX(L)  = DAMP * DHRMAX  * DTBTEFF ! stored for PLOT UNLU
           DT3 = DUNLU_RMAX * DE_RMAX * DTRMAX(L)
 
 C********************************************************************     
@@ -734,14 +588,6 @@ ccc  the last (L-1) point
 
          TNEW(L) = TOLD(L) + DT      
 
-         IF (MAXVAL(FLUXERR) > 0. .AND. CONVEPS > 0.
-     >            .AND. CONVEPS > MAXVAL(FLUXERR)) THEN 
-           IF (L==1) THEN
-             WRITE (hCPR,*) 'FLUXERR < CONVEPS: ' //
-     >          'Temperature stratification considered to be converged'
-           ENDIF
-           TNEW(L) = TOLD(L)
-         ENDIF
 
 C***     Restrict here the T-correction to factor of two increase
 C***      this is necessary to avoid a crash at the next depth point 
@@ -777,20 +623,7 @@ C***  Option: Determine temperature of outer boundary via extrapolation
      >            (QOPAHMEAN(2)*(RADIUS(2) - RADIUS(3)))
      >          * (RADIUS(1) - RADIUS(2)) * QOPAHMEAN(1)
       ENDIF
-     
-C***  Option: Fixed temperature in the outer region
-      IF (bFixOut) THEN        
-        foloop: DO L=1, ND
-          IF (TAUROSS(L) > TBTAU) THEN
-            WRITE (hCPR,'(2A,I3,A)') 
-     >        'TEMPCORR: Temperature fixed for optically thin regime',
-     >        ' (',L-1,' outer depth points)'
-            EXIT foloop
-          ENDIF
-          TNEW(L) = TOLD(L)
-        ENDDO foloop
-      ENDIF
-
+      
 C***  Smoothing of temperature corrections
       IF (BSMOOTHTC) THEN
         QC = 0.6
@@ -816,47 +649,19 @@ C***  Smoothing of temperature corrections
 C**************************************************************
 C*** Enforcing monotonic temperature structure
 C**************************************************************
-      DO L=1, Linner
-        AS = SQRT( BOLTZK/AMU * TOLD(L)/XMU(L) + (VTURB(L)*1.E5)**2 )
-        AS = AS/1.E5
-        IF (VELO(L) > 5. * AS) THEN
-          Lsonic = L
-          EXIT
-        ENDIF
-      ENDDO
-      IF (IMONOTONIC > 0 .OR. ((.NOT. bTDIFFUS) .AND. bINMONO)) THEN
-         IF (IMONOTONIC > 0) THEN
-           WRITE (hCPR,'(A)') 'TEMPCORR: Monotonic Temperature enforced'
-           IF (IMONOTONIC > 1) THEN
-C***         MONOINNER option: Restrict monotonic regime to inner layers
-             Lmono = Lsonic
-           ELSE
-             Lmono = 1
-           ENDIF
-         ELSE 
-           Lmono = Lsonic
-           Linner = ND-1
-           WRITE (hCPR,'(A)') 'TEMPCORR: Monotonic Temperature '
-     >       // 'enforced for innermost points'                         
-         ENDIF
-         IMONOCOUNT = 0
+      IF (BMONOTONIC) THEN
+      WRITE (0,*) 'TEMPCORR: Monotonic Temperature enforced'
    10    CONTINUE
 
 C***     Find local maximum
          LOCMAX=0
-         DO L=Lmono, Linner-1
+         DO L=1, Linner-1
             IF (TNEW(L+1) < TNEW(L)) THEN
               LOCMAX=L
               EXIT
             ENDIF
          ENDDO
          IF (LOCMAX .EQ. 0) GOTO 11
-         IMONOCOUNT = IMONOCOUNT + 1
-         IF (IMONOCOUNT > 20) THEN
-           WRITE (0,*) 'More than 20 MONOTONIC iterations: Giving up!'
-           WRITE (0,*) 'LOCMAX = ', LOCMAX
-           GOTO 11
-         ENDIF
  
 C***     Find following local minimum
          IF (LOCMAX == Linner-1) THEN
@@ -884,7 +689,7 @@ C***     Replace all T between with the average
          ENDDO
 
 C***     Replace all T further out with average if yet hotter
-         DO L= LOCMAX-1, Lmono, -1
+         DO L= LOCMAX-1, 1, -1
             IF (TNEW(L) > TAVERAGE) THEN
                TNEW(L) = TAVERAGE
             ELSE
@@ -1003,26 +808,6 @@ C***  Set switches to transfer information which term was used to PLOT UNLU rout
         bLOCAL = .TRUE.
       ELSE
         bLOCAL = .FALSE.
-      ENDIF
-      IF (DUNLU_INT > 0.) THEN
-        bINT = .TRUE.
-      ELSE
-        bINT = .FALSE.
-      ENDIF
-      IF (DUNLU_RMAX > 0.) THEN
-        bRMAX = .TRUE.
-      ELSE
-        bRMAX = .FALSE.
-      ENDIF
-
-C***  Determine depth index of current EXPTAU value
-      IF (EXPTAU >= TAUROSS(1) .AND. EXPTAU <= TAUROSS(ND)) THEN
-        DO L=1, ND
-          XL(L) = FLOAT(L)
-        ENDDO
-        CALL SPLINPOX(EXPTAUL, EXPTAU, XL, TAUROSS, ND) 
-      ELSE
-        EXPTAUL = 0.
       ENDIF
           
       RETURN

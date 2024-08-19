@@ -13,7 +13,7 @@ C*** !!! ATTENTION !! USE of COMMON BLOCK in LINPOP !!!
 C*** NDIM and NFDIM are also set in LINPOP 
       INTEGER, PARAMETER :: NDIM    =        2560 
       INTEGER, PARAMETER :: NFDIM   = 2*NDIM + 400 
-      INTEGER, PARAMETER :: MAXAUTO =        3200 
+      INTEGER, PARAMETER :: MAXAUTO =        2850 
 C*** !!! ATTENTION !! USE of COMMON BLOCK in LINPOP !!!
 C*** MAXIND is also set in LINPOP 
       INTEGER, PARAMETER :: MAXIND  =       45000 
@@ -31,10 +31,10 @@ C***  MAXIMUM ION CHARGE WHICH MAY OCCUR (SEE ALSO SUBR. GAUNTFF)
       INTEGER, PARAMETER :: MAXION = 27 
 
       INTEGER, PARAMETER :: NDIMP2  = NDIM + 2 
-      INTEGER, PARAMETER :: MAXKONT = NFDIM/2 
+      INTEGER, PARAMETER :: MAXKONT = NDIM 
       INTEGER, PARAMETER :: MAXKODR = NDIM 
 
-      INTEGER, PARAMETER ::MAXLAP = 60
+      INTEGER, PARAMETER ::MAXLAP = 40
 
 C***  NUMBER OF LEVELS WHICH CAN BE PLOTTED BY PLOTPOP
       INTEGER, PARAMETER ::MAXSETS = 25
@@ -47,14 +47,15 @@ C***  NUMBER OF ENTRYS STORED IN THE GAMMA HISTORY
       INTEGER, PARAMETER :: MAXGAHIST = 100
 
 C***  IRON: COMMON BLOCK ARRAY DIMENSIONS
-C      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5     !std
-c      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5     !vd20
-      INTEGER, PARAMETER :: INDEXMAX = 1E8, NFEREADMAX = 6E5     !xxl / hydro
+C***  include "dimblock"
+      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5    !std
+C      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5    !vd20
+C      INTEGER, PARAMETER :: INDEXMAX = 1E8, NFEREADMAX = 6E5    !xxl
 
 C***  Fine Integration in STEAL - SETXJFINE
-C      INTEGER, PARAMETER :: IFF_MAX =   80000      !std
+      INTEGER, PARAMETER :: IFF_MAX =   80000      !std
 C      INTEGER, PARAMETER :: IFF_MAX =  200000      !vd20
-      INTEGER, PARAMETER :: IFF_MAX =  300000      !xxl / hydro
+C      INTEGER, PARAMETER :: IFF_MAX =  300000      !xxl
 
       INTEGER, PARAMETER :: TINYINT = SELECTED_INT_KIND(2)
 
@@ -65,11 +66,11 @@ C      INTEGER, PARAMETER :: IFF_MAX_MS =   IFF_MAX / 8
 C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
       INTEGER, DIMENSION(MAXAUTO) :: LOWAUTO, IONAUTO
       REAL, DIMENSION(MAXAUTO) :: WAUTO, EAUTO, AAUTO
-      INTEGER, DIMENSION(MAXAUTO) :: KRUDAUT
+      INTEGER KRUDAUT(MAXAUTO)
       REAL, DIMENSION(NDIM) :: DRRATEN, RDIEL, RAUTO, DRJLW, 
      >                         DRJLWE, DRLJW
       INTEGER, DIMENSION(MAXKODR) :: KODRNUP, KODRLOW
-      CHARACTER(10), DIMENSION(MAXAUTO) :: LEVUPAUTO, LEVAUTO
+      CHARACTER*10 LEVUPAUTO(MAXAUTO), LEVAUTO(MAXAUTO)
 
       REAL, DIMENSION(NPDIM) :: P
       REAL, DIMENSION(NDDIM,NPDIM) :: Z
@@ -83,13 +84,7 @@ C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
      >                          HTOTL, HTOTCMF0, HTOTM, HTOTG, HTOTOBS,
      >                          AGRAV, AMECH, ARAD, APRESS, DTKUBAT,
      >                          ENTOTDENS, FTCOLI, TOLD2, TOLD3,
-     >                          GRSTATIC, GRDYN, VMACH, VTURB, HYDROF, 
-     >                          VELOorg, RADIUSorg, RNEorg, TAUSCALorg,
-     >                          Torg, T1old, T2old, T3old, RI, AMACHorg,
-     >                          ENTOTorg, GEFFLnew, GEFFL, GAMMARAD, 
-     >                          RNEdummy, RHELP, ARADHELP, VHELP,     
-     >                          VMIC, MacroDamp, CORRS, FLUXERR, 
-     >                          HTOTCUT, HTOTE, HTOTCMF0ADV
+     >                          GRSTATIC, VMACH, FLUXERR, CORRS
       INTEGER, DIMENSION(NDDIM) :: ITNE, IWARN
       REAL, DIMENSION(NDDIM, NDIM) :: POPNUM, DEPART, POPLTE,
      >                                POP1, POP2, POP3
@@ -100,22 +95,20 @@ C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
       LOGICAL, DIMENSION(NDIM, NDIM) :: BCOLLIDONE
       REAL, DIMENSION(4, NDIM) :: ALTESUM
       REAL, DIMENSION(NFLDIM) :: PHI, PWEIGHT
+
       REAL, DIMENSION(MAXATOM) :: ABXYZ, ATMASS, STAGE
       INTEGER, DIMENSION(MAXATOM) :: KODAT, NFIRST, NLAST, IMAXPOP
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
-      REAL, DIMENSION(MAXATOM, NDDIM) :: ARADELEM, ACONTELEM
-      REAL, DIMENSION(NDDIM, MAXATOM, MAXION) :: ARADION, ACONTION
+      REAL, DIMENSION(MAXATOM,MAXATOM) :: SIGMATHK, SEXPOK, EDGEK
       REAL, DIMENSION(MAXKONT) :: SIGMA1I, ALPHA, SEXPO,
      >                            ADDCON1, ADDCON2, ADDCON3
       REAL, DIMENSION(NFDIM) :: FWEIGHT, EMFLUX, EMCOLI 
       REAL, DIMENSION(NDDIM,NFDIM) :: XJC, WCHARM, XJCorg
-      REAL, DIMENSION(NDDIM,MAXINDE) :: XJL, XLAMAPPMEAN,
-     >                                  XLAMAPPUMEAN, XLAMAPPLMEAN
+      REAL, DIMENSION(NDDIM,MAXINDE) :: XJL
       REAL, DIMENSION(NFDIM,NDDIM) :: SCOLD
       REAL, DIMENSION(NFDIM,0:MAXION) :: SIGMAFF
       REAL, DIMENSION(NFDIM,MAXKONT) :: SIGMAKI
       INTEGER, DIMENSION(MAXKONT) :: KONTNUP, KONTLOW, NFEDGE
-      CHARACTER(8), DIMENSION(MAXKONT) :: IGAUNT, KEYCBF
+      CHARACTER*8 IGAUNT(MAXKONT), KEYCBF(MAXKONT)
 C     SPLIT: Groessere SCRATCH-Dimensionierung noetig
 C OLD> DIMENSION SCRATCH(2*NDIMP2), ATEST(NDIMP2,NDIMP2)
       REAL, DIMENSION(NDIMP2*NDIMP2) :: SCRATCH
@@ -129,14 +122,14 @@ C OLD> DIMENSION SCRATCH(2*NDIMP2), ATEST(NDIMP2,NDIMP2)
       REAL, DIMENSION(MAXINDE) :: XJLAPP
       INTEGER, DIMENSION(10) :: NGAMC, NGAMR, NGAML, NGAMD
       REAL, DIMENSION(10) :: AGAMC, AGAMR, AGAML, AGAMD
+      REAL, DIMENSION(2) :: TauCorLimits
       LOGICAL, DIMENSION(MAXAUTO) :: DRXJL
       LOGICAL, DIMENSION(MAXIND) :: LINE, BDIAG
       LOGICAL :: NOTEMP, TPLOT, TPLTAU, CONVERG, MOREJOBS,
      >           NOEXTRAP, STHLP, NODATOM, OLDSTART, NOCON, COMPO,
-     >           DRNORUD, NOPOP, BAUTO, BAUTO_ABORT, BINBOX,
+     >           NOPOP, BAUTO, BAUTO_ABORT, BINBOX,
      >           BPRICORR, BCOREX, VPLOT, BUNLU, BHTOTERR, BITCONT,
-     >           BGFIN, BRDIVFAILED, BTRACE_POPNUM, bHLPHIST,
-     >           bLAMAPPCOLI, bALOTri
+     >           BGFIN, BRDIVFAILED, BTRACE_POPNUM, bHLPHIST
       CHARACTER(100) :: MODHEAD
       CHARACTER(255) :: HISTENTRY
       CHARACTER(80) :: COMMAND
@@ -145,7 +138,6 @@ C OLD> DIMENSION SCRATCH(2*NDIMP2), ATEST(NDIMP2,NDIMP2)
       CHARACTER(10), DIMENSION(NDIM) :: LEVEL
       CHARACTER(10), DIMENSION(NDDIM) :: MAINPRO, MAINLEV
       CHARACTER(10), DIMENSION(MAXATOM) :: ELEMENT
-      LOGICAL, DIMENSION(MAXATOM) :: TRACEELEM
       CHARACTER(10), DIMENSION(MAXSETS, NDIM) :: LEVELPL, LEVELPLDEP
       CHARACTER(10) :: PRILEVRA
       CHARACTER(8), DIMENSION(NDDIM) :: INCRIT, VCRIT
@@ -159,59 +151,52 @@ C OLD> DIMENSION SCRATCH(2*NDIMP2), ATEST(NDIMP2,NDIMP2)
       CHARACTER(256) :: TPLOTOPT
       CHARACTER(256), DIMENSION(MAXPLOTOPT) :: PLOTOPT
       REAL :: RMAX, GEDD, RCSAVE, DENSCON_FIX, CORRLAST
-      CHARACTER(1200) :: UNLUTECLINE, HydroCard
-      CHARACTER(120) :: DENSCON_LINE, VTURB_LINE, DRLINES_CARD,
-     >                 ThinCard, AlphaCard, MacroCard, TaumaxCard
+      CHARACTER(1200) :: UNLUTECLINE
+      CHARACTER(120) :: DENSCON_LINE,
+     >                 ThinCard, HydroCard, AlphaCard, MacroCard
+      CHARACTER*80 DRLINES_CARD
       CHARACTER(8) :: OPC, GEFFKEY
-      LOGICAL :: BPLOCC, BTALTER
+      LOGICAL :: BFEWING, bTDIFFUS, BPLOCC, BTALTER
       REAL, DIMENSION(MAXIND) :: XLAMBLUE, XLAMRED, DEXFAC
       INTEGER, DIMENSION(MAXLAP,MAXIND) :: IBLENDS
       REAL, DIMENSION(NFLDIM,MAXLAP) :: PHIL
       REAL, DIMENSION(MAXLAP) :: BETA
       INTEGER, DIMENSION(2*NDDIM+8) :: IADR16
-      REAL, DIMENSION(NDDIM) :: DTLOCAL, DTFTFLX
+      REAL, DIMENSION(NDDIM) :: DTLOCAL
       REAL, DIMENSION(NDIM) :: DTINT, DTRMAX
-      REAL, DIMENSION(NDDIM, MAXATOM) :: VDOPDD
       LOGICAL, DIMENSION(MAXKONT) :: NRB_CONT
-      LOGICAL, DIMENSION(NDIM, NDDIM) :: ZERO_RATES
+      LOGICAL, DIMENSION(NDIM,NDDIM) :: ZERO_RATES
 C***  New CARDS options added by ansander
-      LOGICAL :: bENSURETAUMAX, bHYDROSOLVE, bRELSCHARMERACC,
+      LOGICAL :: bENSURETAUMAX, bHYDROSOLVE, bBLOCKINVERSION,
      >           bFixGEFF, bTauStrict, bTauUpdated, bThinWind, 
      >           bGEddFix, bHydroDone, bNewVelo, bSUMMARY, bNoARAD,
-     >           bSaveTauCont, bRESTART, BOOLdummy, bUpdateMass, 
-     >           bLateTau, bKUBAT, bLOCAL, bModHeadUpdate, bHydroHelp,
-     >           bOLDVELO, bFULLHYDROSTAT, bGAMMARADMEAN, bINTUNIFY,
-     >           bBackupNow, bTMNoOS, bHYSTloose, bFTFLX,
-     >           bForceColiPP, bUCPP, bUpdateVT, bTDIFFUS, bDDVDOP, 
-     >           bHDNoAG, bTMTHOM, bKUBATDEBUG, BFEWING, bUseTWOPNT,
-     >           bFRACINV, bForceTDIFFUS, bFeTCORR, bNoFeTCORR,
-     >           bINT, bRMAX, bINCADV, bUpdateTEFF
-
-      REAL :: VMIN, RCON, TAUACC, TAUMAX
+     >           bSaveTauCont, BOOLdummy, bUpdateMass, bUseTWOPNT,
+     >           bLateTau, bModHeadUpdate, bHydroHelp, bRELSCHARMERACC,
+     >           bOLDVELO, bTauMaxSafe, bFULLHYDROSTAT, bGAMMARADMEAN,
+     >           bBackupNow, bForceColiPP, bUCPP, bFeTCORR, bNoFeTCORR
+      REAL :: VMIN, RCON, TAUACC, TAUMAX, ReduceTauCorrections
       CHARACTER(80), DIMENSION(3) :: RadiusGridParameters           !contains all RADIUS-GRID CARDS (for subr. RGRID)      
 
       REAL :: TEFF, GLOG, GEFFLOG, XMSTAR, GF, RSTAR, VDOP, XMAX,
-     >        VDOPFE, DXFE, XLAM0FE, TOTOUT, TOTIN, OPARND, VDOPUNIT,
+     >        VDOPFE, DXFE, XLAM0FE, TOTOUT, TOTIN, OPARND, VMAX,
      >        EDDIHOUTJMEAN, HTOTOUTMINUS, EPSILON, REDUCE, GEDDreduce,
      >        BRRESET, SMALLPOP, POPMIN, POPRANG, DELTAC, COREX,
-     >        XLAM_FINE_START, XLAM_FINE_END, WJCMIN, HNDCORFAC, DUMMY,
-     >        WORKRATIO, DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB, MG,
-     >        GAMMAC, Rcritical, GAMMAR, GAMMAL, GAMMAD, TNDCORR, 
+     >        XLAM_FINE_START, XLAM_FINE_END, WJCMIN, FQLIMIT,
+     >        WORKRATIO, GAMMAC, Rcritical,
+     >        DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB, TBTAU, TAUINT,
+     >        GAMMAR, GAMMAL, GAMMAD, TNDCORR, DFEINDR,
      >        CORMAX, RTCMAX, RELIT, XLOGL, RTRANS, XMDOT, GEDDRAD,
-     >        TEFFdummy, ZEROdummy, ZEROdummy2, GFLSAV, DFEINDR,
+     >        TEFFdummy, ZEROdummy, ZEROdummy2, GFLSAV, VTURB,
      >        VPAR1, VPAR2, HSCALE, BETA2, BETA2FRACTION, CLUMP_SEP,
      >        VPAR1_2, VPAR2_2, VFINAL, ATMEAN, OPALINE_SCALE,
-     >        GAMMARADMEAN, QIONMEAN, VMAX, HTOTMINUSND, HTOTND, 
-     >        HTOTNDCOR, POPMIN_org, fTNDCOR, DTDRIN, 
-     >        TBTAU, TAUINT, FLUXEPS, HYSTACC, ALOMIN, CORDELTAHDLAST,
-     >        TAUHDRAW, EXPTAUTCL
+     >        GAMMARADMEAN, QIONMEAN, DTDRIN, HTOTND, HNDCORFAC, 
+     >        FLUXEPS, HYSTACC
 
       REAL, PARAMETER :: AMU = 1.6605E-24   ! Atomic mass unit in gramm
 
       INTEGER :: N, L, LAST, JOBNUM, NCOLIP, IDX, KANAL, NFL, LASTIND,
-     >           I, J, NATOM, NAUTO, LASTKON, LASTKDR, LASTFE, KDR,
-     >           LASTINDAUTO, LASTINDALL, iALOentry,
-     >           ND, NP, NF, NF2, IFF_N_MS, LSRAT, JOBMAX, K, KV,
+     >           I, J, NATOM, NAUTO, LASTKON, LASTKDR, KDR, LASTFE,
+     >           ND, NP, NF, NF2, IFF_N_MS, LSRAT, JOBMAX, K, KV, LST,
      >           NDDUMMY, IHIST, IFRRA, ITORA, IPRICC, IPRILC, LSEXPO,
      >           LSTAU, LSPOP, IFLUX, IDAT, NPLOT, NEWWRC, NOLAP, ITBR,
      >           NATOUT, NUP, LOW, IPRINTZERORATES, NPLOTDEP, NPLOTOPT,
@@ -220,29 +205,23 @@ C***  New CARDS options added by ansander
      >           NLASER, IND, IERR, NBRCANC, NKONVER, MAXFEACT, iAMT,
      >           IWARN_NEG_XJCAPP, IWARN_NEG_XJLAPP, ITSUM, IDUMMY, 
      >           NEXTHYDRO, LASTHYDRO, MFORM, iBLOCKINVERSION, iZRType,
-     >           LASTBACKUP, LASTTAU, NBACKUP, N_WITH_DRLEVELS,
-     >           LDTKDEC, LDTKOFF, ICMMODE, LASTHYDGA, LASTHYDROGAM,
-     >           NKONV_THRESH, NTOLD, LST, NDOUT, IHSSTATUS, IHDSTATUS
+     >           LASTBACKUP, LASTTAU, NBACKUP, NTOLD, NKONV_THRESH,
+     >           IHSSTATUS, LASTINDAUTO, LASTINDALL, N_WITH_DRLEVELS, MG
 
 
 C***  Hydro Stuff
-      INTEGER, PARAMETER :: ITMAXHYDRO = 1000               !Maximum number of iteration steps
       REAL, DIMENSION(NDDIM-1) :: ATHOM, ACONT
-      REAL, DIMENSION(NDDIM) :: RHO, XMU, ALPHAF, ARMDRESP
-      REAL, DIMENSION(3) :: HydroValues
-      REAL, DIMENSION(NDDIM, 2*ITMAXHYDRO) :: F_hist, G_hist !history arrays
+      REAL, DIMENSION(NDDIM) :: RHO, XMU, ALPHAF
 
 C***  Unsoeld-Lucy terms for TEMPEQ
       REAL, DIMENSION(NDDIM) :: OPASMEAN, QFJMEAN, OPAJMEAN,
-     >                          OPAPMEAN, QOPAHMEAN, QOPAHMEANL,
-     >                          OPASMEANTC, SMEAN, HMEAN,
-     >                          OPAJMEANTC, OPALAMBDAMEAN
+     >                          OPAPMEAN, QOPAHMEAN, OPASMEANTC, 
+     >                          OPAJMEANTC, OPALAMBDAMEAN, SMEAN
 
       REAL, DIMENSION(MAXIND) :: XRED, XBLUE, SLOLD, DETAL, OPAL,
      >                           SLNEW, DOPAL, SCOLIND, SCNEIND,
      >                           OPACIND, XRED0, XBLUE0, OPALOLD,
      >                           XLAMZERO
-      LOGICAL, DIMENSION(MAXINDE) :: bUSEALO
       INTEGER, DIMENSION(MAXIND) :: INDNUP, INDLOW, NBLENDS
       REAL, DIMENSION(4,MAXIND) :: COCO
 
@@ -343,11 +322,6 @@ C***  DEPTH(T), MAXCORR(T), NEWTON:AVER,MAX,CANCELLATIONS,NR. NOT CONV.
 C***  Auto Gamma
       REAL, DIMENSION(7) :: AG
 
-C***  DEBUG:
-      REAL, DIMENSION(2) :: TauCorLimits
-      REAL :: ReduceTauCorrections, FQLIMIT
-      LOGICAL :: bTauMaxSafe, bBLOCKINVERSION
-
       CHARACTER(10) :: TIM1
 
       INTEGER :: ITWARN, ITMAX
@@ -363,15 +337,11 @@ C***  Link data to identify program version
       CHARACTER(60) :: LINK_HOST
       COMMON / COM_LINKINFO / LINK_DATE, LINK_USER, LINK_HOST
 
-C***  SOLAR RADIUS ( CM )
-      REAL, PARAMETER :: RSUN = 6.96E10
-
 C***  File and channel handles (=KANAL)
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
       INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
       INTEGER, PARAMETER :: hMODEL = 3      !write to MODEL file
-      INTEGER, PARAMETER :: hHIST = 22      !write to MODHIST file
-      INTEGER, PARAMETER :: hALO  = 23      !integer handle of the ALO file
+      INTEGER, PARAMETER :: hHIST = 21      !write to MODHIST file
 
       INCLUDE 'interfacebib.inc'
 
@@ -382,10 +352,8 @@ C***    might not allocate memory for them unless compiled with "save"
       HTOTND = 0.
       CONVERG = .FALSE.
       FLUXERR = .0
-      bRESTART = .FALSE.
       BGFIN = .FALSE.
       IHSSTATUS = -1
-      IHDSTATUS = -1
 C***  Set Counters for Warnings
       IWARN_NEG_XJCAPP = 0
       IWARN_NEG_XJLAPP = 0
@@ -406,11 +374,11 @@ C***  Write Link Data (Program Version) tp CPR file
 
       CALL INSTALL
                                  
-      IF (OPSYS .EQ. 'CRAY' .OR. OPSYS .EQ. 'SGI') THEN
-        CALL CLOCK(TIM1)
+c      IF (OPSYS .EQ. 'CRAY' .OR. OPSYS .EQ. 'SGI') THEN
+c        CALL CLOCK(TIM1)
 c      ELSE
 c        CALL TIME(TIM1)
-      ENDIF
+c      ENDIF
 
       !Put dummy stuff into COMMON block data to ensure storage reservation
       NDDUMMY = NDDIM
@@ -418,58 +386,9 @@ c        CALL TIME(TIM1)
       DO L=1, NDDIM
         OLDRADI(L) = 1337.
         OLDVELO(L) = 1338.
-        DO IND=1, MAXIND
-          WFELOW(L,IND) = 0.
-          WFENUP(L,IND) = 0.
-        ENDDO
-        DO IND=1, MAXINDE
-          XLAMAPPMEAN(L, IND) = -31337.
-        ENDDO
       ENDDO
-      DO IND=1, MAXIND
-        XRED(IND) = 0.
-        XBLUE(IND) = 0.
-        SLOLD(IND) = 0.
-        SLNEW(IND) = 0.
-        bUSEALO(IND) = .FALSE.
-        DETAL(IND) = 1337.
-        OPAL(IND) = 1337.
-        DOPAL(IND) = 1338.
-        SCOLIND(IND) = 0.   ! crucial
-        SCNEIND(IND) = 0.   ! crucial
-        OPACIND(IND) = 0.   ! crucial
-        XRED0(IND) = 0.
-        XBLUE0(IND) = 0.
-        OPALOLD(IND) = 1337.
-        XLAMZERO(IND) = 31337.
-        NBLENDS(IND) = 31338
-        INDNUP(IND) = 0.
-        INDLOW(IND) = 0.
-        DO I=1, 4
-          COCO(I, IND) = 0.
-        ENDDO
-      ENDDO
-
-      DO NF=1, NFDIM
-        XLAMBDA(NF) = -33.
-        XLAMBDA2(NF) = -33.
-        XJCAPP(NF) = -33. 
-        OPAC(NF) = -33.
-        SCNEW(NF) = -33.
-        DOPA(NF) = -33.
-        DETA(NF) = -33.
-        ETAC(NF) = -33.
-        EXPFAC(NF) = -33.
-        XJCLP1(NF) = -33.
-        OPAC1(NF) = -33.
-        XKC(NF) = -33.
-        XKC2(NF) = -33.
-        XJCAPPNEW(NF) = -33.
-        DO I=1, 4
-          XJC_PLOTDATA_L(NF, I) = -33.
-        ENDDO
-        FWTEST(NF) = -33.
-      ENDDO
+      WFELOW = 0.
+      WFENUP = 0.
 
 C***  DEFINE CHANNEL 2 FOR PLOTS
       KANAL = 2
@@ -507,40 +426,34 @@ C***  IRON: ADDITIONAL PARAMETERS FOR IRON-GROUP LINE BLANKETING
      >                  LASTFE, SIGMAFE, INDRB, INDRF,
      >                  IFENUP, IFELOW, IFRBSTA, IFRBEND, FEDUMMY, 
      >                  VDOPFE, DXFE, XLAM0FE, SIGMAINT, BFEMODEL, 
-     >                  LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS, MAXION)
+     >                  LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS)
  
       LASTINDAUTO = LASTIND + NAUTO
       LASTINDALL  = LASTIND + NAUTO + LASTFE
 
 C***  READING OF THE MODEL FILE ----------------------------------------
       CALL REMOST (ND,NDDIM,NP,NPDIM,P,Z,
-     >               ENTOT,TOLD,NF,NFDIM,XLAMBDA,FWEIGHT,
-     >               RADIUS,RSTAR,RCON,VELO,GRADI,VDOP,INCRIT,VCRIT,
-     >               TOTOUT,TOTIN,EMFLUX, MAXAUTO,LASTIND,INDNUP,
-     >               INDLOW,KEY,RNE,MODHEAD,JOBNUM,XJC,XJL,MODHIST,
-     >               MAXHIST,LAST,EINST,NDIM,ABXYZ,NATOM, TEFF, 
-     >               GLOG, GEFFLOG, bFixGEFF, GEDD, bGEddFix, 
-     >               ENTOTDENS, XMDOT, Rcritical, GEDDRAD, 
-     >               XMSTAR, NAUTO, DRXJL, MAXXDAT, XDATA, 
-     >               HTOTL, BHTOTERR, HTOTND, HTOTCUT, DTDRIN,
+     >               ENTOT,TOLD,NF,NFDIM,XLAMBDA,FWEIGHT,RADIUS,
+     >               RSTAR,RCON,VELO,GRADI,VDOP,INCRIT,VCRIT,TOTOUT,
+     >               TOTIN,EMFLUX, MAXAUTO,LASTIND,INDNUP,INDLOW,KEY,
+     >               RNE,MODHEAD,JOBNUM,XJC,XJL,MODHIST,MAXHIST,LAST,
+     >               EINST,NDIM,ABXYZ,NATOM, TEFF, GLOG, GEFFLOG,
+     >               bFixGEFF, GEDD, bGEddFix, ENTOTDENS, XMDOT, 
+     >               Rcritical, GEDDRAD, XMSTAR, NAUTO, DRXJL, 
+     >               MAXXDAT, XDATA, HTOTL, BHTOTERR, HTOTND, DTDRIN,
      >               DENSCON, FILLFAC, 
      >               LASTFE, ARAD, bNoARAD, WFELOW, WFENUP, NCOLIP,
-     >               FTCOLI, EMCOLI, ARADELEM, ACONTELEM,
-     >               MAXION, ARADION, ACONTION, 
-     >               GAHIST, MAXGAHIST, MAXIND, MAXINDE, MAXKONT, 
-     >               LASTKON, XJTOTL, XKTOTL, XNTOTL, WJC, GF, OPARND, 
+     >               FTCOLI, EMCOLI, GAHIST, 
+     >               MAXGAHIST, MAXIND, MAXINDE, MAXKONT, LASTKON,
+     >               XJTOTL, XKTOTL, XNTOTL, WJC, GF, OPARND, 
      >               OPASMEAN, OPASMEANTC, QFJMEAN, OPAJMEAN, SMEAN,
      >               OPAJMEANTC, OPAPMEAN, QOPAHMEAN,
-     >               EDDIHOUTJMEAN, HMEAN, XLAMBDA2, NF2,
-     >               HTOTOUTMINUS, HTOTMINUSND, HTOTNDCOR,
+     >               EDDIHOUTJMEAN, XLAMBDA2, NF2, HTOTOUTMINUS, 
      >               FF_INFO, IFF_DK, IFF_MAX, IFF_N_MS, 
      >               OPALAMBDAMEAN, TAUROSS, TAUROSScont, VMIN, N, 
      >               POPNUM, SIGMAKI, ATMASS, ACONT, ATHOM, OPALROSS,
-     >               RHO, XMU, ALPHAF, ARMDRESP, HYDROF, NEXTHYDRO, 
-     >               LASTHYDRO, VTURB, VMIC, POPMIN, ZERO_RATES,
-     >               GRSTATIC, GRDYN, LASTBACKUP, LASTTAU, GEFFKEY,
-     >               XLAMAPPMEAN, XLAMAPPUMEAN, XLAMAPPLMEAN,
-     >               iALOentry, bHDNoAG, CORDELTAHDLAST, TAUHDRAW) 
+     >               RHO, XMU, ALPHAF, NEXTHYDRO, LASTHYDRO, VTURB,
+     >               GRSTATIC, LASTBACKUP, LASTTAU, GEFFKEY, ZERO_RATES)      
      
       WRITE(hCPR,'(A,I7)') '>>> This is job number ', JOBNUM
       IF (TAUROSScont(ND) < 0.) THEN
@@ -572,19 +485,17 @@ C***  DECODING INPUT DATA ******************************************
      >     BGAMMACFIX, BGAMMALFIX, BGAMMARFIX, BGAMMADFIX, 
      >     BNUEFE, BXJLAPPCORE, WJCMIN, NKONV_THRESH,
      >     iBLOCKINVERSION, RSTAR, RMAX, TAUMAX, bENSURETAUMAX, TAUACC,
-     >     bTauStrict,
+     >     bTauStrict, ReduceTauCorrections, TauCorLimits, FQLIMIT,
      >     RadiusGridParameters, VMIN, bThinWind, ThinCard, bSUMMARY,
-     >     TaumaxCard, bHYDROSOLVE, bLateTau, HydroCard, AlphaCard, 
+     >     bHYDROSOLVE, bLateTau, HydroCard, AlphaCard, 
      >     DENSCON_FIX, DENSCON_LINE, MFORM, XMSTAR, GLOG, bUpdateMass,
-     >     WRTYPE, MODHEAD, bModHeadUpdate, bOLDVELO,
+     >     WRTYPE, MODHEAD, bModHeadUpdate, bOLDVELO, bTauMaxSafe,
      >     bFULLHYDROSTAT, bGAMMARADMEAN, GEDDreduce, iZRType, iAMT,
-     >     CLUMP_SEP, MacroCard, OPALINE_SCALE, NBACKUP, GEFFKEY,
-     >     bHydroHelp, bHYSTloose, ICMMODE, bUCPP,
-     >     bUpdateVT, VTURB, fTNDCOR, bTMTHOM, bKUBATDEBUG,
-     >     bRELSCHARMERACC, bUseTWOPNT, FLUXEPS, HYSTACC, IHSSTATUS,
-     >     NDOUT, VTURB_LINE, ALOMIN, bLAMAPPCOLI, bDDVDOP,
-     >     bFRACINV, bForceTDIFFUS, bNoFeTCORR, TRACEELEM, bINCADV,
-     >     ENTOT, RHO, iALOentry, bALOTri)
+     >     CLUMP_SEP, MacroCard, OPALINE_SCALE, NBACKUP, GEFFKEY, bUCPP,
+     >     FLUXEPS, HYSTACC, IHSSTATUS, bNoFeTCORR, bUseTWOPNT, 
+     >     bRELSCHARMERACC)
+
+      bBLOCKINVERSION = (iBLOCKINVERSION /= 0)  !temporary line until full ion split is implemented
 
 C***  The following lines are because the LINE option was removed from
 C***  decste wrh  4-Apr-2023
@@ -596,7 +507,7 @@ C***  decste wrh  4-Apr-2023
 ccc   test output
 c      write (0,*) 'after DECSTE:'
 c      do i= 1, LASTINDALL, 100
-c         write (0,'(2I6,x,A,x,A)')
+c         write (0,'(2I6,x,A,x,A)') 
 c     >        i, lineindex(i), LEVEL(indlow(i)), LEVEL(indnup(i))
 c      enddo
 
@@ -646,10 +557,6 @@ C***        rudimental; i.e. REMOST reported DRXJL(INDDR)= .FALSE.
          ENDDO
       ENDIF
 
-      VDOPUNIT = VDOP
-      CALL VDOPDD_SETUP(bDDVDOP, VDOPDD, VDOPUNIT, DUMMY,
-     >                  TOLD, VMIC, ATMASS, ND, NATOM)          
-
 C***  COLI++ after this STEAL job forced by CARDS option     
       IF (bUCPP) THEN
         bForceColiPP = .TRUE.
@@ -659,8 +566,8 @@ cccc  Only for historical reasons, the variable NOTEMP still exists
 ccc   as a parameter for some subroutines. It is always: 
       NOTEMP=.TRUE.
 
-      !Avoid temperature corrections right after hydro and TAUMAX step
-      IF (BUNLU .AND. ((LASTHYDRO == 1)      
+      !Avoid temperature corrections right after hydro step
+      IF (BUNLU .AND. ((LASTHYDRO == 1) 
      >                  .OR. (bLateTau .AND. LASTHYDRO == 2))) THEN
         BUNLU = .FALSE.
       ENDIF
@@ -719,17 +626,17 @@ C***  Get last Correction
       CORRLAST = MIN(CORRLAST, 1.)
 
 C***  Preparations for Fluxcorrection in TEMPCORR (UnLu-Method)
-      CALL INITFCORR (TEFF, RSTAR, TOLD, RNE, bNoARAD, bINCADV,
+      CALL INITFCORR (TEFF, RSTAR, TOLD, RNE, bNoARAD,
      >                ABXYZ, ATMASS, ELEMENT, NATOM, WRTYPE,
      >                RADIUS, VELO, GRADI, VTURB, ENTOT, ND,
      >                HTOTM, HTOTG, HTOTOBS, HTOTL, ACONT, ATHOM,
      >                AGRAV, AMECH, ARAD, APRESS, WORKRATIO,
      >                CLUMP_SEP, OPALROSS, MacroCard, DENSCON,
-     >                FILLFAC, OPALINE_SCALE, MacroDamp, FTCOLI,
-     >                XJTOTL, XKTOTL, XNTOTL, HTOTCMF0, HTOTCMF0ADV,
-     >                HTOTND, HTOTE, XMSTAR, MFORM, GLOG, ATMEAN,VMACH,
-     >                XMU, TAUROSS, QIONMEAN, GAMMARADMEAN, RCON)
-      
+     >                FILLFAC, OPALINE_SCALE,
+     >                FTCOLI, XJTOTL, XKTOTL, XNTOTL, HTOTCMF0, 
+     >                XMSTAR, MFORM, GLOG, ATMEAN, VMACH,
+     >                TAUROSS, QIONMEAN, GAMMARADMEAN, RCON)
+
 C***  Calculate ABS(DTDR) at inner boundary (e.g. for use in COLI)
 C***  This works best if one full COLI was already done, since then the full
 C***  opacity at the inner boundary is given. 
@@ -746,7 +653,7 @@ C***    Calculate OPAROSS (aka continuum opacity) with clump density
      >                ALPHA, SEXPO, ADDCON1, ADDCON2, ADDCON3, 
      >                IGAUNT, NF, XLAMBDA, FWEIGHT, NOM,
      >                MAXATOM, SIGMATHK, SEXPOK, EDGEK, KODAT, 
-     >                RADIUS(ND), KONTNUP, KONTLOW, LASTKON, POPMIN)
+     >                RADIUS(ND), KONTNUP, KONTLOW, LASTKON)
 C***    Scale opacity down with filling factor
         OPARND = OPARND * FILLFAC(ND)
       ENDIF
@@ -754,14 +661,14 @@ C***    Scale opacity down with filling factor
 C***  Start approximation for the temperature gradient at ND
 C***  This should not be calculated before an OLD MODEL might have been adapted
 C***  The first coli will calculate this gradient if still missing
-      IF (DTDRIN < .0 .AND. JOBNUM > 1) THEN
+      IF (DTDRIN < .0 .AND. JOBNUM .GT. 1) THEN
          DTDRIN = 0.1875 * OPARND * TEFF**4 / TOLD(ND)**3
       ENDIF
 
 C***  UNSOELD-LUCY-PROCEDURE 
       bFeTCORR = .FALSE.
       IF (BUNLU) THEN
-        CALL PREPKUBAT(ND, NF, N, NDIM, XLAMBDA, ENTOTDENS, RNE, 
+         CALL PREPKUBAT(ND, NF, N, NDIM, XLAMBDA, ENTOTDENS, RNE, 
      >                 POPNUM, ELEVEL, NCHARG, XJC, KONTNUP,
      >                 KONTLOW, SIGMAKI, FWEIGHT, WEIGHT, NOM, 
      >                 ABXYZ, NFIRST, NLAST, INDNUP, INDLOW,
@@ -769,14 +676,11 @@ C***  UNSOELD-LUCY-PROCEDURE
      >                 NATOM, EION, EINST, COCO, KEYCBB,
      >                 KEYCBF, IONGRND, ALTESUM, MAXIND,
      >                 SIGMATHK, SEXPOK, EDGEK, MAXATOM,
-     >                 LASTKON, LASTIND, LASTINDAUTO, LASTINDALL,
+     >                 LASTKON, LASTIND, LASTINDAUTO, LASTINDALL, 
      >                 OPALROSS, TOLD, RADIUS,
-     >                 RSTAR, OPALAMBDAMEAN, OPASMEANTC,
-     >                 MAXKONT, ADDCON1, ADDCON2, ADDCON3, 
-     >                 IGAUNT, ALPHA, SEXPO, MAXION,
-     >                 DTKUBAT, bCOLLIDONE, ZERO_RATES,
-     >                 bKUBATDEBUG)
-     
+     >                 RSTAR, OPALAMBDAMEAN, OPASMEANTC, 
+     >                 DTKUBAT, BCOLLIDONE )
+
         IF (.NOT. bNoFeTCORR) THEN
 C***      Added in Feb 2018 to wrh branch:        
 C***      Modify Fe rates to account for current temperature changes       
@@ -788,17 +692,15 @@ C***     (old behaviour can be forced via CARDS line "TCORR FERATES OFF")
             AGAMD(MG) = 0.
           ENDDO
         ENDIF
-        CALL TEMPCORR (TOLD, TNEW, ND, RADIUS, VELO, TEFF,
-     >    VTURB, XMU, RSTAR, HTOTL, XJTOTL, HTOTCMF0,
-     >    HTOTCMF0ADV, FTCOLI, DTLOCAL, DTINT, DTRMAX, FLUXERR,
+        CALL TEMPCORR (TOLD, TNEW, ND, RADIUS, TEFF,
+     >    HTOTL, XJTOTL, HTOTCMF0, FTCOLI, 
+     >    DTLOCAL, DTINT, DTRMAX, FLUXERR,
      >    OPASMEANTC, QFJMEAN, OPAJMEANTC, OPAPMEAN, 
-     >    QOPAHMEAN, QOPAHMEANL, OPARND, 
-     >    EDDIHOUTJMEAN, HMEAN, HTOTCUT, SMEAN, HTOTOUTMINUS, 
-     >    HTOTND, DTDRIN, UNLUTECLINE, DUNLU_LOC, DUNLU_RMAX, 
-     >    DUNLU_INT, DUNLU_TB, TBTAU, TAUINT, EXPTAUTCL,
-     >    OPALAMBDAMEAN, TAUROSS, ARAD, DTKUBAT,
-     >    bKUBAT, bLOCAL, bINT, bRMAX, bINCADV,
-     >    bTDIFFUS, HNDCORFAC, CORRS, FLUXEPS)
+     >    QOPAHMEAN, EDDIHOUTJMEAN,
+     >    HTOTOUTMINUS, HTOTND, OPARND, DTDRIN, UNLUTECLINE, 
+     >    DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB, TBTAU, TAUINT,
+     >    OPALAMBDAMEAN, TAUROSS, ARAD, DTKUBAT, BTDIFFUS, HNDCORFAC,
+     >    SMEAN, CORRS, FLUXEPS)
      
       ELSE
          DO L=1, ND
@@ -872,12 +774,10 @@ C***     READING THE LAST-ITERATION POPNUMBERS
       ENDIF
 
 C*** AUTO-GAMMA Artistics
-      IF (BAG) THEN
-        CALL ADJGAMMA(GAHIST, MAXGAHIST, AG, LASTHYDRO, LASTTAU, 
-     >                BTALTER, GAMMAC, GAMMAL, GAMMAR, GAMMAD, BGFIN,
-     >                GF, BGAMMACFIX, BGAMMALFIX, BGAMMARFIX, 
-     >                BGAMMADFIX, bHDNoAG)
-      ENDIF
+      IF (BAG) 
+     >  CALL ADJGAMMA(GAHIST, MAXGAHIST, AG, LASTHYDRO, BTALTER,
+     >                GAMMAC, GAMMAL, GAMMAR, GAMMAD, BGFIN, GF, 
+     >                BGAMMACFIX, BGAMMALFIX, BGAMMARFIX, BGAMMADFIX)
 
 C***  IN CASE OF JOBNUM=1 (STARTJOB) OR OUTPUT REQUEST ONLY (STHLP),
 C***  GAMMA'S ARE SET ZERO:
@@ -889,8 +789,6 @@ C***  GAMMA'S ARE SET ZERO:
          WRITE (hCPR,*) 
      >       "STEAL: JOBNUM=1 or output-only -> All GAMMAs = 0"
       ENDIF
- 
-      POPMIN_org = POPMIN
  
 C***  SKIP ANY CALCULATIONS IN OUTPUT-ONLY MODE OR OLDSTART-INITIALIZATION
       IF (STHLP .OR. OLDSTART .OR. (bLateTau .AND. LASTHYDRO == 1)) THEN
@@ -920,7 +818,7 @@ cc     $    GAMMAL.EQ.0. .AND. GAMMAC.EQ.0. .AND. GAMMAD.EQ.0.)) THEN
      $                  KODAT,NFIRST,NLAST,NATOUT,
      $                  NAUTO,MAXAUTO,LOWAUTO,WAUTO,EAUTO,AAUTO,
      $                  RDIEL,RAUTO,IONAUTO,IONGRND,
-     $                  INDNUP,INDLOW,LASTIND, LASTINDALL, MAXION,
+     $                  INDNUP, INDLOW, LASTIND, LASTINDALL,
      $                  KONTNUP,KONTLOW,LASTKON,KODRNUP,KODRLOW,LASTKDR,
      $                  KEYCBF,MAXATOM,SIGMATHK,SEXPOK,EDGEK,LASTINDAUTO,
      $                  KRUDAUT, ZERO_RATES, POPMIN,
@@ -949,32 +847,30 @@ C***    CALCULATION OF NEW POPULATION NUMBERS, EL. DENSITY AND DEPARTURE COEFF.
 
 C***    PREPARATION OF THE LINE-OVERLAP TREATMENT
 C***    IRON: IRON-LINES ARE OMITTED (-->NBLENDS = 0)
-        CALL OVERLAP (IBLENDS,MAXLAP,LASTIND, LASTINDAUTO,
+        CALL OVERLAP (IBLENDS,MAXLAP, LASTIND, LASTINDAUTO,
      >                XLAMZERO,XLAMRED,XLAMBLUE,
-     >                XMAX,EINST,NDIM,ELEVEL,INDNUP,INDLOW,NOLAP,
-     >                VDOPUNIT,NBLENDS, KRUDAUT, EAUTO, NAUTO, EION)
-
+     >                XMAX,EINST,NDIM,ELEVEL,INDNUP,INDLOW,NOLAP,VDOP,
+     >                NBLENDS, KRUDAUT, EAUTO, NAUTO, EION)
+     
 C***    Temperature correction at inner boundary if TDIFFUS is set in CARDS
-        IF ((bTDIFFUS .AND. BUNLU) 
-     >           .OR. (bTDIFFUS .AND. bForceTDIFFUS)) THEN
-          CALL TDIFFUS(TNEW, RADIUS, ND, TEFF, OPARND, TNDCORR,
-     >                 bNoARAD, HTOTNDCOR, fTNDCOR)
-          WRITE (hCPR,*) 
-     >       'STEAL: T at inner boundary updated via TDIFFUS'
+        IF (bTDIFFUS) THEN
+          CALL TDIFFUS(TNEW, RADIUS, ND, TEFF, OPARND, TNDCORR)
         ENDIF
 
 C***    SOLUTION OF THE NON-LINEAR SET OF RATE EQUATIONS
-        CALL  LINPOP (TNEW,RNE,ENTOT,ITNE,POPNUM,DEPART,POPLTE,POP1,
+        
+
+        CALL LINPOP (TNEW,RNE,ENTOT,ITNE,POPNUM,DEPART,POPLTE,POP1,
      $   N,ENLTE,WEIGHT,NCHARG,EION,ELEVEL,EN,EINST,LEVEL,
      $   FWEIGHT,XJC,NF,XJL,WCHARM,SCOLD,
-     $   XJLAPP, XLAMAPPMEAN, bUSEALO, ALOMIN, bLAMAPPCOLI,
-     >   DM, V1,V2,GAMMAC,GAMMAL,EPSILON,TOLD,
+     $   XJLAPP,
+     $   DM, V1,V2,GAMMAC,GAMMAL,EPSILON,
      $   NOTEMP,DELTAC,GAMMAR,IPRICC,IPRILC,MODHEAD,JOBNUM,IFRRA,ITORA,
      $   RADIUS,RSTAR,OPA,ETA,THOMSON,IWARN,MAINPRO,MAINLEV,
-     $   VELO,GRADI, VDOPDD, VDOPUNIT,NFLDIM,PHI,PWEIGHT,
+     $   VELO,GRADI, VDOP,NFLDIM,PHI,PWEIGHT,
      $   LASTIND,LASTINDAUTO, LASTINDALL,
      $   SIGMAKI,
-     $   ND,LSRAT,CRATE, RRATE,RATCO,ALPHA,SEXPO, 
+     $   ND,LSRAT,CRATE,RRATE,RATCO,ALPHA,SEXPO, 
      $   ADDCON1, ADDCON2, ADDCON3, 
      $   IGAUNT, KEYCBB, NRB_CONT, ZERO_RATES, IPRINTZERORATES, POPMIN,
      $   LINE,ALTESUM,NFEDGE,NOM,NATOM,ABXYZ,KODAT,NFIRST,
@@ -984,9 +880,9 @@ C***    SOLUTION OF THE NON-LINEAR SET OF RATE EQUATIONS
      $   RAUTO,DRJLW,DRJLWE,DRLJW,NSCHAR,MAXATOM,BETA,PHIL,NBLENDS,
      $   SIGMATHK,SEXPOK,EDGEK,XDATA,
      $   KONTNUP,KONTLOW,LASTKON,KODRNUP,KODRLOW,LASTKDR,KEYCBF,NATOUT,
-     $   BRRESET,NOCON,ENOLD,TEFF, KRUDAUT, 
-     $   BAUTO, CKONVER, SMALLPOP, BUNLU, 
-     >   FILLFAC, ENTOTDENS,
+     $   BRRESET,NOCON,ENOLD,TEFF, KRUDAUT, ELEMENT, 
+     $   BAUTO, BAUTO_ABORT, CKONVER, SMALLPOP, BUNLU, 
+     >   DENSCON, FILLFAC, ENTOTDENS,
      >   WFELOW, WFENUP, GAMMAD, NKONVER, WJC, 
      >   OPC, BPLOCC, LPLOCC, KPLOCC, KANAL, 
      >   LASTFE, WJCMIN, NKONV_THRESH,
@@ -1013,11 +909,11 @@ C***  New Fine-spaced WCHARM handling
      >   IFF_MAX, IFF_MAX, FF_INFO, IFF_DK, IFF_WCHARM, WCHARM_FINE, 
      >   IFF_N_MS,
 C***  Split Parameter (if blockwise DM inversion is used or not)
-     >   iBLOCKINVERSION, AOFF, CORRLAST, bRELSCHARMERACC, bFRACINV,
-C***  FERAT correction      
-     >   CORRS, DEXFAC, bFeTCORR, iZRType, 
-C***  Two-point broyden and auto modify temperature settings
-     > bUseTWOPNT, iAMT, 
+     >   bBLOCKINVERSION, AOFF, CORRLAST, bRELSCHARMERACC,
+C***  Settings for ZERO_RATES, BROYDEN TWOPOINT, and AUTO_MODIFY
+     >   iZRType, bUseTWOPNT, iAMT,
+C***  Fe rate temperature correction
+     >   CORRS, DEXFAC, bFeTCORR,
 C***  For constant consistency check     
      >   NDIM, MAXIND, NFDIM, MAXFEIND)
 
@@ -1039,7 +935,7 @@ C***  CYCLIC CHANGING OF THE ARRAY NAME FOR THE LAST THREE ITERATIONS
  
    20 CONTINUE
 C***  REDUCED CORRECTIONS, IF OPTION IS SET
-      IF (REDUCE.NE.1. .AND. JOBNUM.GT.1 .AND. (.NOT. STHLP))
+      IF (REDUCE.NE.1. .AND. JOBNUM.GT.1 .AND. .NOT. STHLP)
      $      CALL REDCOR (POPNUM,POP1,ND,N,RNE,NCHARG,REDUCE)
  
 C***  PRINTOUT POP. NUMBERS (IF REQUESTED)
@@ -1049,20 +945,15 @@ C***  PRINTOUT POP. NUMBERS (IF REQUESTED)
  
 C***  PRINTOUT RELATIVE CORRECTIONS 
       IF ((JOBNUM .GT. 5 .OR. JOBNUM .GT. 1 .AND. .NOT. STHLP) .AND. 
-     >     BPRICORR) THEN
-            CALL PRICORR (POPNUM, POP1, LEVEL, N, ND, MODHEAD, LSPOP, 
-     $                   CORMAX, RTCMAX, JOBNUM, REDUCE, CKONVER,
+     >     BPRICORR)
+     $      CALL PRICORR (POPNUM, POP1, LEVEL, N, ND, MODHEAD, LSPOP, 
+     $                   CORMAX, RTCMAX, JOBNUM, REDUCE, 
      >                   GAMMAC, GAMMAL, GAMMAR, GAMMAD, 
      $                   TOLD, TNEW, EPSILON, DELTAC, SMALLPOP, BUNLU, 
-     >                   DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB,
-     >                   bTDIFFUS, TNDCORR, HNDCORFAC, GAHIST, 
-     >                   MAXGAHIST, STHLP, ICMMODE,
-     >                   IWARN_NEG_XJCAPP, IWARN_NEG_XJLAPP, 
-     >                   TBTAU, TAUINT, NDOUT, NATOM, NOM, TRACEELEM)
-     
-      ELSEIF (ITWARN > 0) THEN
-        WRITE (hCPR,*) 'ITWARN =', ITWARN
-      ENDIF
+     $                   DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB, 
+     >                   bTDIFFUS,  TNDCORR, HNDCORFAC, GAHIST, MAXGAHIST, 
+     >                   STHLP, IWARN_NEG_XJCAPP, IWARN_NEG_XJLAPP,
+     >                   TBTAU, TAUINT)
 
 C*** INHIBIT SMALL OR NEGATIVE POP. NUMBERS (WARNINGS ISSUED!)
       CALL INHIBIT (POPNUM, N, ND, NCHARG, RNE, 
@@ -1147,11 +1038,11 @@ C***  Printout of Model Parameters
      >                           RSTAR, XLOGL, XMDOT, RTRANS, VELO, 
      >                           VDOP, DENSCON, FILLFAC, GLOG, GEFFLOG,
      >                           GEDD, RADIUS, RCON, INCRIT, VCRIT,
-     >                           VTURB, VMACH, bThinWind, bHYDROSOLVE, 
+     >                           VTURB, bThinWind, bHYDROSOLVE, 
      >                           WORKRATIO, RNE, ENTOT, XMU, XMSTAR, 
      >                           GRADI, NATOM, ABXYZ, ATMASS, ELEMENT,
-     >                           SYMBOL, bFULLHYDROSTAT, MAXATOM, KODAT,
-     >                           GEDDRAD, ARAD, APRESS, AGRAV, HTOTOBS,
+     >                           SYMBOL, bFULLHYDROSTAT, 
+     >                           GEDDRAD, ARAD, APRESS, AGRAV, 
      >                           GAMMARADMEAN, QIONMEAN, bFixGEFF)
       ELSEIF (bNoARAD) THEN
         WRITE (hCPR,'(A)') 'WARNING: *** MODEL SUMMARY NOT POSSIBLE: '
@@ -1203,26 +1094,11 @@ C***     *********
          IF (ACTPAR .EQ. 'ACC') THEN
            CALL PLOTACC (PLOTOPT(IPLOTOPT), AGRAV, AMECH, ARAD, APRESS, 
      >                   ACONT, ATHOM, WORKRATIO, VELO, RADIUS, ND, 
-     >                   ATMEAN, ENTOT, RNE, TAUROSS, RCON, TNEW, TEFF, 
-     >                   RSTAR, XMU, VTURB, XMSTAR, Rcritical, 
-     >                   bFULLHYDROSTAT, bNoARAD,
-     >                   MODHEAD, JOBNUM, KANAL)
+     >                   ATMEAN, RNE, RCON, TNEW, TEFF, RSTAR, XMU,
+     >                   XMSTAR, Rcritical, bFULLHYDROSTAT,
+     >                   MODHEAD, JOBNUM, KANAL, HYSTACC)
          ENDIF
 
-C***     *************
-C***     *  ACCELEM  *
-C***     *************
-         IF (ACTPAR == 'ACCELEM') THEN
-           CALL PLOTACCELEM (PLOTOPT(IPLOTOPT), AGRAV, AMECH, ARAD, 
-     >                       ARADELEM, ACONTELEM, ARADION, ACONTION,
-     >                       APRESS, ACONT, ATHOM, WORKRATIO,
-     >                       VELO, RADIUS, ND, NATOM, MAXION,
-     >                       ATMEAN, ENTOT, RNE, TAUROSS, RCON, TNEW,
-     >                       TEFF, RSTAR, XMU, XMSTAR, 
-     >                       Rcritical, bFULLHYDROSTAT, SYMBOL,
-     >                       ELEMENT, bNoARAD, MODHEAD, JOBNUM, KANAL)
-         ENDIF
-         
 C***     *********************
 C***     *  EDDINGTON GAMMA  *
 C***     *********************
@@ -1232,29 +1108,8 @@ C***     *********************
      >                     WORKRATIO, VELO, RADIUS, ND, ATMEAN,
      >                     ENTOT, RNE, RCON, TNEW, TEFF, RSTAR, XMU,
      >                     XMSTAR, Rcritical, bFULLHYDROSTAT,
-     >                     QIONMEAN, GAMMARADMEAN, bNoARAD,
+     >                     QIONMEAN, GAMMARADMEAN,
      >                     MODHEAD, JOBNUM, KANAL)
-         ENDIF
-
-C***     ***********************
-C***     *  FG STRATIFICATION  *
-C***     ***********************
-         IF (ACTPAR == 'FGSTRAT') THEN
-           CALL PLOTFGADAPTER (PLOTOPT(IPLOTOPT), XMSTAR, TAUROSS, ARAD, 
-     >                         VELO, RADIUS, ND, ATMEAN, ENTOT, TNEW, 
-     >                         VTURB, XMU, RSTAR, Rcritical, WORKRATIO,
-     >                         bNoARAD, MODHEAD, JOBNUM, KANAL)
-         ENDIF
-         
-C***     **********************
-C***     *  FORCE MULTIPLIER  *
-C***     **********************
-         IF (ACTPAR == 'FORCEMULT') THEN
-           CALL PLOTFORCEMULT (PLOTOPT(IPLOTOPT), TAUROSS, TAUROSScont,
-     >                         AGRAV, AMECH, ARAD, APRESS, ACONT, ATHOM, 
-     >                         VELO, RADIUS, ND, ATMEAN, ENTOT, TNEW, 
-     >                         XMU, RCON, Rcritical, WORKRATIO,
-     >                         bNoARAD, MODHEAD, JOBNUM, KANAL)
          ENDIF
          
 C***     **********
@@ -1262,46 +1117,40 @@ C***     *  UNLU  *
 C***     **********
          IF (ACTPAR == 'UNLU' .AND. BUNLU) THEN
            CALL PLOTUNLU (KANAL, PLOTOPT(IPLOTOPT), MODHEAD, JOBNUM, 
-     >                    ND, TOLD, TNEW, bKUBAT, bLOCAL, 
-     >                    bINT, bRMAX, bTDIFFUS, DTLOCAL, DTINT, 
-     >                    DTRMAX, DTKUBAT, EXPTAUTCL)
+     >                    ND, TOLD, TNEW, DUNLU_LOC, DUNLU_TB, bTDIFFUS,
+     >                    DTLOCAL, DTINT, DTRMAX, DTKUBAT)
          ENDIF
 
 C***     **********
 C***     *  HTOT  *
 C***     **********
          IF (ACTPAR .EQ. 'HTOT') 
-     >     CALL PLOTHSUM (HTOTL, HTOTND, EDDIHOUTJMEAN, XJTOTL, HTOTM,
-     >                    HTOTG, HTOTOBS, HTOTCMF0, HTOTCMF0ADV,
-     >                    FLUXEPS, ND, MODHEAD, JOBNUM, KANAL, TEFF, 
-     >                    BHTOTERR, bINCADV)
+     >     CALL PLOTHSUM (HTOTL, HTOTM, HTOTG, HTOTOBS, HTOTCMF0,
+     >                    ND, MODHEAD, JOBNUM, KANAL, TEFF, BHTOTERR,
+     >                    FLUXEPS)
 
 C***     **********
 C***     *  FLUX  *
 C***     **********
          IF (ACTPAR .EQ. 'FLUX') 
-     >      CALL PLOTFLU (NF, XLAMBDA, EMFLUX, EMCOLI, MODHEAD, 
-     >                    JOBNUM, KANAL, RSTAR, TOTOUT, 
-     >                    PLOTOPT(IPLOTOPT))
+     >      CALL PLOTFLU (NF, XLAMBDA, EMFLUX, EMCOLI, MODHEAD, JOBNUM, 
+     >                    KANAL, RSTAR, TOTOUT, PLOTOPT(IPLOTOPT))
 
 C***     **********
 C***     *  ALPHA *
 C***     **********
          IF (ACTPAR == 'ALPHA')
-     >     CALL PLOTALPHA(PLOTOPT(IPLOTOPT), ND, RADIUS, ALPHAF,
-     >                    VMACH, VELO, TAUROSS, ENTOT, ATMEAN, 
-     >                    MODHEAD, JOBNUM, .FALSE.)
+     >     CALL PLOTALPHA(ND, RADIUS, ALPHAF, MODHEAD, JOBNUM, .FALSE.)
+     
 C***     ************
 C***     *  SIGMAFE *
 C***     ************
-         IF (ACTPAR == 'SIGMAFE' .AND. JOBNUM > 1) THEN
+         IF (ACTPAR == 'SIGMAFE' .AND. JOBNUM >= 11) THEN
            CALL PLOTSIGMAFE(PLOTOPT(IPLOTOPT), MODHEAD, JOBNUM,
      >                      SIGMAFE, INDRB, MAXFEIND, 
      >                      LASTINDALL, LASTFE, IFRBSTA, IFRBEND, 
-     >                      LASTKON, INDRF, KONTLOW, KONTNUP,
-     >                      LEVEL, N, INDNUP, INDLOW, NOM,
-     >                      ELEVEL, EION,
-     >                      INDEXMAX, NFEREADMAX, MAXATOM, KODAT,
+     >                      LEVEL, N, INDNUP, INDLOW,
+     >                      INDEXMAX, NFEREADMAX,
      >                      VDOPFE, DXFE, XLAM0FE, .FALSE.)
          ENDIF
       ENDDO
@@ -1324,8 +1173,6 @@ C***  DEPARTURE COEFFICIENT PLOT (IF REQUESTED)
 
 C***  DIRECT TRANSFER OF TEMPERATURE STRATIFICATION PLOT (IF REQUESTED)
       IF (TPLOT) THEN
-cc      IF (NTPLOT > 0) THEN
-cc        DO ITPLOT=1, NTPLOT
 C         IF ((LSTAU .LE. 0) .AND. TPLTAU)
 C     $       CALL TAUSCAL (RSTAR,ND,RADIUS,RNE,
 C     $            ENTOT,TNEW,POPNUM,NDIM,N,EN,LEVEL,NCHARG,WEIGHT,
@@ -1333,9 +1180,9 @@ C     $            ELEVEL,EION,EINST,ALPHA,SEXPO,
 C     $            ADDCON1, ADDCON2, ADDCON3, 
 C     $            IGAUNT,NOM,NF,
 C     $            XLAMBDA,FWEIGHT,TAUTHOM,TAUROSScont,
-C     $            MAXATOM,MAXION,SIGMATHK,SEXPOK,EDGEK,KODAT,
-C     $            KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC, POPMIN)
-         CALL PLOTT (TPLOTOPT, ND, RADIUS, TAUROSS, TNEW, ENTOT,
+C     $            MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,
+C     $            KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC)
+         CALL PLOTT (TPLOTOPT, ND, RADIUS, TAUROSS, TNEW,
      >               MODHEAD, JOBNUM, KANAL, BINBOX, UNLUTECLINE)
       ENDIF
 
@@ -1363,24 +1210,7 @@ C     Possible point for new options that were previously only available in wrst
         IF (IERR == -10) NTOLD = 1
       ENDIF
 
-      !bHYDROSOLVE = .FALSE. !deactivate calls so far
-      IF ((bHYDROSOLVE .OR. bHydroHelp) .AND. (JOBNUM > 1)) THEN
-          WRITE (hCPR, '(A)') 
-     >       '*** WARNING: HYDROSOLVE NOT INCLUDED IN THIS BRANCH'
-C***      -- THIS WOULD BE THE LOCATION OF THE HYDROSOLVE CALL --
-          bHydroDone = .FALSE.
-          IF (bHydroDone) THEN
-            VMIN = VELO(ND)         !ensure updated VMIN after hydro
-            bUpdateVT = .TRUE.
-          ENDIF
-          bSaveTauCont = .TRUE.
-          IF (.NOT. bHydroHelp) THEN
-C***        Do not run ENSURETAUMAX iteration together with HYDROSOLVE
-            bENSURETAUMAX = .FALSE. 
-          ENDIF
-      ENDIF
-
-      IF (JOBNUM > 1) THEN
+      IF (JOBNUM > 1 ) THEN
           !ensures that the TAUMAX value given in the CARDS file is still reached at the inner boundary
           ! do not do this for the steal job that is run right after WRSTART (JOB = 1) because the
           ! adapter should be finished before this subroutine is called
@@ -1389,32 +1219,26 @@ C***        Do not run ENSURETAUMAX iteration together with HYDROSOLVE
      >              TAUMAX, TAUACC, bTauStrict,
      >              VMIN, VELO, GRADI, RADIUS, XMDOT, GEDDRAD,
      >              RHO, TAUROSScont, RMAX, RCON, TNEW, TEFF,
-     >              TOLD, TOLD2, TOLD3, CKONVER, TaumaxCard, 
+     >              TOLD, TOLD2, TOLD3, CKONVER, bTauMaxSafe,
      >              LASTTAU, GLOG, GEFFLOG, bFixGEFF, XMSTAR, RSTAR, 
      >              XMU, ENTOT, RNE, ND, NDDIM, NP, NPDIM, P, Z, VTURB,
-     >              VMACH, ARAD, APRESS, AMECH, AGRAV, XJC, bThinWind, 
+     >              ARAD, APRESS, AMECH, AGRAV, XJC, bThinWind, 
      >              ThinCard, RadiusGridParameters, DENSCON, FILLFAC, 
      >              DENSCON_FIX, DENSCON_LINE, NFIRST, NLAST, NATOM, 
-     >              ABXYZ, ATMASS, GEDD, BUNLU, HTOTL, HTOTCMF0, HMEAN,
-     >              bFULLHYDROSTAT, bGAMMARADMEAN, TAUROSS,
-     >              CORMAX, INCRIT, VCRIT, SCRATCH,
-     >              GEDDreduce, QIONMEAN,
+     >              ABXYZ, ATMASS, GEDD, BUNLU, HTOTL, HTOTCMF0, 
+     >              FQLIMIT, bFULLHYDROSTAT, bGAMMARADMEAN, TAUROSS,
+     >              CORMAX, TauCorLimits, INCRIT, VCRIT, SCRATCH,
+     >              ReduceTauCorrections, GEDDreduce, QIONMEAN,
      >              GAMMARADMEAN, GRSTATIC, bGEddFix, bTauUpdated, 
-     >              JOBNUM, POPMIN, MacroDamp, bNoARAD,
-     >              bTMNoOS, bHYSTloose, bTMTHOM,
-     >              NCOLIP, NEWWRC, NTOLD, DEPARTNDorg,
-C                   Backup and temporary arrays     
-     >              VELOorg, RADIUSorg, ENTOTorg, TAUSCALorg,
-     >              Torg, T1old, T2old, T3old, RI, AMACHorg,
-     >              RNEorg, GEFFLnew, GEFFL, GAMMARAD, 
-     >              RNEdummy, RHELP, ARADHELP, VHELP, XJCorg,
+     >              JOBNUM, POPMIN, XJCorg, NCOLIP, NEWWRC,
+     >              NTOLD, DEPARTNDorg,
                     !The parameters hereafter are only needed for TAUSCAL
      >              NDIM,MAXKONT,POPNUM,POP1,POP2,POP3,N,EN,LEVEL,
      >              NCHARG,WEIGHT,ELEVEL,EION,EINST,ALPHA,SEXPO,
      >              ADDCON1, ADDCON2, ADDCON3, 
      >              IGAUNT,NOM,NF,
      >              XLAMBDA,FWEIGHT,TAUTHOM,
-     >              MAXATOM,MAXION,SIGMATHK,SEXPOK,EDGEK,KODAT,
+     >              MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,
      >              KONTNUP,KONTLOW,LASTKON
      >    )
           bSaveTauCont = .TRUE.
@@ -1444,7 +1268,6 @@ C***  UPDATING THE MODEL FILE
 
       IF (bSaveTauCont .AND. (TAUROSScont(ND) > 0.)) THEN
         CALL WRITMS(hMODEL,TAUROSScont,ND,'TAURCONT',-1,IDUMMY,IERR)
-        CALL WRITMS(hMODEL,TAUTHOM,    ND,'TAUTHOM ',-1,IDUMMY,IERR)
       ENDIF
 
       IF (DTDRIN >= 0.) THEN
@@ -1490,11 +1313,7 @@ C***  UPDATING THE MODEL FILE
           CALL WRITMS (hMODEL,RCON,1 ,   'RCON    ', -1, IDUMMY, IERR)
       ENDIF
       IF (bHydroDone) THEN
-        CALL WRITMS (hMODEL, TAUHDRAW, 1, 'TAUHDRAW', -1, IDUMMY, IERR)
-        CALL WRITMS (hMODEL, RCSAVE,   1, 'RCSAVE  ', -1, IDUMMY, IERR)
-        CALL WRITMS (hMODEL, ARAD,  ND-1, 'ARAD    ', -1, IDUMMY, IERR)
-        CALL WRITMS (hMODEL, GRDYN,   ND, 'GRDYN   ', -1, IDUMMY, IERR)     
-        bForceColiPP = .TRUE.
+        CALL WRITMS (hMODEL,RCSAVE,1 , 'RCSAVE  ', -1, IDUMMY, IERR)
       ENDIF
       CALL WRITMS (hMODEL,VELO,ND,   'VELO    ', -1, IDUMMY, IERR)
       CALL WRITMS (hMODEL,GRADI,ND,  'GRADI   ', -1, IDUMMY, IERR)
@@ -1503,28 +1322,19 @@ C***  UPDATING THE MODEL FILE
       IF (bTauUpdated .OR. bUpdateMass) THEN
         !In case of fixed g_eff => save updated Mass ang log g_grav
         IF (bUpdateMass .OR. bFixGEFF) THEN
-          CALL WRITMS (hMODEL,RSTAR ,1 , 'RSTAR   ', -1, IDUMMY, IERR)
           CALL WRITMS (hMODEL,XMSTAR,1 , 'XMSTAR  ', -1, IDUMMY, IERR)
           CALL WRITMS (hMODEL,GLOG  ,1 , 'GLOG    ', -1, IDUMMY, IERR)
-          WRITE (hCPR, '(A)') '*** Mass and/or Radius have been updated:'
-          WRITE (hCPR, '(A,F5.2)') '*** new mass:   ', XMSTAR
-          WRITE (hCPR, '(A,F5.2)') '*** new radius: ', RSTAR/RSUN
-          WRITE (hCPR, '(A,F5.2)') '*** new log g:  ', GLOG
         ELSEIF (.NOT. bFixGEFF) THEN
           !GEDD fixed, but not GEFF => save new g_eff, but with flexible mark (negative)
           GFLSAV = -1. * GEFFLOG
           CALL WRITMS (hMODEL,GFLSAV,1 , 'GEFFLOG ', -1, IDUMMY, IERR)
         ENDIF
       ENDIF
-      IF (bUpdateTEFF) THEN
-        CALL WRITMS (hMODEL, TEFF, 1, 'TEFF    ', -1, IDUMMY, IERR)
-      ENDIF
-      IF (bUpdateVT) THEN
-        DO L=1, ND
-          VMIC(L) = VTURB(L) * SQRT(2.)
-        ENDDO
-        CALL WRITMS (hMODEL, VMIC, ND, 'VMIC    ', -1, IDUMMY, IERR)
-      ENDIF
+      
+C      IF (bTauUpdated .AND. bFULLHYDROSTAT) THEN
+C        NCOLIP = -1     !force COLI++ (i.e. new EDDIS) due to changes and a_rad-dependency
+C        CALL WRITMS(hMODEL, NCOLIP, 1,'NCOLIP  ', -1, IDUMMY, IERR)
+C      ENDIF
 
       IF (NEXTHYDRO > 0) THEN
         !If used, update hydro iteration counter
@@ -1537,18 +1347,9 @@ C***  UPDATING THE MODEL FILE
       ENDIF
       
       IF (bHydroDone) THEN
-        LASTHYDGA = 1
-        IF (HydroValues(3) > 0.5) THEN
-          !Switch off AUTO GAMMA if velocity corrections larger than 0.5
-          LASTHYDGA = 0
-        ENDIF
         !This is only written after a successful hydro iteration
-        CALL WRITMS (hMODEL,HYDROF,ND,'HYDROF  ',-1,IDUMMY,IERR)
         CALL WRITMS (hMODEL,LASTHYDRO,1,'LSTHYDRO',-1,IDUMMY,IERR)
-        CALL WRITMS (hMODEL,LASTHYDGA,1,'LSTHYDGA',-1,IDUMMY,IERR)
         CALL WRITMS (hMODEL,XMDOT,1 , 'XMDOT   ', -1, IDUMMY, IERR)        
-        CALL WRITMS (hMODEL,CORDELTAHDLAST, 1, 'CODHDLST',
-     >                                          -1, IDUMMY, IERR)        
         !update continous radiation field (has been interpolated)
         DO K=1, NF
           KV=1+ND*(K-1)
@@ -1577,13 +1378,13 @@ C          //..
       CALL WRITMS (hMODEL,LASTBACKUP,1, 'LASTBAK ', -1, IDUMMY, IERR)
       
 C***  UPDATING THE MODEL HISTORY
-      CALL       STHIST (MODHIST,LAST,MAXHIST,GAMMAC,GAMMAL,GAMMAR,
-     >                   GAMMAD, DELTAC,MODHEAD,JOBNUM,CORMAX,RTCMAX,
-     >                   REDUCE, NSCHAR, BUNLU, 
-     >                   DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB,
-     >                   BXJLAPPNEW, BXJCAPPNEW, iBLOCKINVERSION,
-     >                   XLAM_FINE_START, XLAM_FINE_END, LASTHYDRO,
-     >                   HydroValues, bTauUpdated)
+      CALL       STHIST (MODHIST, LAST, MAXHIST, GAMMAC, GAMMAL, GAMMAR, 
+     >                   GAMMAD, MODHEAD, JOBNUM, CORMAX, RTCMAX,
+     $                   REDUCE, NSCHAR, BUNLU, DUNLU_LOC, DUNLU_INT, 
+     >                   DUNLU_RMAX, DUNLU_TB,
+     >                   BXJLAPPNEW, BXJCAPPNEW, bBLOCKINVERSION,
+     >                   XLAM_FINE_START, XLAM_FINE_END, bHydroDone,
+     >                   bTauUpdated)
 
       IF (.NOT. bHLPHIST) THEN
         !write model history entry into explicit history file
@@ -1608,15 +1409,7 @@ C***  DECIDE UPON THE NEXT JOB
       CALL NEXTJOB (JOBNUM, JOBMAX, MODHIST, LAST, CORMAX, EPSILON,
      >              NEWWRC, MOREJOBS, CONVERG, NOEXTRAP, NOCON, 
      >              BPRICORR, COREX, BCOREX, NCOLIP, BAG, BGFIN, 
-     >              BAUTO_ABORT, FLUXEPS, ND, FLUXERR, IHSSTATUS,
-     >              IHDSTATUS, bRESTART, bHYDROSOLVE, bHydroHelp)
-      IF (bHydroHelp) THEN
-        NEXTHYDRO = -13     !indicates one-time analysis of hydro values for converged model
-        CALL WRITMS (hMODEL,NEXTHYDRO,1,'NXTHYDRO',-1,IDUMMY,IERR)
-      ELSEIF (NEXTHYDRO == -13) THEN
-        NEXTHYDRO = -1      !switch off hydro indication value afterwards
-        CALL WRITMS (hMODEL,NEXTHYDRO,1,'NXTHYDRO',-1,IDUMMY,IERR)
-      ENDIF
+     >              BAUTO_ABORT, FLUXEPS, ND, FLUXERR, IHSSTATUS)
 
 C***  SECOND ENTRY FOR OUTPUT-ONLY (STEAL-HELP)
   26  CONTINUE
@@ -1637,10 +1430,6 @@ C***  SECOND ENTRY FOR OUTPUT-ONLY (STEAL-HELP)
 
         CALL WRITMS (hMODEL,MODHIST,MAXHIST,'MODHIST ',-1, IDUMMY, IERR)
       ENDIF
-   
-      !Even though POPMIN is read from CARDS, current POPMIN has to be 
-      ! written to model file as it needs to be known for the formal integral
-      CALL WRITMS (hMODEL,POPMIN_org,1,   'POPMIN  ',-1, IDUMMY, IERR)
    
       IF (JOBNUM == 1) GOTO 27
 
@@ -1668,9 +1457,8 @@ C***  THE FOLLOWING PRINTOUT IS ENFORCED IF A MODEL IS FINALLY CONVERGED:
      >                   ADDCON1, ADDCON2, ADDCON3, 
      >                   IGAUNT,NOM,NF,
      >                   XLAMBDA,FWEIGHT,TAUTHOM,TAUROSScont,
-     >                   MAXATOM,MAXION,SIGMATHK,SEXPOK,EDGEK,KODAT,
-     >                   KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC, 
-     >                   POPMIN)
+     >                   MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,
+     >                   KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC)
          ENDIF
          LSTAU=1 !print all depth points after model is converged
          CALL PRITAU (LSTAU,MODHEAD,JOBNUM,ND,RADIUS,RNE,
@@ -1683,11 +1471,11 @@ C***  THE FOLLOWING PRINTOUT IS ENFORCED IF A MODEL IS FINALLY CONVERGED:
      >                           RSTAR, XLOGL, XMDOT, RTRANS, VELO, 
      >                           VDOP, DENSCON, FILLFAC, GLOG, GEFFLOG,
      >                           GEDD, RADIUS, RCON, INCRIT, VCRIT,
-     >                           VTURB, VMACH, bThinWind, bHYDROSOLVE, 
+     >                           VTURB, bThinWind, bHYDROSOLVE, 
      >                           WORKRATIO, RNE, ENTOT, XMU, XMSTAR,
      >                           GRADI, NATOM, ABXYZ, ATMASS, ELEMENT,
-     >                           SYMBOL, bFULLHYDROSTAT, MAXATOM, KODAT,
-     >                           GEDDRAD, ARAD, APRESS, AGRAV, HTOTOBS,
+     >                           SYMBOL, bFULLHYDROSTAT, 
+     >                           GEDDRAD, ARAD, APRESS, AGRAV, 
      >                           GAMMARADMEAN, QIONMEAN, bFixGEFF)
          ELSEIF (bNoARAD) THEN
            WRITE (hCPR,'(A)') 'WARNING: *** MODEL SUMMARY NOT POSSIBLE:'
@@ -1717,9 +1505,8 @@ C***  THE FOLLOWING PRINTOUT IS ENFORCED IF A MODEL IS FINALLY CONVERGED:
      >                  ADDCON1, ADDCON2, ADDCON3, 
      >                  IGAUNT,NOM,NF,
      >                  XLAMBDA,FWEIGHT,TAUTHOM,TAUROSScont,
-     >                  MAXATOM,MAXION,SIGMATHK,SEXPOK,EDGEK,KODAT,
-     >                  KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC,
-     >                  POPMIN)
+     >                  MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,
+     >                  KONTNUP,KONTLOW,LASTKON, DENSCON, FILLFAC)
           CALL PRITAU (LSTAU,MODHEAD,JOBNUM,ND,RADIUS,RNE,
      >                 ENTOT,TNEW,TAUTHOM,TAUROSS,TAUROSScont,
      >                 DENSCON,FILLFAC)
@@ -1745,7 +1532,7 @@ C          WRITE (hCPR,*) 'Hier Output GAMMA HISTORY'
 
 C***  PRINTOUT OF EMERGENT CONT. FLUX (IF REQUESTED)
         IF (IFLUX == 1) THEN
-          IF (TOTOUT == TRANSFER ('UNDEF.   ', TOTOUT)) THEN
+          IF (TOTOUT .EQ. -999. ) THEN
             PRINT 7
     7       FORMAT (//' INVALID PRINT OR PLOT OPTION - ',
      >      'EMERGENT CONT. FLUX NOT YET CALCULATED ',//)
@@ -1761,7 +1548,7 @@ C***  PRINTOUT OF ATOMIC DATA (IF REQUESTED)
      >                  KEY,NF,ALPHA,SEXPO,
      >                  ADDCON1, ADDCON2, ADDCON3, 
      >                  IGAUNT,SIGMATHK,SEXPOK,EDGEK, MAXATOM,
-     >                  MAXION, COCO,KEYCBB,ALTESUM,
+     >                  COCO,KEYCBB,ALTESUM,
      >                  NATOUT,NATOM,ELEMENT,NOM,ABXYZ,ATMASS,
      >                  NAUTO,MAXAUTO,LOWAUTO,WAUTO,EAUTO,AAUTO,IONAUTO,
      >                  INDNUP,INDLOW,LASTIND,LASTINDALL,IONGRND,

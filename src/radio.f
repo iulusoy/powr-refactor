@@ -4,7 +4,7 @@
      >                  RDIEL,RAUTO,IONAUTO,IONGRND,
      >                  INDNUP,INDLOW,LASTIND,KONTNUP,KONTLOW,LASTKON,
      >                  NATOM,MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,
-     >                  NFIRST,NLAST,NCHARG,KRUDAUT,MAXION)
+     >                  NFIRST,NLAST,NCHARG,KRUDAUT)
  
 C*******************************************************************************
 C***  RADIATIVE RATES ARE CALCULATED AT ONE DEPTH POINT L FROM THE GIVEN
@@ -18,10 +18,11 @@ C***  Calling tree: STEAL - POPZERO - NLTEPOP - RADIO
 C*******************************************************************************
  
 C***  Dimension of the core-charge data locally provided here
-      PARAMETER ( MAXATOMDIM = 30)
+      PARAMETER ( MAXATOMDIM = 26)
 
       DIMENSION KODAT(MAXATOM)
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
+      DIMENSION EDGEK(MAXATOM,MAXATOM)
       DIMENSION NFIRST(NATOM),NLAST(NATOM)
       DIMENSION NCHARG(NDIM)
       DIMENSION RRATE(NDIM,NDIM),EINST(NDIM,NDIM)

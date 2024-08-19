@@ -1,9 +1,8 @@
       SUBROUTINE SETXJFINE (SFINE_OLD, SFINE_NEW, MAXFINE, ITNEL, L, 
-     >                 ND, NDDIM, NDIM, N, VDOPUNIT, VELO1, 
+     >                 ND, NDDIM, NDIM, N, VDOP, VELO1, 
      >                 ENTOTL, EN, RSTAR, TL, RNEL, NCHARG, 
      >                 WEIGHT, ELEVEL, EION, EINST, NATOM, 
-     >                 KONTHLP, MAXIND, BXJLAPPCORE, POPMIN, 
-     >                 MAXATOM, KODAT, NOM, VDOPDD, MAXION,
+     >                 KONTHLP, MAXIND, BXJLAPPCORE,
 C***    CONTINUA
      >                 XLAMBDA, XLAMBDA2, NF, NF2, 
      >                 XKC, XKC2, ALPHA, 
@@ -60,9 +59,6 @@ C***********************************************************************
       DIMENSION XLAMBDA(NF), XLAMBDA2(NF2), XKC(NF), XKC2(NF)
       DIMENSION EINST(NDIM,NDIM)
       CHARACTER CMODE*1, NAME*8
-      INTEGER, DIMENSION(MAXATOM) :: KODAT
-      REAL, DIMENSION(ND, NATOM), INTENT(IN) :: VDOPDD
-      INTEGER, DIMENSION(N) :: NOM, NCHARG
 
 C***  Lines: 
       DIMENSION LINE(MAXIND), XLAMSOR(MAXIND)
@@ -76,7 +72,6 @@ C***  Lines:
       DIMENSION XKRED_CORE(MAXLIN), XKBLUE_CORE(MAXLIN)
       DIMENSION XJLAPP(LASTIND), XJL(ND,2)
       DIMENSION PWEIGHT(MAXLIN), WS(MAXLIN)
-      INTEGER, DIMENSION(NDIM) :: INDRBS, IFRBSSTA, IFRBSEND, INDFESACT
 
 C***  BNEWOPER switches to new Fine Operator: Default is false
       LOGICAL BXJLAPPNEW, BXJCAPPNEW, BNEWOPER, BXJLAPPCORE
@@ -84,9 +79,6 @@ C***  BNEWOPER switches to new Fine Operator: Default is false
       LOGICAL BLASERL(MAXIND)
       LOGICAL BPLOT, BFIRSTITER
 
-      REAL :: POPMIN
-      INTEGER :: LASTSELF, MAXFESACT
-      
 C***  Variables to handle Fine Integration in Steal
 C***  FF_INFO : Information on the Frequency grid
 C***         (1) : XLAM0
@@ -119,7 +111,7 @@ C***  Iron: Common Block for Iron-Specific Data
      >              IFENUP(MAXIND), IFELOW(MAXIND),
      >              OPAFE(NDDIM), ETAFE(NDDIM),
      >              INDFEACT(MAXIND)
-      LOGICAL BFECHECK, BFEWING, BFEMODEL, BNUEFE, bFEULSEP
+      LOGICAL BFECHECK, BFEWING, BFEMODEL, BNUEFE
 
 C***  WPI = SQUARE ROOT OF PI
       DATA WPI / 1.772453851 /
@@ -129,7 +121,7 @@ C***  WPI = SQUARE ROOT OF PI
       DATA WJMAX / 0.9999999999 /
 
 C***  CLIGHT = VELOCITY OF LIGHT IN KM/S
-      DATA CLIGHT /2.9979E5/
+      DATA CLIGHT /2.99792458E5/
 
 
       SAVE XLAM0, XLAM0LN, ALN, CMFBAND, CMFBANDR
@@ -148,19 +140,6 @@ C***  Treatment of Continua
 
       LOGICAL BKACTIVE, B_ACTIVE_CORE
 
-C***  needed for COLI compartibility      
-      REAL, DIMENSION(NDDIM) :: OPAKFE, 
-     >                          OPAKNOFENOTH, ETAKNOFENOTH,
-     >                          OPAFEFT, ETAFEFT, OPAKFEFT, ETAKFEFT
-      REAL, DIMENSION(NATOM, NDDIM) :: OPAKELEM, OPACELEM,
-     >                                 ETACELEM, ETAKELEM
-      REAL, DIMENSION(ND, NATOM, MAXION) :: OPAKION, OPACION,
-     >                                      ETACION, ETAKION
-      REAL, DIMENSION(ND, MAXION) :: OPAFEION, ETAFEION
-     
-      OPAKFE = 0.   
-       
-       
 C***  BNEWINT handles the fine frequency grid. If true, the same grid as in 
 C***    COLI is applied. This is, at least for small Model Atoms, a bit faster
       BNEWINT = .TRUE.
@@ -200,29 +179,32 @@ C***    Preparing harmonic wavelengths
           ALN   = FF_INFO(2)
         ELSE
           XLAM0 = XLAMBDA(1)
-          ALN   = ALOG(1. + VDOPUNIT/CLIGHT*DXMAX)
+          ALN   = ALOG(1. + VDOP/CLIGHT*DXMAX)
         ENDIF
         XLAM0LN = ALOG(XLAM0)
 C***    Spacing when no lines and no continua are active
 C***    At the moment 500 Lambda-points per decade are default
         KSPACE = INT((LOG(10.)/ALN) / 500.)
-C***    Do not allow for KSPACE > 200
-        KSPACE = MIN(200, KSPACE)
         WRITE (0,'(A,I4)') 'KSPACE=', KSPACE
-        
 C***    Maximum Half-Bandwidth for CMF Line Transfer in Doppler Units
         CMFBAND = 4.5
-        CMFBANDR = CMFBAND + 2.*VELO1/VDOPUNIT
+        CMFBANDR = CMFBAND + 2.*VELO1/VDOP
 C***    No Opacity and Emissivity of Continuum
         OPA = 0.
         ETA = 0.
-
 C***    Reorder lines in sequence of increasing wavelengths
+C***    Next line means: DRLINES included in ALO
+ccc        NLINE_NOFE = LASTIND + NAUTO
         NLINE_NOFE = LASTIND
-        CALL SEQLINECL(NLINE_NOFE, NUMRUD, LINE, EINST, INDLOW,
+
+ccc        write (0,*) 'BEFORE SEQLINE: NLINE_NOFE=', NLINE_NOFE
+
+        CALL SEQLINECL(NLINE_NOFE, LINE, EINST, INDLOW,
      >         INDNUP, XLAMSOR, ELEVEL,
-     $         NDIM, VDOPUNIT, CMFBAND, CLIGHT, XLAMMIN, XLAMMAX,
-     $         VELO1, EXLAM1, EXLAM2, MAXEXT, LASTIND, NAUTO, KRUDAUT)
+     $         NDIM, VDOP, CMFBAND, CLIGHT, XLAMMIN, XLAMMAX,
+     $         VELO1, EXLAM1, EXLAM2, MAXEXT, LASTIND, NAUTO, KRUDAUT )
+
+ccc        write (0,*) 'AFTER SEQLINE: NLINE_NOFE=', NLINE_NOFE
 
 C***    Range of Extended Lines : All
         EXLAM1 = XLAMBDA(1)
@@ -462,8 +444,7 @@ C***  IRON: Test for active FE-Transitions
            CALL FECHECK (XLAMK, INDRB, IFRBSTA, IFRBEND, LASTFE,
      >                    CLIGHT, VDOPFE, DXFE, XLAM0FE,
      >                    INDFEACT, MAXFEACT, BFECHECK, BFEWING,
-     >                    DFEINDR, N, INDFESACT, MAXFESACT,
-     >                    INDRBS, IFRBSSTA, IFRBSEND, LASTSELF)
+     >                    DFEINDR)
         ENDIF
 
 c        if (bfecheck) then
@@ -588,7 +569,7 @@ C***  Prepare line quantities
      >                 WEIGHT(LOW(NLNEW)), 
      >                 WEIGHT(NUP(NLNEW)), LOW(NLNEW), NUP(NLNEW), 1, 
      >                 XLAMSOR(LINECHECK), ENTOTL, EN, RSTAR, 
-     >                 OPAL(NLNEW), ETAL(NLNEW), VDOPUNIT, POPMIN)
+     >                 OPAL(NLNEW), ETAL(NLNEW), VDOP)
                 IF (BPLOT .AND. L .EQ. IPLOT .AND. 
      >              ITNEL .EQ. IPLOT_ITER) THEN
                   WRITE (38,'(A,F9.2,1X,F3.0,1X,A,I4,1X,I4,F11.3)') 
@@ -765,36 +746,31 @@ c***      damit macht ADDOPA aus OPA -> OPANOTH, was es schon ist
      >                    IFRBSTA, IFRBEND, IFENUP, IFELOW,
      >                    VDOPFE, DXFE, XLAM0FE,
      >                    ELEVEL, WEIGHT, RSTAR, EN, ENTOTL, TL,
-     >                    BNUEFE, POPMIN)
+     >                    BNUEFE)
         ENDIF
 
 C***  Calculate frequency Step in X
 C        DELTAX = FLOAT(K-KLAST) * DXMAX
         NDK = K - KLAST
         IF (NDK .NE. 1) THEN
-           DELTAX = (EXP(FLOAT(NDK)*ALN) - 1.)*CLIGHT/VDOPUNIT
+           DELTAX = (EXP(FLOAT(NDK)*ALN) - 1.)*CLIGHT/VDOP
         ELSE
            DELTAX = DXMAX
         ENDIF
 
         FWEIGHTOLD = FWEIGHTL
-        FWEIGHTL = DELTAX * VDOPUNIT * 1.E13 / XLAMK
+        FWEIGHTL = DELTAX * VDOP * 1.E13 / XLAMK
 
 C***  Sum up Opacities
         PARALAS = 0.01
-        LASERV = 2
         CALL ADDOPA (1, 1, MAXLIN, MAXIND, LIND, LINDS,
-     >             XK, XKMID, XKRED, DELTAX, FWEIGHTL,
-     >             PARALAS, LASER, LASERV, ALN, VDOPUNIT, VDOPDD,
-     >             WS, ETAL, OPAL, ETA, ETANOTH, OPA, ETAK, ETAKNOTH,
-     >             OPAK, OPAKNOTH, THOMSON, PWEIGHT, NOM,
-     >             OPAFE, ETAFE, BFECHECK, BLASERL, NUP, LOW, N, LEVEL,
-     >             OPAKFE, NATOM, MAXATOM, KODAT, OPACELEM, OPAKELEM,
-     >             ETACELEM, ETAKELEM, MAXION, OPACION, OPAKION, 
-     >             ETACION, ETAKION, NCHARG, OPAFEION, ETAFEION, 
-     >             OPAKNOFENOTH, ETAKNOFENOTH,
-     >             OPAFEFT, ETAFEFT, OPAKFEFT, ETAKFEFT)
-     
+     >         XK, XKMID, XKRED, DELTAX,
+     >         PARALAS, LASER,
+     >         WS, ETAL, OPAL, ETA, ETANOTH, OPA, ETAK, ETAKNOTH,
+     >         OPAK, OPAKNOTH, THOMSON,
+     >         PWEIGHT, OPAFE, ETAFE, BFECHECK, BLASERL, NUP, LOW,
+     >         LEVEL)
+
         IF (ETAKNOTH .LT. 0.) THEN
           ETAKNOTH = 0.
         ENDIF
@@ -846,22 +822,17 @@ C***    Calculate XJLAPP
                 CYCLE
               ENDIF
               IF (BNEWINT .AND. BNEWOPER) THEN
-!                 XREL = DXMAX * (XKMID(LACTS) - FLOAT(K))
-!                 PHIL = EXP(-XREL * XREL) / WPI
-!                 XJLAPP(LACT) = XJLAPP(LACT) + DS_WCHARM * PHIL * DXMAX
-                XREL = DELTAX * (XKMID(LACTS) - FLOAT(K))
+                XREL = DXMAX * (XKMID(LACTS) - FLOAT(K))
                 PHIL = EXP(-XREL * XREL) / WPI
-                XJLAPP(LACT) = XJLAPP(LACT) + DS_WCHARM * PHIL * DELTAX
+                XJLAPP(LACT) = XJLAPP(LACT) + DS_WCHARM * PHIL * DXMAX
               ELSE
                 DKLEFT  = AMAX1(XKBLUE_CORE(NL), FLOAT(K-1))
                 DKRIGHT = AMIN1(XKRED_CORE(NL),  FLOAT(K+1))
                 DK = 0.5 * AMAX1(0., DKRIGHT-DKLEFT)
                 IF (DK .EQ. 0.) CYCLE
-c                XREL = DXMAX * (XKMID(LACTS) - FLOAT(K))
-                XREL = DELTAX * (XKMID(LACTS) - FLOAT(K))
+                XREL = DXMAX * (XKMID(LACTS) - FLOAT(K))
                 PHIL = EXP(-XREL * XREL) / WPI
-c                XJLAPP(LACT) = XJLAPP(LACT) + DS*PHIL*DK*DXMAX*WCORE
-                XJLAPP(LACT) = XJLAPP(LACT) + DS*PHIL*DK*DELTAX*WCORE
+                XJLAPP(LACT) = XJLAPP(LACT) + DS*PHIL*DK*DXMAX*WCORE
               ENDIF
 c           if (lact .eq. 2) then
 c             write (0,'(4(F11.5,1x), F8.5, (1x,F11.5), 1x, e20.10, 

@@ -1,7 +1,7 @@
       SUBROUTINE TEMPCORR_FLUXERR(FLUXERR, ND, HTOTL, HTOTCMF0, 
      >                            FTEPS, TAUROSS, AUTOFLUXTAU)
 C***********************************************************************
-C***  Calculation of the current deviation from flux conversation
+C***  Calculation of the current deviation from flux conservation
 C***  and determination of an optical depth that can be used
 C***  as a damping parameter for flux correction terms that should
 C***  favor inner flux corrections.
@@ -23,7 +23,7 @@ C***********************************************************************
 C***  Calculate current flux error      
       FLUXERR(1) = 0.      
       DO L=2, ND
-         FLUXERR(L) = 2.*ABS(HTOTL(L-1) - HTOTCMF0(L-1))
+          FLUXERR(L) = 2.*ABS(HTOTL(L-1) - HTOTCMF0(L-1))
      >                          /(HTOTL(L-1)+HTOTCMF0(L-1))     
       ENDDO
       

@@ -15,12 +15,10 @@ C*******************************************************************************
 
 C***  SET ARRAY DIMENSION PARAMETERS
       INTEGER, PARAMETER :: MAXATOM =          26 
-      INTEGER, PARAMETER :: MAXION  =          27
       INTEGER, PARAMETER :: NDIM    =        2560 
-      INTEGER, PARAMETER :: MAXAUTO =        3200 
+      INTEGER, PARAMETER :: MAXAUTO =        2850 
       INTEGER, PARAMETER :: MAXIND  =       45000 
-      INTEGER, PARAMETER :: MAXKONT =        NDIM + 200
-      INTEGER, PARAMETER :: MAXKODR =        NDIM 
+      INTEGER, PARAMETER :: MAXKONT =        NDIM 
       INTEGER, PARAMETER :: MAXMULTI=       10000 
       INTEGER, PARAMETER :: MAXDRTRANSIT =   1000 
       INTEGER, PARAMETER :: MAXIONRESTRICT =  200
@@ -81,7 +79,7 @@ C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
       REAL, DIMENSION(NDIM,NDIM) :: EINST
       REAL, DIMENSION(MAXATOM) :: ATMASS, STAGE
 
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      REAL, DIMENSION(MAXATOM,MAXATOM) :: SIGMATHK, SEXPOK, EDGEK
       REAL, DIMENSION(4,NDIM) :: ALTESUM
       
       REAL, DIMENSION(MAXKONT) :: ALPHA, SEXPO, 
@@ -97,11 +95,11 @@ C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
 
 C***  IRON: 
 C***  include "dimblock"
-c      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5    !std
-c      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5     !vd20
+C      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5    !std
+C      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5     !vd20
       INTEGER, PARAMETER :: INDEXMAX = 1E8, NFEREADMAX = 6E5     !xxl
 
-      INTEGER, PARAMETER :: MAXFEIND  =       2500 
+      INTEGER, PARAMETER :: MAXFEIND  =       1500 
  
       INTEGER, DIMENSION(MAXFEIND) :: INDRB, INDRF, IFRBSTA, IFRBEND,
      >                                IFENUP, IFELOW
@@ -113,8 +111,6 @@ c      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5     !vd20
       
       INTEGER, DIMENSION(MAXIONRESTRICT) :: LISTRESTRICT 
       
-      CHARACTER(10) :: TIM1
-
 C***  Operating system:
       CHARACTER(8) :: OPSYS
       COMMON / COMOS / OPSYS
@@ -127,6 +123,7 @@ C***  Dimensions for the GETION programm
       CHARACTER(7), DIMENSION(MAXIONNAMES) :: NUMMER
       CHARACTER(2), DIMENSION(MAXIONNAMES) :: SYM
 
+      INTEGER, PARAMETER :: MAXION = 27
       CHARACTER(4), DIMENSION(0:MAXION) :: ROMION
       
       !File and channel handles (=KANAL)
@@ -166,16 +163,9 @@ C*******************************************************************************
 
       CALL INSTALL
                                  
-      IF (OPSYS .EQ. 'CRAY' .OR. OPSYS .EQ. 'SGI') THEN
-        CALL CLOCK(TIM1)
-      ELSE
-        CALL TIME(TIM1)
-      ENDIF
-      
 * Eisenabfrage      
       BIRON = .FALSE.
       WRITE(*,*) 'BIRON=', BIRON
-      WRITE(hCPR,*) 'Opening DATOM...'
 
 C***  READING THE ATOMIC DATA FROM FILE DATOM
       CALL DATOM (NDIM,N,LEVEL,NCHARG,WEIGHT,ELEVEL,EION,MAINQN,
@@ -193,10 +183,9 @@ C***  IRON: ADDITIONAL PARAMETERS FOR IRON-GROUP LINE BLANKETING
      >                  LASTFE, SIGMAFE, INDRB, INDRF,
      >                  IFENUP, IFELOW, IFRBSTA, IFRBEND, FEDUMMY, 
      >                  VDOPFE, DXFE, XLAM0FE, SIGMAINT, BFEMODEL, 
-     >                  LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS, MAXION)
+     >                  LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS)
 
  
-      WRITE(hCPR,*) 'DATOM loaded...'
       WRITE(*,*) 'BFEMODEL', BFEMODEL
       IF (BFEMODEL) THEN
         BIRON = .TRUE.
@@ -257,11 +246,13 @@ C     Oeffnen des Steuerfiles NEWFORMAL_CARDS_INPUT
       OPEN (hNFCIN,FILE='NEWFORMAL_CARDS_INPUT',ACTION = 'READ',ERR=903)
       
 C     Header erstellen
-      CALL DATE(CDATE)
-      CALL TIME(CTIME)
+ccc      CALL DATE(CDATE)
+ccc      CALL TIME(CTIME)
+      CALL DATE_AND_TIME (DATE=CDATE, TIME=CTIME)
       WRITE (hFC,'(A)') 
-     > '* This FORMAL_CARDS-FILE has been created at ' 
-     >         // CDATE(:IDX(CDATE)) // ' ' // CTIME
+     > '* This FORMAL_CARDS-FILE has been created at ' //
+     >     CDATE(1:4) // '/' // CDATE(5:6) // '/' // CDATE(7:8) // ' ' 
+     >  // CTIME(1:2) // ':' // CTIME(3:4) // ':' // CTIME(5:6)  
       WRITE (hFC,'(A)') '* with the program NEWFORMAL_CARDS' 
       WRITE (hFC,'(A)') '* and the following input from file'
       WRITE (hFC,'(A)') '* NEWFORMAL_CARDS_INPUT:' 
@@ -552,7 +543,7 @@ C ******* Einzelne Lines **********************************************
                   ENDIF
                 ENDDO
                 LOWE = ELEVEL(INDEXL) !an diesem Index Energie auslesen
-                IF (LEVELLOW == .FALSE.) THEN
+                IF (.NOT. LEVELLOW) THEN
                   !Level nicht gefunden
                   WRITE (hCPR,*) 'WARNING: Lowerlevel not found: ',
      >                              LOWNAME
@@ -568,7 +559,7 @@ C ******* Einzelne Lines **********************************************
                 ENDDO
                 UPE = ELEVEL(INDEXU) !an diesem Index Energie auslesen
 C              WRITE (0,*) 'Upperlevel: ', UPNAME, UPE
-                IF (LEVELUP == .FALSE.) THEN
+                IF (.NOT. LEVELUP) THEN
                   !Level nicht gefunden
                   WRITE (hCPR,*) 'WARNING: Upperlevel not found: ', 
      >                              UPNAME
@@ -605,7 +596,7 @@ C          Pruefen, ob die Wellenlaenge im Range liegt
      >                 LEVELUP .AND. LEVELLOW) THEN
 
 C          Header fuer das Ion schreiben
-                  IF (HEADER .EQ. .TRUE.) THEN
+                  IF (HEADER) THEN
                     WRITE (hFC,'(A)') 
      >               '************************************************'
                     WRITE (hFC,'(A)',advance='no') '*'
@@ -788,7 +779,7 @@ C             WRITE (0,*) WL
                 IF (PASST) THEN !eine Wellenlaenge im Band
                   PASST = .FALSE.
 C             Header fuer das Ion schreiben
-                  IF (HEADER .EQ. .TRUE.) THEN
+                  IF (HEADER) THEN
                     WRITE (hFC,'(A)') 
      >                '************************************************'
                     WRITE (hFC,'(A)',advance='no') '*'

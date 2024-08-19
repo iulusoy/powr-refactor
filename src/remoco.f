@@ -1,30 +1,26 @@
       SUBROUTINE REMOCO (ND, NDDIM, RADIUS, ENTOT,T , RNE, NF, NFDIM,
-     $                  XLAMBDA, FWEIGHT, KEY, XJC, bNoARAD,
+     $                  XLAMBDA, FWEIGHT, KEY, XJC, 
      $                  N, POPNUM, RSTAR,
      $                  MODHEAD, LAST, MAXHIST, MODHIST, JOBNUM,
      $                  NOTEMP, TEFF, HEDDI, EDDI, MAXXDAT, XDATA, 
-     >                  DENSCON, FILLFAC, OPARND, 
-     >                  ABXYZ, NATOM, POPMIN, ZERO_RATES, NDIM)
+     >                  DENSCON, FILLFAC, OPARND, ABXYZ, NATOM, 
+     >                  ZERO_RATES, NDIM)
 C*******************************************************************************
 C***  READING THE MODEL FILE FOR MAIN PROGRAM "COMO"
 C*******************************************************************************
  
-      INTEGER, INTENT(IN) :: ND, NDDIM, NF, NFDIM
       DIMENSION XJC(2), KEY(2),HEDDI(2),EDDI(2)
       DIMENSION ABXYZ(NATOM)
       DIMENSION XDATA(MAXXDAT)
-      INTEGER :: LAST
-      REAL, DIMENSION(NDDIM) :: RADIUS, ENTOT, T, ARAD
-      LOGICAL, DIMENSION(NDIM*NDDIM) :: ZERO_RATES
-      LOGICAL :: NOTEMP, bNoARAD
-      
-      REAL :: POPMIN
-      
+      INTEGER :: ND, NDDIM, NF, NFDIM
+      REAL, DIMENSION(NDDIM) :: RADIUS, ENTOT, T
+      LOGICAL NOTEMP
+      LOGICAL ZERO_RATES (NDIM*NDDIM)
 C*** tiefenabh. clumping nach goetz
-      REAL, DIMENSION(ND) :: DENSCON, FILLFAC
+      DIMENSION DENSCON(NDDIM),FILLFAC(NDDIM)
 
 C *** NOTE: ASSURE 64-BIT TYPE FOR USE IN WRITMS
-      CHARACTER(8) :: NAME
+      CHARACTER NAME*8   
 
       CALL OPENMS (3, IDUMMY, IDUMMY, 1, IERR)
       CALL READMS (3,ND,1,      'ND      ', IERR)
@@ -50,9 +46,6 @@ C *** NOTE: ASSURE 64-BIT TYPE FOR USE IN WRITMS
             FILLFAC(L) = 1. / DENSCON(L)
          ENDIF
       ENDDO
-c      CALL READMS (3,DENSCON,ND, 'DENSCON ', IERR)
-c      IF (IERR .EQ. -10) DENSCON(1:ND) = 1.
-c      FILLFAC(1:ND) = 1. / DENSCON(1:ND)
       CALL READMS (3,T,ND,      'T       ', IERR)
       CALL READMS (3,RNE,ND,    'RNE     ', IERR)
       CALL READMS (3,NF,1,      'NF      ', IERR)
@@ -64,20 +57,9 @@ c      FILLFAC(1:ND) = 1. / DENSCON(1:ND)
       CALL READMS (3,FWEIGHT,NF,'FWEIGHT ', IERR)
       CALL READMS (3,KEY,NF,    'KEY     ', IERR)
       CALL READMS (3,POPNUM,ND*N,'POPNUM  ', IERR)
-      CALL READMS (3,POPMIN,1,   'POPMIN  ', IERR)
-      IF (IERR < 0) THEN
-C***  POPMIN not on MODEL file => read from CARDS      
-        POPMIN = 1.E-100
-      ENDIF
       CALL READMS (3,RSTAR,1,   'RSTAR   ', IERR)
 
-      CALL READMS (3,ARAD,ND-1, 'ARAD    ', IERR)
-      IF (IERR == -10) THEN
-        bNoARAD = .TRUE.
-      ELSE 
-        bNoARAD = .FALSE.
-      ENDIF
-      
+
 C***  READ 'XDATA' AND CHECK WHETHER THE RECORD EXISTS
       IERR=1
       CALL READMS (3,XDATA,MAXXDAT,'XDATA   ',IERR)
@@ -132,7 +114,7 @@ C***  READ HEDDI = EDDINGTON FACTOR AT INNER BOUNDARY
  
       OPARND = 0.
       CALL READMS (3, OPARND, 1, 'OPARND  ', IERR)
-      
+
       CALL READMS (3,JOBNUM,1,    'JOBNUM  ', IERR)
       JOBNUM=JOBNUM+1
 C      IF (JOBNUM .GE. 1000) JOBNUM=JOBNUM-1000

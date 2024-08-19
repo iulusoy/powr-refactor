@@ -1,10 +1,10 @@
-      SUBROUTINE COOP (XLAM,ND,T,RNE,POPNUM,POPMIN,ENTOT,RSTAR,
+      SUBROUTINE COOP (XLAM,ND,T,RNE,POPNUM,ENTOT,RSTAR,
      $                 OPA,ETA,THOMSON,IWARN,MAINPRO,MAINLEV,NOM,KODAT,
      $                 NDIM,N,MAXATOM,LEVEL,NCHARG,WEIGHT,ELEVEL,EION,
      $                 EINST,ALPHA,SEXPO,
      $                 ADDCON1, ADDCON2, ADDCON3, 
-     $                 IGAUNT,SIGMATHK,SEXPOK,EDGEK,K,NF,SIGMAKI, 
-     $                 RADIUS,KONTNUP,KONTLOW,LASTKON,XDATA)
+     $                 IGAUNT,SIGMATHK,SEXPOK,EDGEK,K,NF,SIGMAKI,RADIUS,
+     $                 KONTNUP,KONTLOW,LASTKON,XDATA)
 C***********************************************************************
 C***  NON-LTE CONTINUOUS OPACITY AT GIVEN FREQUENCY FOR ALL DEPTH POINTS
 C***  CALLED FROM VARIOUS PLACES: 
@@ -29,13 +29,14 @@ C***  MAXIMUM ION CHARGE WHICH MAY OCCUR
 C***  MAXIMUM X-RAY DATA
       PARAMETER ( MAXXDAT = 10)
 C***  Dimension of the core-charge data locally provided here
-      PARAMETER (MAXATOMDIM = 30)
+      PARAMETER (MAXATOMDIM = 26)
 
       DIMENSION XDATA(MAXXDAT)
       DIMENSION NCHARG(N),WEIGHT(N),ELEVEL(N),EION(N)
       DIMENSION NOM(N)
       DIMENSION KODAT(MAXATOM)
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
+      DIMENSION EDGEK(MAXATOM,MAXATOM)
       DIMENSION EINST(NDIM,NDIM)
       DIMENSION POPNUM(ND,N)
       DIMENSION OPA(ND),ETA(ND),THOMSON(ND)
@@ -48,12 +49,10 @@ C***  Dimension of the core-charge data locally provided here
       DIMENSION KODATIND(MAXATOMDIM)
       CHARACTER*10 LEVEL(N),MAINPRO(ND),MAINLEV(ND)
       LOGICAL XRAYS, KSHELL
-      
-      REAL, PARAMETER :: EXPMIN = -300.
 
 C***  Output of laser warnings for bound-free transitions
-      INTEGER, SAVE :: NWARN
       DATA NWARN /0/ ! no warning has been issued yet
+      SAVE NWARN
 
 C***  C1 = H * C / K    ( CM * KELVIN )
       DATA C1 / 1.4388 /
@@ -61,7 +60,7 @@ C***  C2 = 2 * H * C    ( G * CM**3 / S**2 )
       DATA C2 / 3.9724E-16 /
 C***  SIGMAE = ELCTRON SCATTERING CROSS SECTION  ( CM**2 )
       DATA SIGMAE / 0.6652E-24 /
-C***  C3 = RECIPROCAL STATISTICAL WEIGHT OF FREE ELECTRON  ( CM**3 * KELVIN**(3/2) )
+C***  C3 = RECIPROCAL STATISTICAL WEIGHT OF FREE ELECTRON
       DATA C3 / 2.07E-16 /
 C***  CFF = COEFFICIENT FOR FREE-FREE CROSS SECTION ( ALLEN PAGE 100, CM**5 )
       DATA CFF / 1.370E-23 /
@@ -117,23 +116,13 @@ C***  PARAMETER FOR X-RAY SOURCE, AND SOME PREPARATIONS
          XRAYT = XDATA(2)
          XMINR = XDATA(3)
          DIFFEMEXP = XDATA(4)
-         EXPVAL = -C1*W/XRAYT
-         IF (EXPVAL >= EXPMIN) THEN           
-           EXPFACXRAY = EXP(EXPVAL)
-         ELSE 
-           EXPFACXRAY = 0.
-         ENDIF
+         EXPFACXRAY = EXP(-C1*W/XRAYT)
          PRESIGXRAY = CFF / W3 / SQRT(XRAYT)
          IF (XDATA(5) .NE. 0.) THEN
             XFILL2 = XDATA(5)
             XRAYT2 = XDATA(6)
             XMINR2 = XDATA(7)
-            EXPVAL = -C1*W/XRAYT2
-            IF (EXPVAL >= EXPMIN) THEN           
-              EXPFACXRAY2 = EXP(EXPVAL)
-            ELSE 
-              EXPFACXRAY2 = 0.
-            ENDIF
+            EXPFACXRAY2 = EXP(-C1*W/XRAYT2)
             PRESIGXRAY2 = CFF / W3 / SQRT(XRAYT2)
          ENDIF
 C***    Calculate number of free electrons, assuming full ionization
@@ -175,19 +164,10 @@ C***  HAVE BEEN ALREADY CALCULATED ( ARRAY SIGMAKI )
      >                    ADDCON1, ADDCON2, ADDCON3, 
      >                    IGAUNT,KON)
             ENDIF
-            IF (SIGMA < 0.) THEN
-              WRITE (0,*) 'BIGWARN: negative BF cross section!!!'
-            ENDIF
-            
  
 C***  RECIPROCAL STATISTICAL WEIGHT OF FREE ELECTRON
       WE=C3*RNE(L)*ENTOT(L)/T32
-      EXPVAL = C1*(EDGE-W)/TL
-      IF (EXPVAL >= EXPMIN) THEN
-        G=WEIGHT(I)/WEIGHT(J)*WE*EXP(EXPVAL)
-      ELSE 
-        G=0.
-      ENDIF
+      G=WEIGHT(I)/WEIGHT(J)*WE*EXP(C1*(EDGE-W)/TL)
       EMINDU=G*POPNUM(L,J)*SIGMA
 
 C***  Set emissivities zero if both levels are equal (=POPMIN)
@@ -195,8 +175,7 @@ C***  Set emissivities zero if both levels are equal (=POPMIN)
 
       SUM=POPNUM(L,I)*SIGMA-EMINDU
 C***  LASER WARNING IF STIMULATED EMISSION EXCEEDS ABSORPTION IN THIS TRANSITION
-C***  IF TOTAL CONT. OPA WAS < 0 AT FIRST TRIAL. THIS BF TRANSITION IS SKIPPED
-cc      IF (SUM.LT. .0 .AND. NBFLASER .EQ. 1) THEN
+C***  IF THIS BF opacity is negative, it is not added to the sum
       IF (SUM.LT. .0) THEN
          IWARN(L)='*       '
          IF (NWARN .EQ. 0)  THEN
@@ -244,7 +223,6 @@ C***        K-SHELL IONIZATION NEEDS IONS WITH AT LEAST 3 ELECTRONS LEFT
                LASTISTATE = ISTATE
             ENDIF
 
-c            IF (POPNUM(L,J) < 1.1 * POPMIN) CYCLE
             SUM = POPNUM(L,J) * SIGMAK
             OPAL = OPAL + SUM
             IF (SUM .GT. OPAMAX) THEN
@@ -327,12 +305,7 @@ C***  PRECALCULATE FREE-FREE GAUNT FACTORS FOR THE DIFFERENT ION CHARGES
 
 C***  PRECALCULATE SIGMAFF, LEAVING OUT THE FACTOR NCHARGE*NCHARGE
       PRESIG=CFF/W3/ROOTTL
-      EXPVAL = -C1*W/TL
-      IF (EXPVAL >= EXPMIN) THEN
-        EXPFAC=EXP(EXPVAL)
-      ELSE 
-        EXPFAC = 0.
-      ENDIF
+      EXPFAC=EXP(-C1*W/TL)
       DO 3 I=1,N
       NCHARI=NCHARG(I)
       IF (NCHARI .GT. MAXION) THEN
@@ -340,7 +313,6 @@ C***  PRECALCULATE SIGMAFF, LEAVING OUT THE FACTOR NCHARGE*NCHARGE
          STOP '*** ERROR IN COOP'
       ENDIF
       SIGMAFF=PRESIG*GFF(NCHARI)
-c      IF (POPNUM(L,I) < 1.1*POPMIN) GOTO 3
       SUM=RNE(L)*ENTOT(L)*POPNUM(L,I)*SIGMAFF
       EMINDU=SUM*EXPFAC
       SUM=SUM-EMINDU
@@ -356,7 +328,7 @@ C***  If total true continuum opacity is negative:
 C***  re-do the whole calculation, but skip lasering bound-free transitions 
 C***  Note: in the version with strict suppression (wrh  4-Apr-2019)
 C***        this condition should never be met, and is therefore
-C***        commented
+C***        commented 
 cc      IF (OPAL .LE. .0 .AND. NBFLASER .EQ. 0) THEN
 cc         NBFLASER = 1 
 cc         GOTO 55

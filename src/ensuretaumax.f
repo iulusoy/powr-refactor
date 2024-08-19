@@ -1,106 +1,97 @@
       SUBROUTINE ENSURETAUMAX(bENSURETAUXMAX, !determines whether taumax iteration is allowed or not
      >                        HYSTACC,
      >                        IHSSTATUS,
-     >                        TAUMAX,       !TAU should have this value at inner boundary
-     >                        TAUACC,       !Accuracy level for TAUMAX (read from CARDS file)
-     >                        bTauStrict,   !if .FALSE. TAU scale is only changed if TAU(ND) is too low
-     >                        VMIN,         !Minimum velocity (can be changed in this routine)
-     >                        VELO,         !Velocity field vector
-     >                        GRADI,        !Velocity gradient vector
-     >                        RADIUS,       !radius values (in Rstar) for depth points
-     >                        XMDOT,        !log Mdot in M_sun/yr
-     >                        GEDDRAD,
-     >                        RHO,          !mass density per depth point
-     >                        TAUROSScont,  !Rosseland optical depth vector (continuum only)
-     >                        RMAX,         !outer boundary of calculations (VFINAL is reached here)
-     >                        RCONorg,      !old connection point between hydrostatic and beta law domain (updated here)
-     >                        T,            !temperature at each depth point  (TNEW in STEAL main prog.)
-     >                        TEFF,         !effective temperature Tstar at Rstar
-     >                        TOLD,         !old temperature one iteration ago  (for interpolation)
-     >                        TOLD2,        !old temperature two iterations ago (for interpolation)
-     >                        TOLD3,        !old temperature three iterations ago (for interpolation)
-     >                        CKONVER,      !char vector indicating if depth point is converged
-     >                        TaumaxCard,  !TAUMAX CARDS-line
-     >                        LASTTAU,      !Number of STEAL jobs since last TAUMAX iteration
-     >                        GLOG,         !log g
-     >                        GEFFLOG,      !log geff (only > 0 if geff or Eddington Gamma predefined in the CARDS file)
-     >                        bFixGEFF,     !if true, GEFF was fixed by the CARDS input
-     >                        XMSTAR,       !stellar mass in solar masses
-     >                        RSTAR,        !stellar radius at TAUMAX (in cm)
-     >                        XMU,          !relative mass (in AMU?) (called XMASS in INITEL)
-     >                        ENTOT,        !Total number of electrons per depth point
-     >                        RNE,          !relative electron density
-     >                        ND,           !Number of depth points
-     >                        NDDIM,        !Maximum number of depth points
-     >                        NP,           !Number of impact parameters
-     >                        NPDIM,        !Maximum number of impact parameters
-     >                        P,            !Impact parameter grid
-     >                        Z,            !z values (via z=sqrt(r^2-p^2)
-     >                        VTURB,        !turbulence velocity in km/s
-     >                        VMACH,        !sound speed in km/s
-     >                        ARAD,         !radiative acceleration (from COLI)
-     >                        APRESS,       !pressure acceleration (from STEAL->INITFCORR)
-     >                        AMECH,        !mechanical acceleration (inerta, from STEAL->INITFCORR)
-     >                        AGRAV,        !gravitational acceleration (from STEAL->INITFCORR)
-     >                        XJC,     
-     >                        bThinWind,    !Thin Wind CARDS option set? (TRUE/FALSE)
-     >                        ThinCard,     !Thin-Karte aus dem CARDS file
-     >                        RadiusGridParameters,     !Lines from CARDS for radius grid settings
-     >                        DENSCON,      !clumping factor per depth point (from CLUMP_STRUCT)
-     >                        FILLFAC,      !filling factor per depth point (= 1./DENSCON)
-     >                        DENSCON_FIX,  !fixed clumping factor value from CARDS
-     >                        DENSCON_LINE, !DENSCON-Line from CARDS
-     >                        NFIRST,
-     >                        NLAST,
-     >                        NATOM,        !Number of different atoms in DATOM
-     >                        ABXYZ,        !Abundances by number
-     >                        ATMASS,       !
-     >                        GEDD,         !Eddington Gamma (only read if fixed)
-     >                        bUNLU,        !True if temperature corrections are allowed
-     >                        HTOTL,
-     >                        HTOTCMF0,
-     >                        HMEAN,
-     >                        bFULLHYDROSTAT,
-     >                        bGAMMARADMEAN,
-     >                        TAUROSS,
-     >                        CORMAX,       !max corrections in this steal job
-     >                        INCRIT,       !specifies RGRID criterion for each depth point
-     >                        VCRIT,        !specifies velocity criterion for each depth point
-     >                        SCRATCH,      !Scratcharray for popnum interpolation stuff
-     >                        GEDDreduce,   !reduce GEDD change by mixing with old value
-     >                        QIONMEAN,
-     >                        GAMMARADMEAN,
-     >                        GRSTATIC,     !Gammarad(L) values from last TAUMAX iteration
-     >                        bGEddFix,     !True if GEdd has been fixed via CARDS (see DECSTAR)
-     >                        bTauUpdated,  !returns if tau iteration was done or not
-     >                        JOBNUM,
-     >                        POPMIN,
-     >                        MacroDamp,    !damping of GAMMAs due to Macroclumping
-     >                        bNoARAD,      !true if ARAD from COLI has not yet been calculated
-     >                        bTMNoOS,     
-     >                        bHYSTloose,
-     >                        bTMTHOM,
-     >                        NCOLIP,
-     >                        NEWWRC,
-     >                        NTOLD,
-     >                        DEPARTNDorg,
-C                   !Backup and temporary arrays
-     >                        VELOorg, RADIUSorg, ENTOTorg, TAUSCALorg,
-     >                        Torg, T1old, T2old, T3old, RI, AMACHorg,
-     >                        RNEorg, GEFFLnew, GEFFL, GAMMARAD, 
-     >                        RNEdummy, RHELP, ARADHELP, VHELP, 
-     >                        XJCorg,
+     >    TAUMAX,       !TAU should have this value at inner boundary
+     >    TAUACC,       !Accuracy level for TAUMAX (read from CARDS file)
+     >    bTauStrict,   !if .FALSE. TAU scale is only changed if TAU(ND) is too low
+     >    VMIN,         !Minimum velocity (can be changed in this routine)
+     >    VELO,         !Velocity field vector
+     >    GRADI,        !Velocity gradient vector
+     >    RADIUS,       !radius values (in Rstar) for depth points
+     >    XMDOT,        !log Mdot in M_sun/yr
+     >    GEDDRAD,
+     >    RHO,          !mass density per depth point
+     >    TAUROSScont,  !Rosseland optical depth vector (continuum only)
+     >    RMAX,         !outer boundary of calculations (VFINAL is reached here)
+     >    RCONorg,      !old connection point between hydrostatic and beta law domain (updated here)
+     >    T,            !temperature at each depth point  (TNEW in STEAL main prog.)
+     >    TEFF,         !effective temperature Tstar at Rstar
+     >    TOLD,         !old temperature one iteration ago  (for interpolation)
+     >    TOLD2,        !old temperature two iterations ago (for interpolation)
+     >    TOLD3,        !old temperature three iterations ago (for interpolation)
+     >    CKONVER,      !char vector indicating if depth point is converged
+     >    bTauMaxSafe,  !if true taumax is only adjusted if all depth points are conv.
+     >    LASTTAU,      !Number of STEAL jobs since last TAUMAX iteration
+     >    GLOG,         !log g
+     >    GEFFLOG,      !log geff (only > 0 if geff or Eddington Gamma predefined in the CARDS file)
+     >    bFixGEFF,     !if true, GEFF was fixed by the CARDS input
+     >    XMSTAR,       !stellar mass in solar masses
+     >    RSTAR,        !stellar radius at TAUMAX (in cm)
+     >    XMU,          !relative mass (in AMU?) (called XMASS in INITEL)
+     >    ENTOT,        !Total number of electrons per depth point
+     >    RNE,          !relative electron density
+     >    ND,           !Number of depth points
+     >    NDDIM,        !Maximum number of depth points
+     >    NP,           !Number of impact parameters
+     >    NPDIM,        !Maximum number of impact parameters
+     >    P,            !Impact parameter grid
+     >    Z,            !z values (via z=sqrt(r^2-p^2)
+     >    VTURB,        !turbulence velocity in km/s
+     >    ARAD,         !radiative acceleration (from COLI)
+     >    APRESS,       !pressure acceleration (from STEAL->INITFCORR)
+     >    AMECH,        !mechanical acceleration (inerta, from STEAL->INITFCORR)
+     >    AGRAV,        !gravitational acceleration (from STEAL->INITFCORR)
+     >    XJC,
+     >    bThinWind,    !Thin Wind CARDS option set? (TRUE/FALSE)
+     >    ThinCard,     !Thin-Karte aus dem CARDS file
+     >    RadiusGridParameters,     !Lines from CARDS for radius grid settings
+     >    DENSCON,      !clumping factor per depth point (from CLUMP_STRUCT)
+     >    FILLFAC,      !filling factor per depth point (= 1./DENSCON)
+     >    DENSCON_FIX,  !fixed clumping factor value from CARDS
+     >    DENSCON_LINE, !DENSCON-Line from CARDS
+     >    NFIRST,
+     >    NLAST,
+     >    NATOM,        !Number of different atoms in DATOM
+     >    ABXYZ,        !Abundances by number
+     >    ATMASS,       !
+     >    GEDD,         !Eddington Gamma (only read if fixed)
+     >    bUNLU,        !True if temperature corrections are allowed
+     >    HTOTL,
+     >    HTOTCMF0,
+     >    FQLIMIT,
+     >    bFULLHYDROSTAT,
+     >    bGAMMARADMEAN,
+     >    TAUROSS,
+     >    CORMAX,       !max corrections in this steal job
+     >    TauCorLimits, !correction limits from CARDS for tau adjustment
+     >    INCRIT,       !specifies RGRID criterion for each depth point
+     >    VCRIT,        !specifies velocity criterion for each depth point
+     >    SCRATCH,      !Scratcharray for popnum interpolation stuff
+     >    ReduceTauCorrections,    !CARDS option for tau reducing has been set
+     >    GEDDreduce,   !reduce GEDD change by mixing with old value
+     >    QIONMEAN,
+     >    GAMMARADMEAN,
+     >    GRSTATIC,     !Gammarad(L) values from last TAUMAX iteration
+     >    bGEddFix,     !True if GEdd has been fixed via CARDS (see DECSTAR)
+     >    bTauUpdated,  !returns if tau iteration was done or not
+     >    JOBNUM,
+     >    POPMIN,
+     >    XJCorg,
+     >    NCOLIP,
+     >    NEWWRC,
+     >    NTOLD,
+     >    DEPARTNDorg,
 C     
-C                   !Parameters after here are only needed to call TAUSCAL
-     >                        NDIM,MAXKONT,POPNUM,POP1,POP2,           ! 5     
-     >                        POP3,N,EN,LEVEL,NCHARG,WEIGHT,           !11
-     >                        ELEVEL,EION,EINST,ALPHA,SEXPO,           !16
-     >                        ADDCON1, ADDCON2, ADDCON3,               !19
-     >                        IGAUNT,NOM,NF,                           !22
-     >                        XLAMBDA,FWEIGHT, TAUTHOM,                !25
-     >                        MAXATOM,MAXION,SIGMATHK,SEXPOK,EDGEK,    !30
-     >                        KODAT,KONTNUP,KONTLOW,LASTKON            !34
-     >                       )
+C         !Parameters after here are only needed to call TAUSCAL
+     >    NDIM,MAXKONT,POPNUM,POP1,POP2,    !5     
+     >    POP3,N,EN,LEVEL,NCHARG,WEIGHT,    !11
+     >    ELEVEL,EION,EINST,ALPHA,SEXPO,    !16
+     >    ADDCON1, ADDCON2, ADDCON3,        !19
+     >    IGAUNT,NOM,NF,                    !22
+     >    XLAMBDA,FWEIGHT, TAUTHOM,         !25
+     >    MAXATOM,SIGMATHK,SEXPOK,EDGEK,    !29
+     >    KODAT,KONTNUP,KONTLOW,LASTKON     !33
+     >    )
 C***********************************************************************
 C***  THIS SUBROUTINE adjusts the velocity field such that the innermost
 C***   (=maximum) value of the Rosseland continuum optical depth has the
@@ -128,27 +119,31 @@ C***********************************************************************
       INCLUDE 'interfacebib.inc'
 
       INTEGER, INTENT(IN) :: ND, NDDIM, NP, NPDIM, NATOM, JOBNUM,
-     >                       N, NDIM, NF, MAXKONT, MAXATOM, MAXION, 
-     >                       LASTKON, NCOLIP, NEWWRC, NTOLD
-      REAL, INTENT(IN) :: TAUMAX, TAUACC, TEFF, RSTAR, 
-     >                    CORMAX, GEDDreduce,
+     >                       N, NDIM, NF, MAXKONT, MAXATOM, LASTKON,
+     >                       NCOLIP, NEWWRC, NTOLD
+      REAL, INTENT(IN) :: TAUMAX, TAUACC, TEFF, RSTAR, VTURB, 
+     >                    CORMAX, ReduceTauCorrections, GEDDreduce,
      >                    XMDOT, POPMIN
-      REAL, DIMENSION(2) :: TauCorLimits                     !correction limits from CARDS for tau adjustment
+      REAL, DIMENSION(2), INTENT(IN) :: TauCorLimits
       REAL, INTENT(INOUT) :: GEDD, GLOG, GEFFLOG, RMAX, RCONorg, 
      >                       VMIN, XMSTAR, GEDDRAD, HYSTACC
       REAL, DIMENSION(ND), INTENT(IN) :: TAUROSS             !full tau from COLI (not changed here)
       REAL, DIMENSION(ND), INTENT(INOUT) :: RADIUS, VELO, GRADI, ENTOT,
      >                                      T, TAUTHOM, TAUROSScont,
      >                                      RHO, XMU, RNE, GRSTATIC,
-     >                                      TOLD, TOLD2, TOLD3, VMACH, 
-     >                                      VTURB
-      REAL, DIMENSION(ND, NF), INTENT(INOUT) :: XJC, XJCorg
+     >                                      TOLD, TOLD2, TOLD3
+      REAL, DIMENSION(ND-1), INTENT(IN) :: ARAD, APRESS, AMECH, AGRAV, 
+     >                                     HTOTL, HTOTCMF0
+      REAL, DIMENSION(ND, NF), INTENT(INOUT) :: XJC
       INTEGER, INTENT(INOUT) :: LASTTAU, IHSSTATUS
       CHARACTER(1), DIMENSION(ND) :: CKONVER
-      CHARACTER(8), DIMENSION(ND), INTENT(INOUT) :: INCRIT, VCRIT     !gives back depth point criterion from GEOMESH>RGRID and the velocity calculation criterion
+
+C***  Info on depth point criteria from GEOMESH>RGRID and 
+C***   the velocity calculation criterion
+      CHARACTER(8), DIMENSION(ND), INTENT(INOUT) :: INCRIT, VCRIT     
+
       LOGICAL, INTENT(IN) :: bENSURETAUXMAX, bThinWind, bTauStrict, 
-     >                       bGEddFix, bUNLU, bTMTHOM, 
-     >                       bNoARAD
+     >                       bGEddFix, bUNLU, bTauMaxSafe
       LOGICAL, INTENT(OUT) :: bTauUpdated
 
       INTEGER :: NDVALUE, NC
@@ -173,6 +168,8 @@ C***********************************************************************
       REAL, DIMENSION(NF), INTENT(IN) :: FWEIGHT, XLAMBDA
       CHARACTER(10), DIMENSION(N), INTENT(IN) :: LEVEL
 
+      REAL, DIMENSION(ND, NF), INTENT(INOUT) :: XJCorg
+
       !Internal variables
       INTEGER :: I, J, K, L, ITTAU, Nct, LastDAMP, IT_failsafe, LL,
      >           NA, IPAR, NPAR, LCON, LfM, LTMCM, NHYSTBAD, NTAUIV,
@@ -183,75 +180,67 @@ C***********************************************************************
 C***  The full Eddington factor may not be higher than GAMMARADmax 
 C***    to have some safety distance to the Eddington limit, 
 C***    which helps keeping the density stratification stable. 
-C***      A maximum value of 0.9 is used in TLUSTY 
-C***     Update 13.02.2022, ansander: Increased GAMMARADmax from 0.9 to 0.99
-C***     -- maybe make this a switch in the future
-      REAL, PARAMETER :: GAMMARADmax = 0.99
-      REAL, PARAMETER :: FLUXNEGMAXFRAC = 1.E-4 !maximum fraction of negative flux for a depth point
+C***      A maximum value of 0.9 is also used in TLUSTY 
+      REAL, PARAMETER :: GAMMARADmax = 0.9
       REAL, DIMENSION(MAXITTAU) :: VMINHIST   !history of vmin steps
       REAL, DIMENSION(MAXITTAU) :: TAUMAXHIST !history of TAUROSScont(ND)
 
 C***  Attention! The following block of vectors is loccaly dimensioned
 C***             ("HEAP variables" since dimension ND is formal parameter!)
       REAL, DIMENSION(ND) :: RADIUSorg, VELOorg, TAUSCALorg, RI,
-     >                       Torg, T1old, T2old, T3old, TMOD, TMODorg,
-     >                       GEFFL, GEFFLnew, GAMMARAD, 
-     >                       ENTOTorg, DR, AMACH, AMACHorg, RNEorg,
-     >                       MacroDamp, RNEdummy, 
-     >                       RHELP, ARADHELP, VHELP
-      REAL, DIMENSION(ND-1) :: ARAD, APRESS, AMECH, AGRAV, 
-     >                         HTOTL, HTOTCMF0, HMEAN, ARADmod
-
+     >                       OPAROSSorg, Torg, T1old, T2old, T3old,
+     >                       GEDDTHOM, GEFFL, GAMMARAD, RHELP,
+     >                       ENTOTorg, DR, ARADHELP, RNEorg
+      REAL, DIMENSION(ND-1) :: ARADmod
+          
       REAL :: ATMEAN, FM, STEPDAMP, RSTARSU, RNEL, XMSTARG,
      >        VFINAL, VMINCAND, BETA, BETA2, BETA2FRACTION, TAUCURMAX,
      >        VPAR1, VPAR2, HSCALE, VPAR1_2, VPAR2_2, FQLIMIT,
      >        RCON, VMINOLD, VMINOLD2, CORLOG, VCON, ARADL, FQ,
-     >        TAUCHECK, TROLD, TROLD2, TAU23, R23, Tcon, GEDDL,
+     >        TAUCHECK, TROLD, TROLD2, TAU23, R23, GEDDL,
      >        VMIN_over, VMIN_under, VMIN_min, VMIN_max, DARADDR,
-     >        DAGRAVDR, RL, RHOL, XLSTAR, XLSTARS, Qhopf, Qorg, 
+     >        DAGRAVDR, RL, XLSTAR, XLSTARS, Qhopf, Qorg, 
      >        P1, P2, RHOINT, APR, GFR, VPAR1cand, VPAR2cand,
      >        GAMMARADMEAN, VL, TL, TscaleFac, RINT, TAUINT,
      >        facMass, DIFF1, DIFF2, ENTOTL, AGRAVL, MECHRATIOLOG,
      >        HSCALEold, TauGammaEffect, QIONMEAN, fGAMMACOR, XMG,
-     >        GAMMARADMEANcalc, GEDDreducenow, RCRIT, tempREAL,
+     >        GAMMARADMEANcalc, GEDDreducenow, RCRIT, ENEL,
      >        GLOGorg, XMSTARorg, GEFFLOGorg, HYSTRATIO, GEDDreduceL,
-     >        BESTTAUACC, CURTAUACC, ReduceTauCorrections, ENEL,
-     >        QVorg, QVnew, QRHOorg, QRHOnew, RONSET,
-     >        DIFFTAUMAX_MIN, DIFFTAUMAX_J,
-     >        Textrap, TAUTHICK, HYSTMODRATIO, HDRATIO, AMECHL, VELOINT
-
+     >        DIFFTAUMAX_J, DIFFTAUMAX_MIN, 
+     >        QVorg, QVnew, QRHOnew, QRHOorg, Textrap, TAUTHICK
       REAL, DIMENSION(3) :: TMCORRMAX
-      LOGICAL, DIMENSION(ND) :: HYSTGOOD        !HYSTACC fullfilled per depth point (or not)
+
+C***  Vector, true if HYSTACC fulfilled per depth point 
+      LOGICAL, DIMENSION(ND) :: HYSTGOOD
       
       CHARACTER(8), DIMENSION(ND) :: VELOCRITERION
-      CHARACTER(40), DIMENSION(20) :: CURPAR
+      CHARACTER(40) :: ACTPAR
       CHARACTER(4) :: TMENFCRIT, CTFMT
-      CHARACTER(12) :: TAUFLAB
+      CHARACTER(8) :: TAUFLAB
 
       LOGICAL bNewVelo, bHydroStat, bNoRGrid, bNoDetails, 
-     >        bTauMaxSafe,
-     >        bTauInterpolation, bTauCycle,
-     >        bReduceDone, bFixGEFF, bHScaleOnly,
+     >        bTauInterpolation, bUseBisection, bTauCycle,
+     >        bReduceDone, bThinImprove, bFixGEFF, bHScaleOnly,
      >        bFULLHYDROSTAT, bGAMMARADMEAN, bPrintChanges, 
      >        bForceTAUMAX, bPrintHYST, bTauInterval, 
-     >        bTMNoOS, bHYSTloose, bUseENTOT, bRCON,
-     >        bSKIPNEGARAD, bARADCHECK, bOldThinGrid, bVDAMP, bTMIX,
-     >        bWRCnext, bIVWRC, bKeepTTAU
+     >        bTMTHOM, bTMNoOS, bHYSTloose, bUseENTOT, bRCON,
+     >        bARADCHECK, bOldThinGrid, bVDAMP, bWRCnext
       
-      REAL, EXTERNAL :: WRVEL         !velocity field function WRVEL(L) return type
+      REAL, EXTERNAL :: WRVEL   !velocity field function 
 
 C***  Tiefenabhaengiges Clumping nach Goetz Graefener
       REAL, DIMENSION(ND), INTENT(INOUT) :: DENSCON, FILLFAC       
       REAL, INTENT(IN) :: DENSCON_FIX
-      CHARACTER(120), INTENT(IN) :: DENSCON_LINE, ThinCard, TaumaxCard
+      CHARACTER(80), INTENT(IN) :: DENSCON_LINE, ThinCard
 
-      CHARACTER(80), DIMENSION(3) :: RadiusGridParameters           !contains all RADIUS-GRID CARDS (for subr. RGRID)
+C***  !contains all RADIUS-GRID CARDS (for subr. RGRID)
+      CHARACTER(80), DIMENSION(3) :: RadiusGridParameters           
 
       REAL, DIMENSION(NP), INTENT(INOUT) :: P
       REAL, DIMENSION(ND*NP), INTENT(INOUT) :: Z
 
 C***  The following variables are just declared to call PRIMOD
-      LOGICAL :: OLDTEMP, BTWOT, TTABLE, FALSEdummy, bSMOCO
+      LOGICAL :: OLDTEMP, BTWOT, TTABLE, FALSEdummy
       REAL :: TFAC, TEFFdummy, ZEROdummy, ZEROdummy2
       INTEGER :: JOBNOLD, JOBNOLD2
       CHARACTER(100) :: MODHEAD, MODOLD, MODOLD2
@@ -288,29 +277,13 @@ C***  COMMON /COMTEFF/  TRANSFERS THE EFF. TEMPERATURE TO: PRIMOD
       ZEROdummy2 = 0.
       FALSEdummy = .FALSE.
       bForceTAUMAX = .FALSE.
-      RCRIT = -1.
       
-C***  Default settings of advanced options      
-      bTauMaxSafe = .FALSE.     !if true taumax is only adjusted if all depth points are conv.
-      ReduceTauCorrections = 1.0    !default reducing factor for vmin changes in taumax enforcement routine
-      TauCorLimits(1) = -999.       !
-      TauCorLimits(2) = -999.
-      FQLIMIT = -1.                 !default: no flux ratio limit for TAUMAX fixing
-      bHYSTloose = .FALSE.         !if true, ensuretaumax is not enforced if TAUMAX is good, but HYST not
-      bNoRGrid = .FALSE.           !.FALSE. = change to a new grid (default)
+C***  interpolate POPNUM, GEFFL over ENTOT (if true), or RADIUS (if false)
+      bUseENTOT = .FALSE.      
 
-C***  Numerical tweaks      
-      bUseENTOT = .FALSE.          !if true, interpolations are performed over density instead of radius
-      bTMIX = .FALSE.
-      bKeepTTAU = .TRUE.           !if true, the temperature in the opt. thick part is interpolated on TAU afterwards
+      bPrintHYST = .FALSE.     !default: do not print hydrostatic situation
+      bPrintChanges = .FALSE.  !default: do not print changes to V and T
       
-C***  Debug options      
-      bPrintHYST = .FALSE.         !default: do not print hydrostatic situation
-      bPrintChanges = .FALSE.      !default: do not print changes to V and T
-      
-C**** Default: perform stratification update before next WRCONT 
-      bIVWRC = .TRUE.
-
 C***  if true, TAUMAX iteration is performed in only every NTAUIV-th job
       bTauInterval = .FALSE.    
       NTAUIV = 5
@@ -318,9 +291,12 @@ C***  if true, TAUMAX iteration is performed in only every NTAUIV-th job
 C***  if true, overshooting is prevented/damped by further GAMMARAD reducing
 C***   Changed to FALSE by wrh  4-Apr-2019, as suggested by Andreas 
       bTMNoOS = .FALSE.          
- 
+      
+C***  if true, iteration is done based on TAUTHOM instead of TAUROSScont
+      bTMTHOM = .FALSE.         
+
 C***  if true, ensuretaumax is not enforced if TAUMAX is good, but HYST not
-C      bHYSTloose = .FALSE.      
+      bHYSTloose = .FALSE.      
 
 C***  if true, damping applies to the whole v(r) changes, otherwise toVMIN only
       bVDAMP = .TRUE.           
@@ -346,7 +322,6 @@ C***      (This can be switched off by the SAFE option on the TAUMAX card)
           ENDIF
         ENDDO
       ENDIF
-
       
 C***  Ensure useful format for TAU output, even for very large TAUMAX      
       IF (TAUMAX > 9999.) THEN
@@ -371,10 +346,6 @@ C***  ATMEAN = mean atomic weight (without electrons)
 C***  XMU = mean particle mass (atoms and electrons)
       DO L=1, ND
         XMU(L) = ATMEAN / (1. + RNE(L))
-        AMACH(L) = SQRT ( RGAS * T(L) / XMU(L) / 1.E10 + VTURB(L)**2 )        !modified amach (includes turbulence)
-        AMACHorg(L) = AMACH(L)
-        TMOD(L) =  (T(L) + TOLD(L) + TOLD2(L)) / 3.
-        TMODorg(L) = TMOD(L)
       ENDDO
 
 C***  RHO = mass density from current ENTOT
@@ -391,91 +362,10 @@ C***  RI = interstice radius grid; DR = interval (L, L+1)
 C***  Mass flux per square centimeter at R* 
 C***  The constant "3.02" converts M_sun/yr/(4pi Rsun^2) gram/cm^2/s 
       FM = 10.**(XMDOT+3.02) / RSTARSU**2 
-      
-C***  XMG = GGRAV * XMSTAR       
-      XMG = AGRAV(1) * (RI(1)*RSTAR)**2
 
       RCON = RCONorg
       IF (VMIN < 0.) THEN
           VMIN = VMINCAND
-      ENDIF
-      
-C***  Decode additional TAUMAX card options      
-      CALL SARGC (TaumaxCard, NPAR)
-      DO i=1, NPAR
-        CALL SARGV(TaumaxCard,i,CURPAR(I))
-      ENDDO      
-      IF (NPAR > 2) THEN
-C***     Note: Basic parameters which are required in more places than just 
-C***           this routine are decoded in DECSTE
-         DO i=3, NPAR 
-            SELECTCASE (CURPAR(i))
-              CASE ('REDUCE')
-                ReduceTauCorrections = 0.2
-                IF (NPAR >= (i+1)) THEN
-                  READ (CURPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
-                  IF (IERR == 0) THEN
-                    IF (tempREAL > 1. .OR. tempREAL < 0.)  THEN
-                      WRITE (hCPR,'(A)') ' *** Error: invalid choice'
-     >                    // ' of REDUCE parameter, must be '
-     >                    // ' between 0 and 1!'
-                      WRITE (hCPR,*) 
-     >                      'DECSTE: ERROR WHILE DECODING TAUMAX LINE'
-                    ENDIF                  
-                    ReduceTauCorrections = tempREAL
-                  ENDIF                  
-                ENDIF
-              CASE ('CORLIMIT', 'CORRLIMIT')
-                TauCorLimits(1) = -1.0    !Default value
-                IF (NPAR >= (i+1)) THEN
-                  READ (CURPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
-                  IF (IERR == 0) THEN
-                    TauCorLimits(1) = tempREAL
-                    IF (NPAR >= (i+2)) THEN
-                      !Note: This second parameter is not interpreted yet
-                      READ (CURPAR(i+2),'(F10.0)',IOSTAT=IERR) tempREAL
-                      IF (IERR == 0) THEN
-                        TauCorLimits(2) = tempREAL
-                      ELSE
-                        TauCorLimits(2) = 1.0
-                      ENDIF                                    
-                    ENDIF
-                  ENDIF                                    
-                ENDIF
-              CASE ('FLUXQUOTLIMIT', 'FQLIM', 'FQL')
-                FQLIMIT = 0.05  !default if criterion is set
-                IF (NPAR >= (i+1)) THEN
-                  READ (CURPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
-                  IF (IERR == 0) THEN
-                    FQLIMIT = tempREAL
-                  ENDIF           
-                ENDIF            
-              CASE ('OS', 'ALLOWOV', 'OVERSHOOT')
-                bTMNoOS = .FALSE.               
-              CASE ('IV')
-                bTauInterval = .TRUE.
-                IF (NPAR >= (i+1)) THEN
-                  READ (CURPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
-                  IF (IERR == 0) THEN
-                    NTAUIV = IFIX(tempREAL)
-                  ENDIF           
-                ENDIF            
-              CASE ('NOIVWRC')
-                bIVWRC = .FALSE.
-              CASE ('FIXGRID')
-                bNoRGrid = .TRUE.               
-              CASE ('TMIX')
-                bTMIX = .TRUE.               
-              CASE ('VMIX')
-                bVDAMP = .TRUE.               
-              CASE ('NOVMIX')
-                bVDAMP = .FALSE.         
-              CASE ('NOTTAU')
-                bKeepTTAU = .FALSE.
-              CASE ('SAFE')
-                bTauMaxSafe = .TRUE.
-            ENDSELECT
-         ENDDO      
       ENDIF
       
       !This calculates the continuum tau-rosseland vector
@@ -486,9 +376,9 @@ C***           this routine are decoded in DECSTE
      >              IGAUNT, NOM, NF,
      >              XLAMBDA, FWEIGHT,
      >              TAUTHOM, TAUROSScont,
-     >              MAXATOM, MAXION, SIGMATHK, SEXPOK, EDGEK, KODAT,
+     >              MAXATOM, SIGMATHK, SEXPOK, EDGEK, KODAT,
      >              KONTNUP, KONTLOW, LASTKON, 
-     >              DENSCON, FILLFAC, POPMIN
+     >              DENSCON, FILLFAC
      >     )
      
 C***  Consistency check: Is VFINAL kept? Stop otherwise!
@@ -533,17 +423,16 @@ C***      are also not considered  (MECHRATIOLOG check)
           IF (ABS(HYSTRATIO) > HYSTACC) THEN
             HYSTGOOD(L) = .FALSE.
             IF (bFULLHYDROSTAT) THEN
-              !Enforece TAUMAX iteration even with good TAUMAX if 
-              ! hydrostatic equation is not fullfilled but should
-              ! be due to specified CARDS parameters
-              ! (can be skipped if LOOSE option is set on HYDROSTATIC INTEGRATION card)
+              ! Enforce TAUMAX iteration even with good TAUMAX if 
+              ! hydrostatic equation is not fulfilled.
+              ! (can be switched off with the "LOOSE" option)
               bForceTAUMAX = .NOT. bHYSTloose
             ENDIF
             NHYSTBAD = NHYSTBAD + 1
           ENDIF
           IF (bPrintHYST) THEN
-            WRITE (hCPR,'(A, I3, 3X, F7.4, 2X, L1, 2(3X, F12.5))') 
-     >        'HyS: ', L, HYSTRATIO, HYSTGOOD(L), AMACH(L), VELO(L)
+            WRITE (hCPR,'(A, I3, 3X, F7.4, 2X, L1, 1(3X, F12.5))') 
+     >        'HyS: ', L, HYSTRATIO, HYSTGOOD(L), VELO(L)
           ENDIF
         ENDIF
       ENDDO      
@@ -561,10 +450,10 @@ C***  specified in the CARDS file refers to the THOMSON tau scale.
 C***  Otherwise it refers to the full Rosseland continuum tau. (default)
       IF (bTMTHOM) THEN
         TAUCURMAX = TAUTHOM(ND)
-        TAUFLAB = '    TAUTHOM '
+        TAUFLAB = ' TAUTHOM'
       ELSE
         TAUCURMAX = TAUROSScont(ND)
-        TAUFLAB = ' TAUROSScont'
+        TAUFLAB = ' TAUcont'
       ENDIF
       
 C***  Interval option for velocity update
@@ -572,12 +461,10 @@ C***  Instead of updating the velocity field as soon as one of the other
 C***  criteria enforces this, it is also possible to restrict the run of
 C***  this routine to every N-th STEAL job.
 C***  To switch this on, the bTauInterval logical must be .TRUE.
-      IF ((LASTTAU >= 0 .AND. LASTTAU < NTAUIV .AND. bTauInterval)
-     >                         .OR. (bIVWRC .AND. .NOT. bWRCnext)) THEN
-         WRITE (hCPR, FMT='(A)') 
-     >      'ENSURETAUMAX is skipped in this job.'
-            WRITE (hCPR,FMT='(A,F10.5,A,I2,A,F10.5)') 
-     >        ' current diagnosis: TAUMAX=', TAUMAX,
+      IF (.NOT. bWRCnext) THEN
+            WRITE (hCPR,FMT='(A,F6.1,A,I2,A,F10.5)') 
+     >      'TAUMAX update postponed; current values: ' //
+     >        'TAUMAX=', TAUMAX,
      >        '  ' // TAUFLAB // '(',ND ,')=', TAUCURMAX
             bTauUpdated = .FALSE.
          RETURN
@@ -653,47 +540,17 @@ C***  ARADmod. The rest of this routine then uses ARADmod instead of ARAD
         ARADmod(L) = ARAD(L)
       ENDDO
       
-      IF (.NOT. bTMIX) THEN
-        DO L=1, ND
-          TMOD(L) = T(L)
-        ENDDO
-      ENDIF
-      
-C***  Check for positive ARAD and warn (+smooth) or skip TAUMAX 
-C***   if any negative value occurs in the relevant (hydrostatic) part
-      bSKIPNEGARAD = .FALSE.
+C***  Interpolate over negative ARAD (and negative FLUX) points
       bARADCHECK = .FALSE.
       LL=0
       LCHECK=0
       DO L=ND-1, 1, -1
         IF (.NOT. bFULLHYDROSTAT) EXIT
-        IF (bGAMMARADMEAN) EXIT  
+        IF (bGAMMARADMEAN) EXIT
         bARADCHECK = .TRUE.
-c***    Sanity check => skip routine if ARAD from COLI is not yet available
-        IF (bNoARAD) THEN
-          WRITE (hCPR, FMT='(A)') 
-     >      'ENSURETAUMAX skipped because ARAD is not yet calculated.'
-        ENDIF
         TAUINT = 0.5 * (TAUROSS(L) + TAUROSS(L+1))
         LCHECK = LCHECK + 1
-        IF (ARAD(L) < 0. .OR. HTOTL(L) < 0.) THEN
-          IF (bSKIPNEGARAD) THEN
-            IF (ARAD(L) < 0.) THEN
-              WRITE (hCPR, FMT='(A)') 
-     >          'ENSURETAUMAX skipped due to negative a_rad.'
-            ELSE
-              WRITE (hCPR, FMT='(A)') 
-     >          'ENSURETAUMAX skipped due to negative flux.'
-            ENDIF
-            WRITE (hCPR,FMT='(A,F10.5,A,I2,A,F10.5)') 
-     >        ' current diagnosis: TAUMAX=', TAUMAX,
-     >        '  ' // TAUFLAB // '(',ND ,')=', TAUCURMAX
-            bTauUpdated = .FALSE.
-            RETURN
-          ELSE 
-            WRITE (hCPR,*) 'Skipping ', ARAD(L), HTOTL(L)
-          ENDIF
-        ELSEIF (.NOT. bSKIPNEGARAD) THEN
+        IF (ARAD(L) > 0. .AND. HTOTL(L) > 0.) THEN
 C***      Store "good" ARAD values in HELP arrays for interpolation  
           LL = LL + 1
           ARADHELP(LL) = ARAD(L)
@@ -701,9 +558,9 @@ C***      Store "good" ARAD values in HELP arrays for interpolation
 C***      Note that HELP arrays are inside out in radius direction
         ENDIF
       ENDDO      
-      
-C***  Interpolate over negative ARAD (and negative FLUX) points
-C***  (for boundaries: take last "good" value)
+
+C***  Interpolation
+C***  for boundaries: take last "good" value
 C***  There must always be at least two good points
 C***  (if LL == LCHECK all ARAD values are fine and nothing needs to be done!)
       IF (LL < LCHECK .AND. LL >= 2) THEN
@@ -718,7 +575,7 @@ C***  (if LL == LCHECK all ARAD values are fine and nothing needs to be done!)
             CALL SPLINPOX(ARADmod(L),RI(L),ARADHELP,RHELP,LL)
           ENDIF
         ENDDO               
-      ELSEIF (bARADCHECK .AND. (.NOT. bSKIPNEGARAD) .AND. LL < 2) THEN
+      ELSEIF (bARADCHECK .AND. LL < 2) THEN
         WRITE (hCPR, FMT='(A)') 
      >   'WARNING: BAD ARAD => ENSURETAUMAX SKIP FORCED'        
           WRITE (hCPR,FMT='(A,F10.5,A,I2,A,F10.5)') 
@@ -783,7 +640,6 @@ C***  Temperature interpolation onto a changed grid
         TAUSCALorg(L) = TAUROSScont(L)
         ENTOTorg(L) = ENTOT(L)
         Torg(L) = T(L)
-        TMODorg(L) = TMOD(L)
         RNEorg(L) = RNE(L)
       ENDDO
       DO K=1, NF
@@ -798,15 +654,6 @@ C***  Temperature interpolation onto a changed grid
 C***  Mis-use of the scratch array which is dimensioned in STEAL as
 C***  (NDIM+2)*(NDIM+2)
       CALL BACKUPPOPNUM(ND, N, POPNUM, SCRATCH)      
-
-C***  Calculate "quality" of old grid
-C***  (will be used in a later comparison with a potential new grid)
-      QRHOorg = 1.
-      QVorg = 0.
-      DO L=1, ND-1
-        QRHOorg = MAX(QRHOorg, RHO(L+1)/RHO(L))
-        QVorg = MAX(QVorg, VELO(L) - VELO(L+1))        
-      ENDDO
 
 C***  Calculate Eddington Gamma and g_eff
       XLSTAR = PI4 * STEBOL * RSTAR*RSTAR * TEFF*TEFF*TEFF*TEFF
@@ -835,7 +682,6 @@ C***   GAMMARAD-reducing caused by "overshooting"
         ENDIF
         ENTOT(L) = ENTOTorg(L)
         T(L) = Torg(L)
-        TMOD(L) = TMODorg(L)
         RNE(L) = RNEorg(L)
         XMU(L) = ATMEAN / (1. + RNE(L))
       ENDDO
@@ -882,9 +728,9 @@ C***  GAMMARADMEAN and QIONMEAN were calculated in INITFCORR
         !GEFF was fixed by wrstart => Calculate GEDD and new mass
         CALL CALCMASSFROMGEFF(bFixGEFF, bFULLHYDROSTAT,
      >                        XMSTAR, GLOG, GEFFLOG, 
-     >                        ARADmod, APRESS, AGRAV, RADIUS, ND,
-     >                        RSTAR, RCON, RI, VELO, TAUROSS,
-     >                        VMACH, GAMMARADMEAN, GEDD,
+     >                        ARAD, APRESS, AGRAV, RADIUS, ND,
+     >                        RSTAR, RCON, RI, TAUROSS,
+     >                        GAMMARADMEAN, GEDD,
      >                        LOG10(XLSTARS), QIONMEAN, fGAMMACOR)
         IF (bFULLHYDROSTAT) THEN
           GEDD = GAMMARADMEAN
@@ -968,8 +814,7 @@ C***        MEAN option has been set on the HYDROSTATIC INTEGRATION card
             GEFFL(L) = 10**(GEFFLOG)
           ELSE
             GEFFL(L) = (10**GLOG) 
-     >        - RNE(L)/(ATMEAN*QIONMEAN) * ((10**GLOG) - (10**GEFFLOG)) 
-     >                      * MacroDamp(L)      !needed if MACROCLUMP cards option is used
+     >        - RNE(L)/(ATMEAN*QIONMEAN) * ( (10**GLOG) - (10**GEFFLOG) ) 
           ENDIF
         ENDIF
       ENDDO
@@ -984,6 +829,7 @@ C***  Initialize Iteration values
       bHydroStat = .TRUE.      !default value: hydrostatic domain is achieved
 
       !prepare bisection    
+      bUseBisection = .FALSE.   !FALSE = bisection method is currently not in use
       VMIN_over = -1.0
       VMIN_under = -1.0
       VMIN_min = VMIN
@@ -1005,12 +851,9 @@ C***  if true, the velocity corrections have been damped
         WRITE (hCPR,*) 'ENSURETAUMAX WARNING> Old velocity might not '
      >    // 'be a beta-type law'
         RCON = RADIUS(1)    !this is needed to avoid SPLINPOX errors
-        bRCON = .FALSE.
-      ELSEIF (RCON < RADIUS(ND)) THEN
-C**     Previous stratification had no hydrostatic domain (on current grid)
-        bRCON = .FALSE.
-      ELSE 
-        bRCON = .TRUE.
+        bRCON= .FALSE.
+      ELSE
+        bRCON= .TRUE.
       ENDIF
 
 C***  Major update Mar 2016: In contrast to earlier versions,
@@ -1038,7 +881,7 @@ C***        detect from the history the VMIN value which gave
 C***        the closest approximation to TAUMAX
             DIFFTAUMAX_MIN = ABS(TAUMAXHIST(1)-TAUMAX) 
             IT_failsafe = 1
-            DO J=2, ITTAU-1 
+            DO J=2, ITTAU-1
               DIFFTAUMAX_J = ABS(TAUMAXHIST(J)-TAUMAX)
               IF (DIFFTAUMAX_J < DIFFTAUMAX_MIN) THEN
                 DIFFTAUMAX_MIN = DIFFTAUMAX_J
@@ -1051,7 +894,7 @@ C***        the closest approximation to TAUMAX
 C***        Damping the correction may be counter-productive, when 
 C***        the relation between VMIN and TAUMAX was non-monotonic!
 C***        Therefore:
-            IF (bVDAMP) bReduceDone = .TRUE.
+            bReduceDone = .TRUE.
           ENDIF
 
 C***      Transfer VMIN to VELPAR common block          
@@ -1068,7 +911,7 @@ C***      (for 2beta-laws also VPAR1_2 and VPAR2_2)
 C***      for HYDROSTATIC INTEGRATION only the scale height H_0 is calculated
           bHScaleOnly = bThinWind
           CALL INITVEL (RMAX, TEFF, GEFFLOG, RSTAR, XMU(ND),
-     >                  VTURB(ND), bHScaleOnly, bHydroStat) 
+     >                  VTURB, bHScaleOnly, bHydroStat) 
 
 C***      bThinWind = HYDROSTATIC INTEGRATION card has been found            
           IF (bThinWind) THEN
@@ -1077,8 +920,9 @@ C***        and connects the result to a BETA law in the outer part.
 C***        The default connection criterion a continouus gradient
 C***        between both velocity laws
 C***        (can be changed to a fraction of the sonic speed via CARDS option)
-            CALL VELTHIN (TMOD, RADIUS, VELO, ND, RSTAR, RMAX,
+            CALL VELTHIN (T, RADIUS, VELO, ND, RSTAR, RMAX,
      >                    GEFFL, XMU, VTURB, ThinCard, VELOCRITERION)
+     
           ELSE
 C***        Simple exponential law with constant scale height 
 C***        (i.e. barometric formula) in the inner part:
@@ -1109,8 +953,6 @@ C***        is updated here:
             SELECTCASE (VELOCRITERION(L))
               CASE ('HYSTINT ')
                 VCRIT(L) = 'HS      '
-              CASE ('HYDROINT')
-                VCRIT(L) = 'HD      '
               CASE ('STATIC  ')
                 VCRIT(L) = 'ST      '
               CASE ('BETA    ')
@@ -1148,9 +990,9 @@ C***      Calculation of the new TAU scale (continuum opacities only)
      >              IGAUNT, NOM, NF,
      >              XLAMBDA, FWEIGHT,
      >              TAUTHOM, TAUROSScont,
-     >              MAXATOM, MAXION, SIGMATHK, SEXPOK, EDGEK, KODAT,
+     >              MAXATOM, SIGMATHK, SEXPOK, EDGEK, KODAT,
      >              KONTNUP, KONTLOW, LASTKON, 
-     >              DENSCON, FILLFAC, POPMIN
+     >              DENSCON, FILLFAC
      >      )
           IF (bTMTHOM) THEN
             TAUCURMAX = TAUTHOM(ND)
@@ -1222,35 +1064,33 @@ C***      check if current VMIN yields higher or lower TAUMAX than wanted
               CYCLE
             ENDIF            
 
-            
-              !How effective is this stuff?
-              IF (((ABS(TAUCURMAX) - TAUMAX) > TAUACC) .AND.
-     >                                (ITTAU/10*10 == ITTAU) .AND. 
-     >                             ((TROLD - TROLD2) > TAUACC)) THEN
-                VMIN = (VMINOLD2*(TROLD-TAUMAX) - 
-     >                VMINOLD*(TROLD2-TAUMAX)) / 
-     >                  (TROLD - TROLD2)
-                bTauCycle = .TRUE.
-              ENDIF
-          
+C***        If not yet converged:
+            IF (ABS(TAUCURMAX-TAUMAX) > TAUACC) THEN
+C***           Check if bisection is possible               
+               IF (VMIN_OVER > .0 .AND. VMIN_UNDER > .0) THEN
+                  VMIN = 0.5 * (VMIN_OVER + VMIN_UNDER)
+                  BTAUCYCLE = .TRUE.
+               ENDIF 
+            ENDIF
+
 C***          TAUROSScont TOO LARGE: New vmin is at v(TAUMAX) using spline interpolation
               IF (bTauStrict .AND. (.NOT. bTauCycle) .AND.
      >            (TAUCURMAX > TAUMAX+TAUACC)) THEN
-                VMIN_over = VMIN
-                !SPLINPO offen makes a too large step inside, try other things first
-                IF ((VMINOLD2 > 0.) .AND. (TROLD2 > 0.) .AND. 
-     >                           (TROLD2 < (TAUMAX-TAUACC))) THEN
-                  !Only last step was too large, try half step
-                  VMIN = (VMINOLD2 + VMINOLD) / 2.
-                ELSEIF (bTMTHOM) THEN
-                  ! standard method: 
-                  ! calculate new v_min by using v(tau) interpolation
-                  CALL SPLINPOX(VMIN, TAUMAX, VELO, TAUTHOM, ND)
-                ELSE
-                  ! standard method: 
-                  ! calculate new v_min by using v(tau) interpolation
-                  CALL SPLINPOX(VMIN, TAUMAX, VELO, TAUROSScont, ND)
-                ENDIF
+                VMIN = VMIN*(TAUCURMAX/TAUMAX)**(.5*STEPDAMP)
+c                !SPLINPO offen makes a too large step inside, try other things first
+c                IF ((VMINOLD2 > 0.) .AND. (TROLD2 > 0.) .AND. 
+c     >                           (TROLD2 < (TAUMAX-TAUACC))) THEN
+c                  !Only last step was too large, try half step
+c                  VMIN = (VMINOLD2 + VMINOLD) / 2.
+c                ELSEIF (bTMTHOM) THEN
+c                  ! standard method: 
+c                  ! calculate new v_min by using v(tau) interpolation
+c                  CALL SPLINPOX(VMIN, TAUMAX, VELO, TAUTHOM, ND)
+c                ELSE
+c                  ! standard method: 
+c                  ! calculate new v_min by using v(tau) interpolation
+c                  CALL SPLINPOX(VMIN, TAUMAX, VELO, TAUROSScont, ND)
+c                ENDIF
                 bTauCycle = .TRUE.
               ENDIF
 
@@ -1258,7 +1098,6 @@ C***          TAUROSScont TOO SMALL: New vmin by scaling with sqrt(tau(ND)/TAUMA
               !STEPDAMP can damp this adjustment by using higher roots
               IF ((.NOT. bTauCycle) 
      >             .AND. (TAUCURMAX < TAUMAX-TAUACC)) THEN
-                VMIN_under = VMIN
                 VMIN = VMIN*(TAUCURMAX/TAUMAX)**(.5*STEPDAMP)
                 bTauCycle = .TRUE.                
               ENDIF
@@ -1309,19 +1148,19 @@ C***          Update VMIN, mix RCON with old value
               
 C***          Any velocity update might affect the clumping stratification              
               CALL CLUMP_STRUCT (DENSCON, FILLFAC, ND, DENSCON_FIX, 
-     >                 VELO, TAUROSScont, DENSCON_LINE, RADIUS, T, XMU)
+     >                 VELO, TAUROSScont, DENSCON_LINE, RADIUS, T, XMU)     
      
               !Berechnung der neuen TAU-Skala (continuum opacities only)
               CALL TAUSCAL(RSTAR, ND, RADIUS, RNE, ENTOT,
-     >              T, POPNUM, NDIM, N, EN, LEVEL, NCHARG, WEIGHT,
-     >              ELEVEL, EION, EINST, ALPHA, SEXPO,
-     >              ADDCON1, ADDCON2, ADDCON3, 
-     >              IGAUNT, NOM, NF,
-     >              XLAMBDA, FWEIGHT,
-     >              TAUTHOM, TAUROSScont,
-     >              MAXATOM, MAXION, SIGMATHK, SEXPOK, EDGEK, KODAT,
-     >              KONTNUP, KONTLOW, LASTKON, 
-     >              DENSCON, FILLFAC, POPMIN
+     >                T, POPNUM, NDIM, N, EN, LEVEL, NCHARG, WEIGHT,
+     >                ELEVEL, EION, EINST, ALPHA, SEXPO,
+     >                ADDCON1, ADDCON2, ADDCON3, 
+     >                IGAUNT, NOM, NF,
+     >                XLAMBDA, FWEIGHT,
+     >                TAUTHOM, TAUROSScont,
+     >                MAXATOM, SIGMATHK, SEXPOK, EDGEK, KODAT,
+     >                KONTNUP, KONTLOW, LASTKON, 
+     >                DENSCON, FILLFAC
      >        )
               IF (bTMTHOM) THEN
                 TAUCURMAX = TAUTHOM(ND)
@@ -1381,8 +1220,7 @@ C***  Calculate "quality" of the old radius grid
       ENDDO
 
 C***  To test for a new grid, bNoRGrid needs to be .FALSE.      
-c     This is overruled by a CARDS setting
-c      bNoRGrid = .FALSE.    
+      bNoRGrid = .FALSE.    
       
       gridloop: DO
       
@@ -1447,33 +1285,28 @@ C***  interpolations have to be performed
       IF (.NOT. bNoRGrid) THEN
             
 C***    Interpolation of temperature on the new radius grid
-        CALL INTERPOLATETEMP(T, Torg, RADIUS, RADIUSorg, 
-     >                       ENTOT, ENTOTorg,  
-     >                       TAUROSS, TEFF, ND, bUseENTOT)
+        CALL INTERPOLATETEMP(T, Torg, RADIUS, RADIUSorg, ND)
 
 C***    Interpolation of Popnumbers on new radius grid
         CALL INTERPOLATEPOPNUM(POPNUM, SCRATCH, POPMIN,
      >                         RADIUS, RADIUSorg, ENTOT, ENTOTorg,
-     >                         RNE, RNEorg, T, Torg,
-     >                         N, ND, ABXYZ, NFIRST, NLAST, NATOM,
-     >                         NCHARG, WEIGHT, EION, ELEVEL, NOM,
+     >                         N, ND, ABXYZ, NFIRST, NLAST, NATOM, 
      >                         bUseENTOT)
 
-C***    re-calculate XMU(L) from new POPNUMs
+C***    re-calculate RNE(L) and XMU(L) from new POPNUMs
         DO L=1, ND
+          RNEL=0.0
+          DO J=1,N
+            RNEL = RNEL + NCHARG(J) * POPNUM(L,J)
+          ENDDO
+          RNE(L)=RNEL
           XMU(L) = ATMEAN / (1. + RNE(L))
         ENDDO
 
 C***    --- Interpolation of old temperatures on Radius-Grid ---
-        CALL INTERPOLATETEMP (TOLD, T1old, RADIUS, RADIUSorg, 
-     >                        ENTOT, ENTOTorg,  
-     >                        TAUROSS, TEFF, ND, bUseENTOT)
-        CALL INTERPOLATETEMP (TOLD2, T2old, RADIUS, RADIUSorg, 
-     >                        ENTOT, ENTOTorg,  
-     >                        TAUROSS, TEFF, ND, bUseENTOT)
-        CALL INTERPOLATETEMP (TOLD3, T3old, RADIUS, RADIUSorg, 
-     >                        ENTOT, ENTOTorg,  
-     >                        TAUROSS, TEFF, ND, bUseENTOT)
+        CALL INTERPOLATETEMP(TOLD , T1old, RADIUS, RADIUSorg, ND)
+        CALL INTERPOLATETEMP(TOLD2, T2old, RADIUS, RADIUSorg, ND)
+        CALL INTERPOLATETEMP(TOLD3, T3old, RADIUS, RADIUSorg, ND)
         
         WRITE (hCPR,*) '*** ENSURETAUMAX: New radius grid established'
         
@@ -1496,18 +1329,12 @@ C***  depth point of the old stratification
       ENDDO
     
       DO L=1, ND 
-        IF (.NOT. bKeepTTAU) EXIT
         IF (TAUROSScont(L) < TAUTHICK) CYCLE
         IF (TAUROSScont(L) <= TAUSCALorg(ND)) THEN
           CALL SPLINPOX(T(L), TAUROSScont(L), Torg, TAUSCALorg, ND)
           CALL SPLINPOX(TOLD(L), TAUROSScont(L), T1old, TAUSCALorg, ND)
-          IF (NTOLD > 1) THEN
-            CALL SPLINPOX(TOLD2(L),TAUROSScont(L),T2old,TAUSCALorg, ND)
-          ENDIF
-          IF (NTOLD > 2) THEN
-            CALL SPLINPOX(TOLD3(L),TAUROSScont(L),T3old,TAUSCALorg, ND)
-          ENDIF
-C***      Note: SCRATCH still contains the POPNUMs on TAUSCALorg
+          CALL SPLINPOX(TOLD2(L), TAUROSScont(L), T2old, TAUSCALorg, ND)
+          CALL SPLINPOX(TOLD3(L), TAUROSScont(L), T3old, TAUSCALorg, ND)
           DO J=1, ND
             CALL SPLINPOX(POPNUM(L,J), TAUROSScont(L), 
      >                                SCRATCH(1,J), TAUSCALorg, ND)
@@ -1516,12 +1343,8 @@ C***      Note: SCRATCH still contains the POPNUMs on TAUSCALorg
           Textrap= ((TAUROSScont(L)+0.67)/(TAUSCALorg(ND)+0.67))**(0.25)
           T(L)     = Torg(ND)  * Textrap
           TOLD(L)  = T1old(ND) * Textrap
-          IF (NTOLD > 1) TOLD2(L) = T2old(ND) * Textrap
-          IF (NTOLD > 2) TOLD3(L) = T3old(ND) * Textrap
-C!TEST    DEBUG OUTPUT
-c          WRITE (hCPR,'(A,I2,5(2X,G14.6))') 'DEBUG TEXTRAP ', L, 
-c     >          Torg(ND), T(L), TAUSCALorg(ND), TAUROSScont(L), 
-c     >          (TAUROSScont(L)/TAUSCALorg(ND))**(0.25)
+          TOLD2(L) = T2old(ND) * Textrap
+          TOLD3(L) = T3old(ND) * Textrap
 
           ENEL = RNE(L) * ENTOT(L)
 C***      LTEPOP returns the LTE population numbers
@@ -1542,41 +1365,34 @@ C***        Apply old departure coefficient to LTE popnums
         XMU(L) = ATMEAN / (1. + RNE(L))
       ENDDO
             
-      CALL POP_RENORM(POPNUM, ND, N, NATOM, NFIRST, NLAST, ABXYZ)
-            
-            
-      DO L=1, ND
-        RNEdummy(L) = RNE(L)
-      ENDDO
-            
             
 C***  Interpolation of older popnumbers on the new radius grid
 C***  and interpolation on TAU in the optical thick part
       CALL REGRIDOLDPOP(POP1, T1old, SCRATCH, ND, N, T,
      >                  POPMIN, TAUTHICK, bNoRGrid,
      >                  RADIUS, RADIUSorg, ENTOT, ENTOTorg,
-     >                  RNEdummy, RNEorg, ABXYZ, NFIRST, NLAST, 
+     >                  RNE, RNEorg, ABXYZ, NFIRST, NLAST, 
      >                  NATOM, WEIGHT, NCHARG, EION, ELEVEL, NOM, 
      >                  TAUROSScont, TAUSCALorg,
-     >                  EN, DEPARTNDorg, bUseENTOT, bKeepTTAU)
+     >                  EN, DEPARTNDorg, bUseENTOT)
 
       IF (NTOLD > 1) THEN      
         CALL REGRIDOLDPOP(POP2, T2old, SCRATCH, ND, N, T,
      >                    POPMIN, TAUTHICK, bNoRGrid,
      >                    RADIUS, RADIUSorg, ENTOT, ENTOTorg,
-     >                    RNEdummy, RNEorg, ABXYZ, NFIRST, NLAST, 
+     >                    RNE, RNEorg, ABXYZ, NFIRST, NLAST, 
      >                    NATOM, WEIGHT, NCHARG, EION, ELEVEL, NOM, 
      >                    TAUROSScont, TAUSCALorg,
-     >                    EN, DEPARTNDorg, bUseENTOT, bKeepTTAU)
+     >                    EN, DEPARTNDorg, bUseENTOT)
       ENDIF
       IF (NTOLD > 2) THEN      
         CALL REGRIDOLDPOP(POP3, T3old, SCRATCH, ND, N, T,
      >                    POPMIN, TAUTHICK, bNoRGrid,
      >                    RADIUS, RADIUSorg, ENTOT, ENTOTorg,
-     >                    RNEdummy, RNEorg, ABXYZ, NFIRST, NLAST, 
+     >                    RNE, RNEorg, ABXYZ, NFIRST, NLAST, 
      >                    NATOM, WEIGHT, NCHARG, EION, ELEVEL, NOM, 
      >                    TAUROSScont, TAUSCALorg,
-     >                    EN, DEPARTNDorg, bUseENTOT, bKeepTTAU)
+     >                    EN, DEPARTNDorg, bUseENTOT)
       ENDIF
 
 C     ------- end of POPNUM interpolation ----------------------
@@ -1594,14 +1410,14 @@ C***  now including all grid updates
      >             IGAUNT, NOM, NF,
      >             XLAMBDA, FWEIGHT,
      >             TAUTHOM, TAUROSScont,
-     >             MAXATOM, MAXION, SIGMATHK, SEXPOK, EDGEK, KODAT,
+     >             MAXATOM, SIGMATHK, SEXPOK, EDGEK, KODAT,
      >             KONTNUP, KONTLOW, LASTKON, 
-     >             DENSCON, FILLFAC, POPMIN)
+     >             DENSCON, FILLFAC)
             
 C***  Final calculation of the DENSCON and FILLFAC vectors,
 C***  now including all damping and grid update effects
       CALL CLUMP_STRUCT (DENSCON, FILLFAC, ND, DENSCON_FIX, 
-     >     VELO, TAUROSScont, DENSCON_LINE, RADIUS, T, XMU)     
+     >                   VELO, TAUROSScont, DENSCON_LINE, RADIUS, T, XMU)     
       
 C***  Calculate Tau2/3 (always on Rosseland continuum scale)
       TAU23=0.666666666666
@@ -1696,7 +1512,7 @@ C***  PRINTOUT OF VARIOUS MODEL SPECIFICATIONS
      >             R23, TEFF, bThinWind, ITTAU, MAXITTAU, RCON, 
      >             BTWOT, MODOLD2, JOBNOLD2, TFAC,
      >             BETA, VPAR1cand, VPAR2cand, DENSCON, BETA2, 
-     >             BETA2FRACTION, HSCALE, bNoDetails,.FALSE.,VTURB(ND))
+     >             BETA2FRACTION, HSCALE, bNoDetails,.FALSE.,VTURB)
 
       GEDDRAD = GAMMARADMEAN        !store new GAMMARADMEAN in GEDDRAD (saved in MODEL)
       bTauUpdated = .TRUE.

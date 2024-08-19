@@ -2,7 +2,7 @@
      $                  WCHARM,ND,L,NFEDGE,EXPFAC,NDIM,N,NCHARG,WEIGHT,
      $                  ELEVEL,EION,EINST,SIGMAKI, KONTLOW,
      $                  KONTNUP,LASTKON,SIGMAFF,MAXION,NOM,KODAT,
-     $                  SIGMATHK,SEXPOK,EDGEK,MAXATOM,iBLOCKINVERSION)
+     $                  SIGMATHK,SEXPOK,EDGEK,MAXATOM,bBLOCKINVERSION)
 C***********************************************************************
 C***  CALLED FROM: SUBROUTINE COMA
 C***  DERIVATIVE OF NON-LTE OPACITY AND EMISSIVITY WITH RESPECT TO EN(I)
@@ -16,7 +16,8 @@ C***  This version (23-Mar-2007) assumes that KODAT positions
 C***  (i.e. KODATIND) give the atomic number (NCORECHARGE)
 C***********************************************************************
 
-      REAL, DIMENSION(MAXATOM, MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
+      DIMENSION EDGEK(MAXATOM,MAXATOM)
       DIMENSION NOM(N),KODAT(MAXATOM)
       DIMENSION NCHARG(N),WEIGHT(N),ELEVEL(N),EION(N)
       DIMENSION KONTLOW(LASTKON),KONTNUP(LASTKON),NFEDGE(LASTKON)
@@ -26,10 +27,10 @@ C***********************************************************************
       DIMENSION SIGMAKI(NF,LASTKON),SIGMAFF(NF,0:MAXION)
 
 C***  Dimension of the core-charge data locally provided here
-      INTEGER, PARAMETER :: MAXATOMDIM = 30
+      INTEGER, PARAMETER :: MAXATOMDIM = 26
       DIMENSION KODATIND(MAXATOMDIM)
  
-      INTEGER :: iBLOCKINVERSION
+      LOGICAL :: bBLOCKINVERSION
 
       REAL, PARAMETER :: C1 = 1.4388        !C1 = H * C / K    ( CM * ANGSTROEM )
       REAL, PARAMETER :: C2 = 3.9724E-16    !C2 = 2 * H * C    ( G * CM**3 / S**2 )
@@ -52,12 +53,11 @@ C***  IF DERIVATIVE WITH RESPECT TO THE TEMPERATURE REQUIRED: GOTO 50
 C***  BOUND-FREE TRANSITIONS INVOLVING LEVEL I  ********************************
       DO 2 KON=1, LASTKON
       NUP=KONTNUP(KON)
-      IF ((iBLOCKINVERSION > 0) .AND. (NOM(I) /= NOM(NUP))) GOTO 2
-C      IF ((iBLOCKINVERSION > 1) .AND. (NCHARG(I) /= NCHARG(NUP))) GOTO 2
+      IF (bBLOCKINVERSION .AND. (NOM(I) /= NOM(NUP))) GOTO 2
       LOW=KONTLOW(KON)
 
 C***  I IS LOWER LEVEL
-      IF (I == LOW) THEN
+      IF (I .EQ. LOW) THEN
          DO 11 K=1,NFEDGE(KON)
          DOPA(K)=DOPA(K)+SIGMAKI(K,KON)
    11    CONTINUE
