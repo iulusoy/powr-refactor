@@ -5,8 +5,8 @@
      $                  DRRATEN,RDIEL,RAUTO,DRJLW,DRJLWE,DRLJW,
      $                  INDNUP,INDLOW,LASTIND,KONTNUP,KONTLOW,LASTKON,
      $                  NFEDGE,NATOM,MAXATOM,SIGMATHK,SEXPOK,EDGEK,
-     $                  KODAT,NFIRST,NLAST, KRUDAUT,L,ND, NRB_CONT, 
-     >                  EXPFAC, WCHARM, MAXION)
+     $                  KODAT,NFIRST,NLAST, KRUDAUT,L,ND, 
+     >                  NRB_CONT, EXPFAC, WCHARM)
 C*******************************************************************************
 C***  RADIATIVE RATE COEFFICIENT MATRIX RRATE IS CALCULATED AT DEPTH POINT L
 C***  FROM THE GIVEN RADIATION FIELD
@@ -16,11 +16,12 @@ C***  Calling tree: STEAL - LINPOP - COMA - RADNET
 C*******************************************************************************
 
 C***  Dimension of the core-charge data locally provided here
-      PARAMETER ( MAXATOMDIM = 30)
+      PARAMETER ( MAXATOMDIM = 26)
       
 c      character*10 level(n) 
       DIMENSION KODAT(MAXATOM)
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
+      DIMENSION EDGEK(MAXATOM,MAXATOM)
       DIMENSION NFIRST(NATOM),NLAST(NATOM)
       DIMENSION RRATE(NDIM,NDIM),EINST(NDIM,NDIM)
       DIMENSION XJC(NF), XJL(LASTIND)

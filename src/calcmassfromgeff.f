@@ -1,8 +1,8 @@
       SUBROUTINE CALCMASSFROMGEFF(bFixGEFF, bFULLHYDROSTAT,
      >                            XMSTAR, GLOG, GEFFLOG, 
      >                            ARAD, APRESS, AGRAV, RADIUS, ND,
-     >                            RSTAR, RCON, RI, VELO, TAUROSS,
-     >                            VMACH, GAMMARADMEAN, GEDD,
+     >                            RSTAR, RCON, RI, TAUROSS,
+     >                            GAMMARADMEAN, GEDD,
      >                            XLOGL, QIONMEAN, fGAMMACOR)
 C***********************************************************************
 C***  updates GLOG and XMSTAR if GEFF has been fixed in the CARDS file
@@ -20,11 +20,11 @@ C***  fGAMMACOR is the calculated correction factor for depth-dependend GAMMARAD
       
       LOGICAL, INTENT(IN) :: bFixGEFF, bFULLHYDROSTAT
       
-      REAL, DIMENSION(ND) :: RADIUS, TAUROSS, VMACH, VELO
+      REAL, DIMENSION(ND) :: RADIUS, TAUROSS
       REAL, DIMENSION(ND-1) :: ARAD, AGRAV, APRESS, RI
             
       
-      REAL :: DIFF1, DIFF2, XLSTARS, facMASS, GTRUE, Rphoto
+      REAL :: DIFF1, DIFF2, XLSTARS, facMASS, GTRUE
       INTEGER :: L, LCON, Lfm
 
       !Physical constants:
@@ -46,28 +46,16 @@ C***  fGAMMACOR is the calculated correction factor for depth-dependend GAMMARAD
                   
       XLSTARS = 10**(XLOGL)
 
-C***  Fallback option: if RCON is not available, use sonic point
-      Rphoto = RCON
-      IF (Rphoto < RADIUS(ND) .OR. Rphoto > RADIUS(1)) THEN        
-        Rphoto = RADIUS(ND)
-        rsloop: DO L=ND-1, 1, -1
-          IF (VELO(L) > VMACH(L)) THEN
-            EXIT rsloop
-          ENDIF
-          Rphoto = RADIUS(L)
-        ENDDO rsloop 
-      ENDIF
-      
       Lfm = ND
       IF (bFixGEFF .AND. bFULLHYDROSTAT) THEN
         LCON = ND
-        DO WHILE (RADIUS(LCON) < Rphoto) 
+        DO WHILE (RADIUS(LCON) < RCON) 
           LCON = LCON - 1
         ENDDO
         
         !Calculate GAMMARADMEAN without limitation here:
         CALL CALCGAMMARADMEAN(ARAD, AGRAV, RADIUS, TAUROSS, 
-     >                        ND, Rphoto, RI, GAMMARADMEAN)
+     >                        ND, RCON, RI, GAMMARADMEAN)
         
         !We need to update the mass, so we need to find a point where
         ! GAMMARADMEAN is realized
@@ -110,5 +98,6 @@ C          WRITE (hCPR,*) 'LfM, fMass, fGAMMACOR ', LfM, facMass, fGAMMACOR
           GLOG = LOG10( GCONST * XMSTAR * XMSUN / (RSTAR * RSTAR) )
           GEDD = 1. - 10.**( GEFFLOG - GLOG )
       ENDIF        
-            
+      
+      
       END

@@ -2,7 +2,8 @@
      $                   CLIGHT, VDOP, INDLAP, XLAMLAP, DELXLAP, ALN,
      $                   XLAM, NBLINE, MAXLAP, MAXIND, MAXATOM, 
      $                   LEVEL, WEIGHT, EINST, NDIM, POPNUM,
-     >                   T, ND, NOM, NCHARG, EION, ENTOT, RNE, MAXSUBL,
+     >                   T, ND, NOM, NCHARG, EION, ENTOT, RNE, 
+     >                   MAXNSUBLEVEL, MAXNSUBLINE,
      $                   NSUBLOW, NSUBNUP, BROAD, LINPRO,
      >                   AVOIGT, NMOD, NDDIM, MAXMOD, DENSCON, MAINQN,
      >                   MULTIIND, NMULTI, DD_VDOP, NATOM, IND_ORIGLEV)
@@ -27,7 +28,7 @@ C***  Hence, all entering parmeters must be indexed with IMOD
       INTEGER, DIMENSION(NDIM) :: NOM
       DIMENSION ELEVEL(N)
       DIMENSION INDNUP(LASTIND),INDLOW(LASTIND), MULTIIND(LASTIND)
-      INTEGER, DIMENSION(MAXSUBL) :: NSUBLOW, NSUBNUP
+      INTEGER, DIMENSION(MAXNSUBLINE) :: NSUBLOW, NSUBNUP
       DIMENSION INDLAP(MAXLAP),XLAMLAP(MAXLAP),DELXLAP(MAXLAP)
       DIMENSION AVOIGT(MAXLAP,NDDIM,MAXMOD)
       DIMENSION EINST(NDIM,NDIM), IND_ORIGLEV(NDIM)
@@ -148,7 +149,8 @@ C***    Store LINE index for checking if this transition was split
      >                 DELXLAP, NBLINE,MAXLAP,INDLOW,INDNUP,INDNEW,MAXIND,
      >                 LEVEL,WEIGHT,ELEVEL,NNEW,EINST,NDIM,
      >                 POPNUM, T, ND, ALN, VDOP,
-     >                 MAXSUBL, NSUBLOW, NSUBNUP, BROAD, LINPRO, 
+     >                 MAXNSUBLEVEL, MAXNSUBLINE, 
+     >                 NSUBLOW, NSUBNUP, BROAD, LINPRO, 
      >                 AVOIGT, NMOD, MAXMOD, NDDIM, 
      >                 MAINQN, NCHARG, EION, NOM, IND_ORIGLEV)
 
@@ -171,7 +173,7 @@ C***     If LEVELS were not found: Skip the whole DRTRANSIT block
      >                 LEVEL, WEIGHT, ELEVEL, NNEW, EINST, NDIM,
      >                 POPNUM, T, ND,
      >                 ALN, VDOP, EION, ENTOT, RNE,
-     >                 MAXSUBL, NSUBLOW, BROAD, LINPRO, 
+     >                 MAXNSUBLEVEL, NSUBLOW, BROAD, LINPRO, 
      >                 AVOIGT, DENSCON, NMOD, MAXMOD, NDDIM, 
      >                 MAINQN, NCHARG, NOM, IND_ORIGLEV) 
 
@@ -186,6 +188,17 @@ C***  END OF BLEND BLOCK  ****************************************
 
 
    20 CONTINUE
+
+C***  Informative output for current range:
+c     find highest level index
+      nmax = max(maxval(indlow), maxval(indnup)) 
+      WRITE (0,'(A,I8,A,I8)') 
+     >    '*** NUMBER OF LEVELS incl. sublevels:', nmax,
+     >    '  DIMENSIONED:', MAXNSUBLEVEL
+      WRITE (0,'(A,I8,A,I8)') 
+     >    '*** NUMBER OF LINES  incl. sublines :', INDNEW, 
+     >    '  DIMENSIONED:', MAXIND
+
 
       RETURN
 

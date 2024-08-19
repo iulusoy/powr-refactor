@@ -1,28 +1,23 @@
-C*** ISU unused variable
-C    >             OPAKNOTH, 
-      SUBROUTINE COLIMO(K, ND, RADIUS, OPAK, ETAKNOTH, 
+      SUBROUTINE COLIMO(K, ND, RADIUS, OPAK, ETAK, ETAKNOTH, 
      >             OPAKNOTH, 
-C    >             S, XJLMO, XJLMOR2, XHLMO, 
-     >             XJLMO, XJLMOR2, XHLMO, 
+     >             S, XJLMO, XJLMOR2, XHLMO, 
      >             XJLMO_OLD, XHLMO_OLD, 
      >             DLF, DLH, GLF, GLH, VLF, VLH, 
      >             GLF2, GLH2, VLF2, VLH2, 
      >             QLF, QLH, OPAKH, 
      >             EDDIF, EDDIFO, EDDIG, EDDIGO,
-C    >             EDDIHOUT, EDDIHIN, EDDIHOUTO,
-     >             EDDIHOUT, EDDIHIN,
-C    >             EDDINOUT, EDDININ, EDDINOUTO,
+     >             EDDIHOUT, EDDIHIN, EDDIHOUTO,
+     >             EDDINOUT, EDDININ, EDDINOUTO,
      >             ALH, BLH, CLH, 
      >             A, B, C, W, DX, 
-C    >             BCORE, DBDR, XIMINUS, BPDONE, XLAMK,
-     >             BCORE, XLAMK,
-     >             DJDSMOD, bALOTri, DJDSMOU, DJDSMOL,
+     >             BCORE, DBDR, XIMINUS, BPDONE, XLAMK,
+     >             DJDSMO, DJDOMO, 
      >             FULFIL0, FULFIL1, BPLOT, BPLOT2, IPLOT, 
      >             IW_COLIMO_F, IW_COLIMO_G, IW_COLIMO_G2, BSTATIC, 
      >             CLMOETA, CLMOOPA, XHI, 
      >             RADIUS2, EPSG, GEPSB, GEPSBO, 
-C    >             XHOM, XHOMO, XNOM, XNOMO, 
-C    >             EDDIHOUTP, EDDINOUTP, EDDIHOUTOP, EDDINOUTOP,
+     >             XHOM, XHOMO, XNOM, XNOMO, 
+     >             EDDIHOUTP, EDDINOUTP, EDDIHOUTOP, EDDINOUTOP,
      >             IWARNJMNEG)
 
 
@@ -31,9 +26,7 @@ C***  Setup and solution of the tridiagonal equation
 C***  -A, B, -C and W are calculated
 C********************************************************
 
-C*** ISU unused variable
-C     DIMENSION RADIUS(ND), OPAK(ND), ETAK(ND), ETAKNOTH(ND), S(ND)
-      DIMENSION RADIUS(ND), OPAK(ND), ETAKNOTH(ND)
+      DIMENSION RADIUS(ND), OPAK(ND), ETAK(ND), ETAKNOTH(ND), S(ND)
       DIMENSION OPAKNOTH(ND)
       DIMENSION XJLMO(ND), XJLMOR2(ND), XHLMO(ND)
       DIMENSION XJLMO_OLD(ND), XHLMO_OLD(ND)
@@ -45,81 +38,17 @@ C     DIMENSION RADIUS(ND), OPAK(ND), ETAK(ND), ETAKNOTH(ND), S(ND)
       DIMENSION EDDIF(ND), EDDIFO(ND)
       DIMENSION EDDIG(ND-1), EDDIGO(ND-1)
       DIMENSION ALH(ND-1), BLH(ND-1), CLH(ND-1)
-C*** ISU unused variable
-C     DIMENSION A(ND), B(ND), C(ND), D(ND), E(ND), W(ND)
       DIMENSION A(ND), B(ND), C(ND), W(ND)
-C     DIMENSION DINV(ND), DJDSMOD(ND), DJDSMOU(ND), DJDSMOL(ND)
-      DIMENSION DJDSMOD(ND), DJDSMOU(ND), DJDSMOL(ND)
+      DIMENSION D(ND), E(ND), DINV(ND), DJDSMO(ND), DJDOMO(ND)
       DIMENSION FULFIL0(ND), FULFIL1(ND)
-      DIMENSION CLMOETA(ND), CLMOOPA(ND)
+      DIMENSION ETAT(ND), OPAT(ND), CLMOETA(ND), CLMOOPA(ND)
       DIMENSION RADIUS2(ND)
       DIMENSION EPSG(ND), GEPSB(ND), GEPSBO(ND)
-C     LOGICAL BPDONE, BPLOT, BPLOT2, BSTATIC, bALOTri
-      LOGICAL BPLOT, BPLOT2, BSTATIC, bALOTri
+      LOGICAL BPDONE, BPLOT, BPLOT2, BSTATIC, BOPAFULL
+      CHARACTER*4 REDISMODE
 
       INTEGER :: IWARNJMNEG
       
-
-      ! write(*,*) "RADIUS" , RADIUS
-      ! write(*,*) "OPAK" , OPAK
-      ! write(*,*) "ETAKNOTH" , ETAKNOTH
-      ! write(*,*) "OPAKNOTH", OPAKNOTH
-      ! write(*,*) "XJLMO", XJLMO
-      ! write(*,*) "XJLMOR2", XJLMOR2
-      ! write(*,*) "XHLMO", XHLMO
-      ! write(*,*) "XJLMO_OLD", XJLMO_OLD
-      ! write(*,*) "XHLMO_OLD", XHLMO_OLD
-      ! write(*,*) "DLF", DLF
-      ! write(*,*) "DLH",DLH
-      ! write(*,*) "GLF", GLF
-      ! write(*,*) "GLH", GLH
-      ! write(*,*) "VLF", VLF
-      ! write(*,*) "VLH", VLH
-      ! write(*,*) "GLF2", GLF2
-      ! write(*,*) "GLH2", GLH2
-      ! write(*,*) "VLF2", VLF2
-      ! write(*,*) "VLH2", VLH2
-      ! write(*,*) "QLF", QLF
-      ! write(*,*) "QLH", QLH
-      ! write(*,*) "OPAKH", OPAKH
-      ! write(*,*) "EDDIF", EDDIF
-      ! write(*,*) "EDDIFO", EDDIFO
-      ! write(*,*) "EDDIG", EDDIG
-      ! write(*,*) "EDDIGO",EDDIGO
-      ! write(*,*) "EDDIHOUT", EDDIHOUT
-      ! write(*,*) "EDDIHIN", EDDIHIN
-      ! write(*,*) "ALH", ALH
-      ! write(*,*) "BLH", BLH
-      ! write(*,*) "CLH", CLH
-      ! write(*,*) "A", A
-      ! write(*,*) "B", B
-      ! write(*,*) "C", C
-      ! write(*,*) "W", W
-      ! write(*,*) "DX", DX
-      ! write(*,*) "BCORE", BCORE
-      ! write(*,*) "XLAMK",XLAMK
-      ! write(*,*) "DJDSMOD", DJDSMOD
-      ! write(*,*) "bALOTri", bALOTri
-      ! write(*,*) "DJDSMOU", DJDSMOU
-      ! write(*,*) "DJDSMOL",DJDSMOL
-      ! write(*,*) "FULFIL0", FULFIL0
-      ! write(*,*) "FULFIL1", FULFIL1
-      ! write(*,*) "BPLOT", BPLOT
-      ! write(*,*) "BPLOT2", BPLOT2
-      ! write(*,*) "IPLOT", IPLOT
-      ! write(*,*) "IW_COLIMO_F", IW_COLIMO_F
-      ! write(*,*) "IW_COLIMO_G", IW_COLIMO_G
-      ! write(*,*) "IW_COLIMO_G2", IW_COLIMO_G2
-      ! write(*,*) "BSTATIC", BSTATIC
-      ! write(*,*) "CLMOETA", CLMOETA
-      ! write(*,*) "CLMOOPA", CLMOOPA
-      ! write(*,*) "XHI", XHI
-      ! write(*,*) "RADIUS2", RADIUS2
-      ! write(*,*) "EPSG", EPSG
-      ! write(*,*) "GEPSB", GEPSB
-      ! write(*,*) "GEPSBO", GEPSBO
-      ! write(*,*) "IWARNJMNEG", IWARNJMNEG
-
 C***  DNUEINV is frequency step in Hertz * Doppler velocity in cm/s
       IF (K .EQ. 0 .OR. BSTATIC) THEN
         DNUEINV = 0.
@@ -154,17 +83,10 @@ ccc          EDDIFO(L) = 0.01
         GLH(L) = DNUEINV * GLH2(L)
         VLH(L) = DNUEINV * VLH2(L)
 cc eddig-reset testweise stillgelegt zugunsten von EDDIMIX
-c        IF (EDDIG(L)*GLH(L)+VLH(L) .LT. -1.E-15 .OR. EDDIG(L) < 0.) THEN
-c         IF (EDDIG(L) < 0. .OR. EDDIG(L) > 1.) THEN
+        IF (EDDIG(L)*GLH(L)+VLH(L) .LT. -1.E-15) THEN
 c          write (0,'(a,i7,1x,f8.3,i3,2(1x,f7.3))') 
 c     >      'k, xlamk, l', k, xlamk, l, 
 c     >      EDDIG(L), EDDIG(L)*GLH(L)+VLH(L)
-c         ENDIF
-
-        IF (EDDIG(L)*GLH(L)+VLH(L) .LT. -1.E-15) THEN
-c          write (0,'(a,i7,1x,f8.3,i3,3(1x,f10.6))') 
-c     >      'k, xlamk, l', k, xlamk, l, 
-c     >      EDDIG(L), EDDIG(L)*GLH(L)+VLH(L), -VLH(L)/GLH(L)
           EDDIG(L) = -VLH(L)/GLH(L)
 ccc No reset of EDDIG at last K
 ccc          EDDIGO(L) = EDDIG(L)
@@ -244,15 +166,13 @@ C***    new treatment of outer boundary
         C(1)  = 2./DLF(1)* 
      >             (QLF(2)*EDDIF(2)*ALH(1)/QLH(1) - GEPSB(1))
         B(1)  = 2./DLF(1) * 
-c     >             (QLF(1)*EDDIF(1)*ALH(1)/QLH(1) + EDDIHOUTP
-     >             (QLF(1)*EDDIF(1)*ALH(1)/QLH(1) + EDDIHOUT   !test with full EDDIHOUT
+     >             (QLF(1)*EDDIF(1)*ALH(1)/QLH(1) + EDDIHOUTP
      >              + GEPSB(1) ) 
      >          + GLF(1)*EDDIF(1) + VLF(1) + CLMOOPA(1)
         W(1)  = 2./DLF(1)*
      >              ((BLH(1)*EDDIGO(1)+CLH(1))*XHLMO_OLD(1) 
      >               + GEPSBO(1) * (XJLMO_OLD(1) + XJLMO_OLD(2)) 
-c     >               - XHOM )
-     >               - 0. )     !test without prescribed XHOM (i.e. full EDDIHOUT)
+     >               - XHOM )
      >           + (GLF(1)*EDDIFO(1)+VLF(1))*XJLMO_OLD(1) 
      >           + CLMOETA(1)*RADIUS2(1) 
 
@@ -336,52 +256,76 @@ c        W(ND) = 0.
      >      GLF(IPLOT), VLF(IPLOT), GLH(IPLOT), VLH(IPLOT)
         ENDIF
 
+      CALL INVTRI (A, B, C, W, ND)
+
+C**********************************************************************
+C***  Calculate Diagonal Elements(^-1) of the Inverse of the T-Matrix
+C**********************************************************************
       DO L=1, ND
-        A(L) = A(L)/CLMOOPA(L)
-        B(L) = B(L)/CLMOOPA(L)
-        C(L) = C(L)/CLMOOPA(L)
-        W(L) = W(L)/CLMOOPA(L)
+         A(L) = A(L)/CLMOOPA(L)
+         B(L) = B(L)/CLMOOPA(L)
+         C(L) = C(L)/CLMOOPA(L)
       ENDDO
-        
-C**********************************************************************
-C***  Solve system with tridiagonal matrix to obtain solution vector
-C***   solution for XJL is rewritten in W vector
-C**********************************************************************
-      CALL LINTRIDIAGSOL (A, B, C, W, DJDSMOD, ND, 
-     >                    bALOTri, DJDSMOU, DJDSMOL)
-      
+
+C***  B is set negativ due to the form of the matrix -A, B, -C
+C***    and Matrix is divided by -OPA
+      D(1) = C(1) / (-B(1))
+      DO L=2, ND
+         D(L) = C(L) / (-B(L) - A(L)*D(L-1))
+      ENDDO
+
+      E(ND) = A(ND) / (-B(ND))
+      DO L=ND-1, 1, -1
+         E(L) = A(L) / (-B(L) - C(L)*E(L+1))
+      ENDDO
+
+      DINV(1) = (1. - D(1)*E(2)) * (-B(1))
+      DO L=2, ND-1
+ccc         DINV(L) = (1. - D(L)*E(L+1)) * (-B(L) - A(L)*D(L-1))
+         DINV(L) = (1. - D(L)*E(L+1)) * (B(L) - A(L)*D(L-1))
+      ENDDO
+ccc      DINV(ND) = -B(ND) - A(ND)*D(ND-1)
+      DINV(ND) = B(ND) - A(ND)*D(ND-1)
+
       DO L=1, ND
-C***    Protocol for warnings for negative results in XJL (=W now)      
+         DJDSMO(L) = 1.  / DINV(L)
+         DJDOMO(L) = (GLF(L)*EDDIFO(L)+VLF(L)) / (DINV(L)*CLMOOPA(L))
+      ENDDO
+      DJDSMO(1)    = 0.
+      DJDOMO(1)    = 0.
+      DJDSMO(ND)   = 0.
+      DJDOMO(ND)   = 0.
+C**********************************************************************
+
+      DO L=1, ND
+C***    WARNING counter increase if negative J encountered    
         IF (W(L) < 0.) IWARNJMNEG = IWARNJMNEG + 1
 
 C***    Set J to zero, if small or neg. values
 C***    as recommended by Andreas - wrh  5-Mar-2019
-        IF (W(L) < EXP(-499.D0)) THEN
+        IF (W(L) < EXP(-499.)) THEN
           XJLMO(L) = 0.
           XJLMOR2(L) = 0.
         ELSE
           XJLMO(L) = W(L)
           XJLMOR2(L) = W(L) / (RADIUS(L)*RADIUS(L))
-        ENDIF                
+        ENDIF
       ENDDO
 
-C***  We set the boundary terms to zero (why?)      
-      DJDSMOD(1)    = 0.
-      DJDSMOD(ND)   = 0.
-      
+
 C***  Calculation of the flux from the moment equation (XHLMO)
 C***  again suppressing neg. values as recommended by Andreas 
 C***  - wrh 5-Mar-2019
       DO L=1, ND-1
-        IF (W(L) < EXP(-499.D0)) THEN
+        IF (W(L) < EXP(-499.)) THEN
           XHLMO(L) = 0.
         ELSE
           XHLMO(L) = ALH(L)/QLH(L)*
-     >              (QLF(L+1)*EDDIF(L+1)*XJLMO(L+1)-
-     >               QLF(L)*EDDIF(L)*XJLMO(L)) + 
-     >             (BLH(L)*EDDIGO(L)+CLH(L))*XHLMO_OLD(L)
-     >          + GEPSBO(L) * (XJLMO_OLD(L+1) + XJLMO_OLD(L))
-     >          - GEPSB (L) * (XJLMO    (L+1) + XJLMO    (L))
+     >                (QLF(L+1)*EDDIF(L+1)*XJLMO(L+1)-
+     >                 QLF(L)*EDDIF(L)*XJLMO(L)) + 
+     >               (BLH(L)*EDDIGO(L)+CLH(L))*XHLMO_OLD(L)
+     >            + GEPSBO(L) * (XJLMO_OLD(L+1) + XJLMO_OLD(L))
+     >            - GEPSB (L) * (XJLMO    (L+1) + XJLMO    (L))
         ENDIF
       ENDDO
 

@@ -1,6 +1,6 @@
       SUBROUTINE READOLDT (ICH, ND, NDDIM, T, RADIUS,
      $                     TOLD, ROLD, MODOLD, JOBNOLD, TEFF, TEFFOLD,
-     >                     TAURCONT, TAURCONTOLD, BTAUR)
+     >                     TAURCONT, TAURCONTOLD, BTAUR, DTDRIN_OLD)
 C**********************************************************************
 C***  CALLED FROM: WRSTART
 C***  READS TEMPEREATURE STRUCTURE FROM OLD MODEL FILE, IF REQUESTED
@@ -25,10 +25,6 @@ C***  READ FROM CHANNEL ICH = OLD MODEL FILE ****************************
          ENDIF
       CALL READMS (ICH,JOBNOLD,     1, 'JOBNUM  ' , IERR)
       CALL READMS (ICH,NDOLD  ,     1, 'ND      ' , IERR)
-      CALL READMS (ICH,TEFFOLD,     1, 'TEFF    ' , IERR)
-      CALL READMS (ICH,TOLD   , NDOLD, 'T       ' , IERR)
-      CALL READMS (ICH,ROLD   , NDOLD, 'R       ' , IERR)
-
 C***  ARRAY BOUND CHECK
       IF (NDOLD .GT. NDDIM) THEN
          CALL REMARK (' OLD MODEL HAS TOO MANY DEPTH POINTS')
@@ -36,7 +32,10 @@ C***  ARRAY BOUND CHECK
          STOP 'ERROR'
       ENDIF
 
-C***  OLD T TAU: CHECK IF TAURCONT IS ON MODEL OR FALLBACK NEEDED
+      CALL READMS (ICH,TEFFOLD,     1, 'TEFF    ' , IERR)
+      CALL READMS (ICH,TOLD   , NDOLD, 'T       ' , IERR)
+      CALL READMS (ICH,ROLD   , NDOLD, 'R       ' , IERR)
+
       IF (BTAUR) THEN
          CALL READMS (ICH,TAURCONTOLD, NDOLD, 'TAURCONT' , IERR)
          IF (IERR .EQ. -10) THEN
@@ -51,15 +50,18 @@ C***  OLD T TAU: CHECK IF TAURCONT IS ON MODEL OR FALLBACK NEEDED
             ENDIF        
          ENDIF
       ENDIF
-      
+
+      CALL READMS (ICH,DTDRIN_OLD,1,   'DTDRIN  ' , IERR)
+      ! DTDRIN_OLD only used if OLD T + OLD STRAT/V is set
+
       CALL CLOSMS (ICH, IERR)
 
 
 C***  INTERPOLATION ***************************************************
-cc      BTAUR_INTERPO = BTAUR_INTERPO .AND. (TAURCONT(ND) .NE. 0.)
-      BTAUR_INTERPO = BTAUR_INTERPO .AND. (TAURCONT(ND) > 0.)
+      BTAUR_INTERPO = BTAUR_INTERPO .AND. (TAURCONT(ND) .NE. 0.)
 
       IF (BTAUR_INTERPO) THEN
+
          WRITE (0,*) 'Interpolation of Temperature on Tau-Grid'
 
 cC***     scale TAUROLD
@@ -97,12 +99,9 @@ C***  SCALE TEMPERATURE WITH THE RATIO TEFF ( NEW / OLD )
       IF (TEFF .NE. TEFFOLD) THEN
          Q = TEFF / TEFFOLD
          DO L=1, ND
-C***  NOTE: THIS DOES NO LONGER GUARANTEE TMIN
-C***        and can lead to non-monotonic situations
-c           FTAU = EXP(-TAUROSS(L)*2.)
-C           FTAU = 1.-MIN(TAUROSS(L), 1.)
-c           T(L) = T(L) * (FTAU + (1.-FTAU) * Q)
-           T(L) = T(L) * Q
+         FTAU = EXP(-TAURCONT(L)*2.)
+C         FTAU = 1.-MIN(TAURCONT(L), 1.)
+         T(L) = T(L) * (FTAU + (1.-FTAU) * Q)
          ENDDO
       ENDIF
 

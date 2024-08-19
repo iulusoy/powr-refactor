@@ -20,7 +20,6 @@
      >                              INCRIT,     !Rgrid depth point criterion per depth point
      >                              VELOCRIT,   !Vgrid calculation criterion per depth point
      >                              VTURB,      !Turbulence velocity in km/s
-     >                              VMACH,      !Sound speed in km/s (w/o turbulence)
      >                              bThinWind,  !determines if HYDROSTATIC INTEGRATION was used
      >                              bHYDROSOLVE,!determines if HYDROSOLVE was used
      >                              WORKRATIO,  !current work ratio of the model
@@ -35,13 +34,10 @@
      >                              ELEMENT,    !Element corresponding to atom integer index
      >                              SYMBOL,     !same as above but only symbol instead of full name
      >                              bFULLHYDROSTAT,
-     >                              MAXATOM,
-     >                              KODAT,
      >                              GEDDRAD,
      >                              ARAD,
      >                              APRESS,
      >                              AGRAV,
-     >                              HTOTOBS,
      >                              GAMMARADMEAN,
      >                              QIONMEAN,
      >                              bFixGEFF
@@ -54,21 +50,17 @@ C*******************************************************************************
       IMPLICIT NONE
       INCLUDE 'interfacebib.inc'
 
-      INTEGER, INTENT(IN) :: ND, NATOM, MAXATOM
+      INTEGER, INTENT(IN) :: ND, NATOM
       REAL, DIMENSION(ND), INTENT(IN) :: DENSCON, FILLFAC, RADIUS, VELO,
-     >                                   GRADI, RNE, ENTOT, T, TAUROSS, 
-     >                                   VMACH, VTURB, HTOTOBS
+     >                                   GRADI, RNE, ENTOT, T, TAUROSS
       REAL, DIMENSION(ND-1), INTENT(IN) :: ARAD, APRESS, AGRAV
       REAL, DIMENSION(ND), INTENT(INOUT) :: XMU
-      REAL, DIMENSION(ND) :: VSCRATCH
+      REAL, DIMENSION(ND) :: AMACH, VSCRATCH
       REAL, DIMENSION(ND-1) :: RI
       REAL, DIMENSION(NATOM), INTENT(IN) :: ABXYZ, ATMASS 
-      REAL, DIMENSION(NATOM) :: VTHELEM
-      REAL, INTENT(IN) :: TEFF, RSTAR, VDOP, RCON, LOGMDOT, 
+      REAL, INTENT(IN) :: TEFF, RSTAR, VDOP, RCON, LOGMDOT, VTURB, 
      >                    WORKRATIO, GEDDRAD
       REAL, INTENT(INOUT) :: LOGL, RTRANS, GEDD, GLOG, GEFFLOG, MSTAR
-      
-      INTEGER, DIMENSION(MAXATOM) :: KODAT
       
       CHARACTER(2), DIMENSION(NATOM), INTENT(IN) :: SYMBOL
       CHARACTER(8), DIMENSION(ND), INTENT(IN) :: INCRIT, VELOCRIT
@@ -80,15 +72,14 @@ C*******************************************************************************
 
       INTEGER, EXTERNAL :: IDX
 
-      INTEGER :: NA, L, Lcand, LCON, Ltcand, NAFE
+      INTEGER :: NA, L, Lcand, LCON
       REAL :: RSTARSU, ATMEAN, XELEM, VFINAL, VMIN, FM, VESC, VESCFULL,
      >        Dout, T1, T13, T23, R1, R13, R23, TAU1, TAU13, TAU23,
      >        Tindex, Rtindex, RL1, RL2, LOGQ, gammaIon, MDOTNL, GEDDe,
      >        LOGMDOTTRANS, LOGDMOM, Rsonic, Vsonic, XMUsonic, Tsonic,
      >        GAMMARAD, LOGLINF, QIONMEAN, GAMMARADMEAN, fdummy, q,
      >        G23LOG, GEFF23LOG, ASTAR, ETA, Rscrit, Vscrit, VTH, VTEST,
-     >        TAUsonic, TAUscrit, VMICND, LOGLINFTEST, LWINDSUB,
-     >        VESC23, VESCFULL23
+     >        TAUsonic, TAUscrit, VMICND, LOGLINFTEST, LWINDSUB
       CHARACTER(2) :: VCRIT
       CHARACTER(100) :: CTABLINE
 
@@ -126,7 +117,6 @@ C*******************************************************************************
       ATMEAN = .0
       DO NA=1, NATOM
         ATMEAN = ATMEAN + ABXYZ(NA)*ATMASS(NA)
-        VTHELEM(NA) = -1.
       ENDDO
       DO L=1, ND
         XMU(L) = ATMEAN / (1. + RNE(L))
@@ -147,12 +137,11 @@ C*******************************************************************************
           RI(L) = 0.5 * (RADIUS(L) + RADIUS(L+1))
         ENDDO
         !This updates MSTAR, GLOG, GEDD, GAMMARADMEAN
-        WRITE (hCPR,*) 'calcmassfromgeff called'
         CALL CALCMASSFROMGEFF(bFixGEFF, bFULLHYDROSTAT,
      >                        MSTAR, GLOG, GEFFLOG, 
      >                        ARAD, APRESS, AGRAV, RADIUS, ND,
-     >                        RSTAR, RCON, RI, VELO, TAUROSS,
-     >                        VMACH, GAMMARADMEAN, GEDD,
+     >                        RSTAR, RCON, RI, TAUROSS,
+     >                        GAMMARADMEAN, GEDD,
      >                        LOGL, QIONMEAN, fdummy)
       ENDIF
       
@@ -160,39 +149,20 @@ C*******************************************************************************
       !Find sonic point parameters
       Lcand = 0
       DO L=1, ND
-        VSCRATCH(L) = VELO(L) - VMACH(L)        
+        AMACH(L) = SQRT( RGAS * T(L) / XMU(L) ) / 1.E5      !a_mach in km/s
+        VSCRATCH(L) = VELO(L) - AMACH(L)        
         IF ((VSCRATCH(L) < 0) .AND. (Lcand == 0)) THEN
           Lcand = L
         ENDIF
-        DO NA=1, NATOM        
-          VTH = SQRT(2.*RGAS*T(L)/ATMASS(NA)) / 1.E5
-          VTEST = VELO(L) - VTH 
-          IF (VTEST < 0. .AND. VTHELEM(NA) < 0.) THEN
-            VTHELEM(NA) = VTH      !thermal speed per element (neglecting electron masses for ions)
-          ENDIF
-        ENDDO
       ENDDO
       IF (Lcand > 0) THEN
         CALL SPLINPOX(Rsonic,0.,RADIUS,VSCRATCH,ND,.FALSE.,Lcand)
-        CALL SPLINPOX(Vsonic,Rsonic,VMACH,RADIUS,ND)
+        CALL SPLINPOX(Vsonic,Rsonic,AMACH,RADIUS,ND)
         CALL SPLINPOX(Tsonic,Rsonic,T,RADIUS,ND)
         CALL SPLINPOX(XMUsonic,Rsonic,XMU,RADIUS,ND)
         CALL SPLINPOX(gammaIon,Rsonic,RNE,RADIUS,ND)
-        CALL SPLINPOX(TAUsonic,Rsonic,TAUROSS,RADIUS,ND)
       ENDIF
-      !Current critical point
-      Ltcand = 0
-      DO L=1, ND
-        VSCRATCH(L) = VELO(L) - SQRT(VMACH(L)**2  + VTURB(L)**2)
-        IF ((VSCRATCH(L) < 0) .AND. (Ltcand == 0)) THEN
-          Ltcand = L
-        ENDIF
-      ENDDO
-      IF (Ltcand > 0) THEN
-        CALL SPLINPOX(Rscrit,0.,RADIUS,VSCRATCH,ND,.FALSE.,Ltcand)
-        CALL SPLINPOX(Vscrit,Rscrit,VELO,RADIUS,ND)
-        CALL SPLINPOX(TAUscrit,Rscrit,TAUROSS,RADIUS,ND)
-      ENDIF
+            
         
       Dout = DENSCON(1)
       RTRANS = 
@@ -201,9 +171,9 @@ C*******************************************************************************
 
 
       WRITE(hSUMMARY,'(A,F10.2)') '\VAR TEFF    = ', TEFF
-      WRITE(hSUMMARY,'(A,F20.2)') '\VAR RSTAR   = ', RSTAR   !in cm
-      WRITE(hSUMMARY,'(A,F12.4)') '\VAR RSTARSU = ', RSTARSU  !in Rsun
-      WRITE(hSUMMARY,'(A,F8.4)') '\VAR LOGL    = ', LOGL     !log L/Lsun
+      WRITE(hSUMMARY,'(A,1PG14.4)') '\VAR RSTAR   = ', RSTAR   !in cm
+      WRITE(hSUMMARY,'(A,F8.3)') '\VAR RSTARSU = ', RSTARSU  !in Rsun
+      WRITE(hSUMMARY,'(A,F5.3)') '\VAR LOGL    = ', LOGL     !log L/Lsun
       WRITE(hSUMMARY,'(A,F12.4)') '\VAR RTRANS  = ', RTRANS   !Rtrans in solar radii
       WRITE(hSUMMARY,'(A,F9.3)') '\VAR VFINAL  = ', VFINAL   !v_inf in km/s
       WRITE(hSUMMARY,'(A,F9.3)') '\VAR VMIN    = ', VMIN     !v_min in km/s
@@ -212,22 +182,13 @@ C*******************************************************************************
         WRITE(hSUMMARY,'(A,F9.3)') '\VAR RSONIC  = ', Rsonic   !Rsonic in Rstar
         WRITE(hSUMMARY,'(A,F9.3)') '\VAR RSONICSU = ', Rsonic * RSTARSU  !Rsonic in Rsun
       ENDIF
-      IF (Ltcand > 0) THEN
-        WRITE(hSUMMARY,'(A,F9.3)') '\VAR VSCRIT  = ', Vscrit   !v_sonic in km/s
-        WRITE(hSUMMARY,'(A,F9.3)') '\VAR RSCRIT  = ', Rscrit   !Rsonic in Rstar
-        WRITE(hSUMMARY,'(A,F9.3)') '\VAR RSCITSU = ', Rscrit * RSTARSU  !Rsonic in Rsun
-      ENDIF
       WRITE(hSUMMARY,'(A,F7.3)') '\VAR LOGMDOT = ', LOGMDOT  !log Mdot/(Msol/yr)
       WRITE(hSUMMARY,'(A,F6.2)') '\VAR DENSCON = ', 
      >                                 MAXVAL(DENSCON(1:ND)) !maximum D value
       WRITE(hSUMMARY,'(A,F9.3)') '\VAR VDOP    = ', VDOP
-      NAFE = KODAT(26)
-      IF (NAFE > 0 .AND. VTHELEM(NAFE) > 0.) THEN
-        WRITE(hSUMMARY,'(A,F9.3)') '\VAR VTHFE    = ', VTHELEM(NAFE)
-      ENDIF
-      WRITE(hSUMMARY,'(A,F12.3)') '\VAR RMAX    = ', RADIUS(1)        !in Rstar (als Kontrolle fuer RMAX)
+      WRITE(hSUMMARY,'(A,F8.2)') '\VAR RMAX    = ', RADIUS(1)        !in Rstar (als Kontrolle fuer RMAX)
       IF (RCON > 0.) THEN
-        WRITE(hSUMMARY,'(A,F12.5)') '\VAR RCON    = ', RCON     !in Rstar
+        WRITE(hSUMMARY,'(A,F10.5)') '\VAR RCON    = ', RCON     !in Rstar
       ENDIF
       
       ETA = 10**(LOGMDOT) * XMSUNPYR * VFINAL * 1.E5 * CLIGHT 
@@ -294,26 +255,18 @@ C*******************************************************************************
       ELSE 
         VESCFULL = -99.
       ENDIF
-      IF (HTOTOBS(1) > 0.) THEN
-        LOGLINFTEST = LOG10( PI4*PI4 * (RADIUS(1)*RSTAR)**2.
-     >                           * HTOTOBS(1)  / XLSUN )
-      ELSE 
-        LOGLINFTEST = -99.
-      ENDIF
       LWINDSUB = 10**(LOGMDOT) * XMSUNPYR/XLSUN * 1.E10 *
      >                    ( VFINAL**2 + VESC**2 ) / 2.
       IF (LWINDSUB < 10**LOGL) THEN
         LOGLINF = LOG10( 10**(LOGL) 
      >                 - LWINDSUB )
-        WRITE(hCPR,'(A,F8.3,1X,F8.3)') 'Linf, Linftest ',
-     >                                LOGLINF, LOGLINFTEST
       ELSE
         WRITE(hCPR,'(A)')
      >    '*** WARNING: WIND CONSUMES MORE LUMINOSITY THAN PROVIDED'
         WRITE(hOUT,'(A)')
      >    '*** WARNING: WIND CONSUMES MORE LUMINOSITY THAN PROVIDED'
         WRITE(hCPR,'(A,3(1X,F8.3))') 'L, Lsub, Linftest ',
-     >                      LOGL, LOG10(LWINDSUB), LOGLINFTEST        
+     >                      LOGL, LOG10(LWINDSUB)
       ENDIF
 
       WRITE(hSUMMARY,'(A,F8.3)') '\VAR MSTAR   = ', MSTAR
@@ -323,9 +276,9 @@ C*******************************************************************************
       ENDIF
       WRITE(hSUMMARY,'(A,F6.3)') '\VAR GEDD    = ', GEDDe     !Eddington Gamma_e (Thomson only)
       WRITE(hSUMMARY,'(A,F6.3)') '\VAR GAMMARAD = ', GAMMARAD !Eddington Gamma with full a_rad
-      WRITE(hSUMMARY,'(A,F9.3)') '\VAR VTURB   = ', VTURB(ND) !Turbulence velocity
-      VMICND = VTURB(ND) * SQRT(2.)
-      WRITE(hSUMMARY,'(A,F9.3)') '\VAR VMIC   = ', VMICND !Turbulence velocity
+      WRITE(hSUMMARY,'(A,F9.3)') '\VAR VTURB   = ', VTURB     !Turbulence velocity
+      VMICND = VTURB * SQRT(2.)
+      WRITE(hSUMMARY,'(A,F9.3)') '\VAR VMIC   = ', VMICND     !literature microturbulence value
       IF (VESC >= 0.) THEN
         WRITE(hSUMMARY,'(A,F9.3)') '\VAR VESC    = ', VESC    !Escape velocity at Rstar
       ELSE 
@@ -348,9 +301,9 @@ C*******************************************************************************
         !calculate mass fraction of current element
         !note: ELEMENT(NA) returns the Name, SYMBOL(NA) just He, C, ...
         XELEM = ABXYZ(NA)*ATMASS(NA) / ATMEAN
-        WRITE(hSUMMARY,'(A8,A2,A5,G12.6)')
+        WRITE(hSUMMARY,'(A8,A2,A5,F7.5)')
      >     '\VAR Xn_',ADJUSTL(SYMBOL(NA)), '   = ', ABXYZ(NA)      !by number
-        WRITE(hSUMMARY,'(A8,A2,A5,G12.6)') 
+        WRITE(hSUMMARY,'(A8,A2,A5,F7.5)') 
      >     '\VAR Xm_',ADJUSTL(SYMBOL(NA)), '   = ', XELEM          !by mass
       ENDDO
 
@@ -423,35 +376,9 @@ C*******************************************************************************
         GEFF23LOG = GEFFLOG - 2. * LOG10(R23)
         WRITE(hSUMMARY,'(A,F8.4)') '\VAR GEFF23LOG = ', GEFF23LOG
       ENDIF
-      IF (GEDDe < 1.) THEN
-        VESC23 = SQRT(2*GCONST*MSTAR*MSUN * (1. - GEDDe) / (R23*RSTAR)) / 1.E5
-      ELSE 
-        VESC23 = -99.
-      ENDIF
-      IF (GAMMARAD < 1.) THEN
-        VESCFULL23 = SQRT(2*GCONST*MSTAR*MSUN*(1.-GAMMARAD)/(R23*RSTAR)) / 1.E5
-      ELSE 
-        VESCFULL23 = -99.
-      ENDIF
-      IF (VESC23 >= 0.) THEN
-        WRITE(hSUMMARY,'(A,F9.3)') '\VAR VESC23  = ', VESC23    !Escape velocity at R23
-      ELSE 
-        WRITE(hSUMMARY,'(A)')    '\VAR VESC23  = invalid'     !supereddington, no escape velocity at R23
-      ENDIF
-      IF (VESCFULL23 >= 0.) THEN
-        WRITE(hSUMMARY,'(A,F9.3)') '\VAR VESCFULL23 = ', VESCFULL23 !Escape velocity at R23 w/ full GAMMARAD
-      ELSE 
-        WRITE(hSUMMARY,'(A)')    '\VAR VESCFULL23 = invalid'      !supereddington, no escape velocity at R23
-      ENDIF
-      
-      WRITE(hSUMMARY,'(A,F10.4)')   '\VAR TAUMAX    = ', TAUROSS(ND)
-      IF (Lcand > 0) THEN
-        WRITE(hSUMMARY,'(A,F10.4)') '\VAR TAUSONIC  = ', TAUsonic     !Tau_sonic (full Tau)
-      ENDIF
-      IF (Ltcand > 0) THEN
-        WRITE(hSUMMARY,'(A,F10.4)') '\VAR TAUSCRIT  = ', TAUscrit     !Tau_scrit (full Tau)
-      ENDIF
-      WRITE(hSUMMARY,'(A,F6.3)')    '\VAR WORKRATIO = ', WORKRATIO    !calculated in INITFCORR
+
+      WRITE(hSUMMARY,'(A,F10.4)') '\VAR TAUMAX  = ', TAUROSS(ND)
+      WRITE(hSUMMARY,'(A,F6.3)')  '\VAR WORKRATIO = ', WORKRATIO    !calculated in INITFCORR
       
       !Grid index calculation
       Tindex = (log10(TEFF) - 4.35) / 0.05

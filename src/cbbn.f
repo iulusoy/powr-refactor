@@ -202,7 +202,7 @@ C                                    ====
           ELSE
 C***  NO/UNKNOWN KEYWORD 'KEYCBB' DECODED
               CALL REMARK (' N IV: WRONG KEYWORD KEYCBB ')
-              GOTO 999
+              STOP 'ERROR'
           ENDIF
  
 C***  N V  *************************************************************
@@ -226,7 +226,7 @@ C                                    ====
           ELSE
 C***  NO/UNKNOWN KEYWORD 'KEYCBB' DECODED
               CALL REMARK (' N V: WRONG KEYWORD KEYCBB ')
-              GOTO 999
+              STOP 'ERROR'
           ENDIF
  
 C***  N VI  ************************************************************

@@ -14,15 +14,12 @@ C***  IRON: ADD GENERIC ION TO MAXATOM
       INTEGER, PARAMETER :: NFDIM    = 2*NDIM + 400 
       INTEGER, PARAMETER :: MAXKONT  =     NFDIM/2 
       INTEGER, PARAMETER :: MAXIND   =       45000 
-      INTEGER, PARAMETER :: MAXFEIND =        2500 
+      INTEGER, PARAMETER :: MAXFEIND =        1500 
       INTEGER, PARAMETER :: NDDIM    =          89 
       INTEGER, PARAMETER :: MAXHIST  =        4000 
-
-C***  MAXIMUM ION CHARGE WHICH MAY OCCUR (SEE ALSO SUBR. GAUNTFF)
-      INTEGER, PARAMETER :: MAXION = 27 
-
+ 
 C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
-      INTEGER, PARAMETER :: MAXAUTO = 3200 
+      INTEGER, PARAMETER :: MAXAUTO = 2850 
       INTEGER, DIMENSION(MAXAUTO) :: LOWAUTO, IONAUTO, KRUDAUT
       REAL, DIMENSION(MAXAUTO) :: WAUTO, EAUTO, AAUTO
       COMMON / COMAUTO / LOWAUTO, WAUTO, EAUTO, AAUTO, IONAUTO, KRUDAUT
@@ -46,9 +43,9 @@ C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
       CHARACTER(8*MAXHIST) :: MODHIST
 
       INTEGER :: I, N, L, IFRO, ITO, JOBNUM, LASTIND, NATOM, NAUTO, ND,
-     >           LASTKON, LASTFE, JOBNUM_SAVE, IDUMMY, IERR, NALIM, 
-     >           LAST, LSPOP, IARG, NARG, IONLIM, N_WITH_DRLEVELS
-      REAL :: A, B, X, Q, FEDUMM, POPMIN, TMIN, TMPREAL,
+     >           LASTKON, LASTFE, JOBNUM_SAVE, IDUMMY, IERR,
+     >           LAST, LSPOP, IARG, NARG, N_WITH_DRLEVELS
+      REAL :: A, B, X, Q, FEDUMM,
      >        VDOPFE, DXFE, XLAM0FE, XL, FROM, FTO, ASECOND
 
       CHARACTER(255) :: HISTENTRY
@@ -59,7 +56,7 @@ C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
       CHARACTER(7) :: MODE
       CHARACTER(4), DIMENSION(MAXIND) :: KEYCBB
       CHARACTER(2), DIMENSION(MAXATOM) :: SYMBOL
-      CHARACTER(10), DIMENSION(15) :: ARGUMENT
+      CHARACTER(10), DIMENSION(10) :: ARGUMENT
       CHARACTER(64) :: BUFFER64
       CHARACTER(72) :: BUFFER72
       LOGICAL NOTEMP, BAUTO, NOPOP
@@ -68,7 +65,7 @@ C***  IRON: COMMON BLOCK FOR IRON-SPECIFIC DATA
 C***  include "dimblock"
 C      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5    !std
 C      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5     !vd20
-      INTEGER, PARAMETER :: INDEXMAX = 1E8, NFEREADMAX = 6E5     !xxl / hydro
+      INTEGER, PARAMETER :: INDEXMAX = 1E8, NFEREADMAX = 6E5     !xxl
 
       REAL, DIMENSION(NFEREADMAX) :: FEDUMMY
       INTEGER, DIMENSION(MAXFEIND) :: INDRB, INDRF, IFRBSTA, IFRBEND,
@@ -106,11 +103,11 @@ C***  Write Link Data (Program Version) tp CPR file
       WRITE(hCPR,'(4A)') '>>> created by ', LINK_USER(:IDX(LINK_USER)),
      >      ' at host ', LINK_HOST(:IDX(LINK_HOST))
 
-      IF (OPSYS .EQ. 'CRAY' .OR. OPSYS .EQ. 'SGI') THEN
-        CALL CLOCK(TIM1)
-      ELSE
-        CALL TIME(TIM1)
-      ENDIF
+c      IF (OPSYS .EQ. 'CRAY' .OR. OPSYS .EQ. 'SGI') THEN
+c        CALL CLOCK(TIM1)
+c      ELSE
+c        CALL TIME(TIM1)
+c      ENDIF
 
       CALL       DATOM (NDIM,N,LEVEL,NCHARG , WEIGHT,ELEVEL,EION,MAINQN,
      $                  EINST,ALPHA,SEXPO,
@@ -127,7 +124,7 @@ C***  IRON: ADDITIONAL PARAMETERS FOR IRON-GROUP LINE BLANKETING
      >             LASTFE, SIGMAFE, INDRB, INDRF,
      >             IFENUP, IFELOW, IFRBSTA, IFRBEND, FEDUMMY,
      >             VDOPFE, DXFE, XLAM0FE, SIGMAINT, BFEMODEL, 
-     >             LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS, MAXION)
+     >         LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS)
 
 C***  READING OF THE MODEL FILE ----------------------------------------
       CALL OPENMS (hMODEL, IDUMMY, IDUMMY, 1, IERR)
@@ -141,10 +138,6 @@ C***  READING OF THE MODEL FILE ----------------------------------------
 C***  Save JOBNUM
       JOBNUM_SAVE = JOBNUM
       CALL READMS (hMODEL, POPNUM ,ND*N,'POPNUM  ' , IERR)
-      CALL READMS (hMODEL, POPMIN ,  1, 'POPMIN  ' , IERR)
-      IF (IERR == -10) THEN
-        POPMIN = 1.E-99   !Note: STEAL has a default of 1.E-25
-      ENDIF
       CALL READMS (hMODEL, RNE    , ND, 'RNE     ' , IERR)
       CALL READMS (hMODEL, ENTOT  , ND, 'ENTOT   ' , IERR)
       CALL READMS (hMODEL, T      , ND, 'T       ' , IERR)
@@ -184,16 +177,11 @@ C***  DECODING INPUT CARDS  ********************************************
       NOTEMP = .FALSE.
       BAUTO = .FALSE.
       NOPOP = .FALSE.
-      NALIM = 0
-      IONLIM = 0
-
-C***  Set minimum temperature for extrapolation
-      TMIN = 3000.
 
 C***  IF INPUT-FILE IS FINISHED (END=66) THEN UPDATE THE MODEL
     7 READ(hMODINPUT,'(A)',END=66) KARTE
 
-      DO IARG=1, 15
+      DO IARG=1, 10
        ARGUMENT(IARG) = ""
       ENDDO
 
@@ -208,7 +196,9 @@ C                           ===========
 
       ELSEIF ( KARTE(:9) .EQ. 'PRINT POP' ) THEN
 C                              =========
-            READ(UNIT=KARTE, FMT='(9X,F10.0)') XL
+c            DECODE (80,4,KARTE) XL
+            READ (KARTE(10:),'(F10.0)') XL
+c    4       FORMAT (9X,F10.0)
             LSPOP=IFIX(XL)
             IF (LSPOP.EQ.0) LSPOP=1
 C***        READ NEXT INPUT CARD
@@ -221,14 +211,6 @@ C                                    =========
             IFRO=IFIX(FROM)
             ITO=IFIX(FTO)
             MODE='INTERPO'
-            IF ( NARG > 7 .AND. ARGUMENT(8) == 'ONLY' ) THEN
-              READ (ARGUMENT(10),'(F10.0)') tmpREAL
-              IF ( ARGUMENT(9) == 'ATOM' ) THEN
-                NALIM = IFIX(tmpREAL)
-              ELSEIF ( ARGUMENT(9) == 'ION' ) THEN
-                IONLIM = IFIX(tmpREAL)
-              ENDIF
-            ENDIF
             JOBNUM = JOBNUM + 1
 C***        DO INTERPOLATION
             GOTO 80
@@ -290,23 +272,7 @@ C                             ===
             NOPOP = .FALSE.
 C***        READ NEXT INPUT CARD
             GOTO 7
-
-      ELSE IF (ARGUMENT(1)(1:6) .EQ. 'POPMIN' ) THEN
-C                                     =======
-            READ (ARGUMENT(2),'(F10.0)') tmpREAL
-            IF (POPMIN <= 1.E-98) THEN
-              !use CARDS value only if not stored in MODEL file
-              POPMIN = tmpREAL
-            ENDIF
-C***        READ NEXT INPUT CARD
-            GOTO 7
-
-      ELSEIF (ARGUMENT(1) == 'TMIN') THEN 
-C                             ====
-            READ (ARGUMENT(2),'(F10.0)') TMIN
-C***        READ NEXT INPUT CARD
-            GOTO 7
-
+            
       ENDIF
 
       GOTO 7
@@ -315,8 +281,8 @@ C***  LOOP OF DECODING-OF-INPUT-CARDS  **********************************
 C***  INTER- OR EXTRAPOLATION OF THE POPULATIONS  **********************
 C***  ENTRY-POINT FOR INTERPOLATION AND EXTRAPOLATION
    80 CONTINUE
-          CALL INTEPO (ND,N,RNE,NCHARG,POPNUM,ENTOT,NATOM,NALIM,IONLIM,
-     >                           ABXYZ,NFIRST,NLAST,IFRO,ITO,MODE,NOPOP)
+          CALL INTEPO (ND,N,RNE,NCHARG,POPNUM,ENTOT,NATOM,
+     $                           ABXYZ,NFIRST,NLAST,IFRO,ITO,MODE,NOPOP)
 
 C***  INTERPOLATION OF THE TEMPERATURE STRATIFICATION
       IF (.NOT. NOTEMP) THEN
@@ -361,13 +327,8 @@ C***  INTERPOLATION OF THE TEMPERATURE STRATIFICATION
       ENDIF
 
 C***  TO AVOID NEGATIVE OR SMALL POPNUMBERS: CALL INHIBIT
-      CALL INHIBIT (POPNUM, N, ND, NCHARG, RNE,
-     >              NATOM, ABXYZ, NFIRST, NLAST, POPMIN)
-
-C***  AVOID TEMPERATURES BELOW TMIN (especially negative T)
-      DO L=1, ND
-        T(L) = MAX(T(L), TMIN)
-      ENDDO
+      CALL INHIBIT(POPNUM, N, ND, NCHARG, RNE, 
+     >             NATOM, ABXYZ, NFIRST, NLAST, 1.E-99)
 
 C***  UPDATING THE MODEL HISTORY
 C***  JOBNUM IS INCREASED FOR EVERY INTERPOLATION OR EXTRAPOLATION CARD

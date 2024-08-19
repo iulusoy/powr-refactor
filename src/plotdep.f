@@ -1,5 +1,5 @@
       SUBROUTINE PLOTDEP (LEVELPLDEP, NPLOTDEP, N, ND, LEVEL, ENTOT,
-     $                    DEPART, MODHEAD, JOBNUM, KANAL, MAXSETS,
+     $                    DEPART, MODHEAD, JOBNUM, KANAL, MAXSETS, 
      $                    BINBOX, POPNUM, POPLTE, NATOM, NFIRST, NLAST,
      >                    NCHARG, SYMBOL)
 
@@ -11,15 +11,7 @@ C***********************************************************************
       REAL, DIMENSION(NDMAX) :: X, Y
       REAL, DIMENSION(ND) :: ENTOT
       REAL, DIMENSION(ND,N) :: DEPART, POPNUM, POPLTE
-C*** ISU
-C array boundaries are exceeded below, so I am extending the
-C array size
-C     CHARACTER HEADER*60,MODHEAD*100,LEVEL(N)*10,CENTER*8
-      CHARACTER HEADER*70,MODHEAD*100,LEVEL(N)*10,CENTER*8
-C*** ISU
-C array boundaries are exceeded below, so I am extending the
-C array size
-C     CHARACTER(5) :: MORE
+      CHARACTER HEADER*100,MODHEAD*100,LEVEL(N)*10,CENTER*8
       CHARACTER(50) :: MORE
       CHARACTER*10 LEVELPLDEP(MAXSETS,N), ACTLEV
       INTEGER, DIMENSION(MAXSETS) :: LI, ISYMBOL
@@ -30,7 +22,7 @@ C     CHARACTER(5) :: MORE
       IF (ND .GT. NDMAX) THEN
         WRITE (0,*) 'WARNING : FROM PLOTDEP'
         WRITE (0,*) 'WARNING : DEPART COULD NOT BE PLOTTED'
-        WRITE (0,'(A,2(1XI3))')
+        WRITE (0,'(A,2(1XI3))') 
      >         'NDMAX INSUFFICIENT : ND, NDMAX=', ND, NDMAX
         RETURN
       ENDIF
@@ -46,7 +38,7 @@ C***  DEFINE PLOTSYMBOLS
       ISYMBOL(8) = 21
       ISYMBOL(9) = 22
       ISYMBOL(10)= 23
-
+ 
       CALL JSYMSET ('G2','TRANSFER')
       CALL REMARK ('PLOT DEPART -- DATA TO BE ROUTED')
 
@@ -66,7 +58,7 @@ C***  DEFINE PLOTSYMBOLS
       YTICK=1.
       XABST=3.
       YABST=5.
-
+ 
 C***  Check for GROUNDSTATES option
       NEWNPLOTDEP = NPLOTDEP
       DO IPLOT=1, NPLOTDEP
@@ -145,7 +137,7 @@ C**   No single level found --> skip this plot
       IF (LI(1) .GT. 0) HEADER(29:38)=LEVEL(LI(1))
       IF (LI(2) .GT. 0) HEADER(40:49)=LEVEL(LI(2))
       IF (LI(3) .GT. 0) HEADER(51:60)=LEVEL(LI(3))
-      IF (LI(4) .GT. 0 .OR. LI(5) .GT. 0 .OR. LI(6) .GT. 0 .OR.
+      IF (LI(4) .GT. 0 .OR. LI(5) .GT. 0 .OR. LI(6) .GT. 0 .OR. 
      >    LI(7) .GT. 0) HEADER(62:64)='etc'
       WRITE (KANAL, '(A)') 'PLOT   :'//HEADER
 
@@ -157,9 +149,9 @@ C***  MORE THAN THREE LEVELS TO BE PLOTTED: CONTINUE HEADER VERTICALLY
       IF (LI(7) .GT. 0) MORE(34:43) = LEVEL(LI(7))
       IF (LI(8) .GT. 0) MORE(44:49) = ', etc.'
 
-      IF (LI(4) .GT. 0 .OR. LI(5) .GT. 0 .OR. LI(6) .GT. 0 .OR.
-     >    LI(7) .GT. 0) WRITE (KANAL, '(2A)')
-     >  'KASDEF LUNA XMAX YMAX 0.7 0. 0.4 -90. ', MORE
+      IF (LI(4) .GT. 0 .OR. LI(5) .GT. 0 .OR. LI(6) .GT. 0 .OR. 
+     >    LI(7) .GT. 0) WRITE (KANAL, '(2A)') 
+     >  'KASDEF LUNA XMAX YMAX 0.7 0. 0.4 -90. ', MORE 
 
       IF (BINBOX) THEN
         WRITE (KANAL, '(A)') 'KASDEF INBOX'
@@ -167,7 +159,7 @@ C***  MORE THAN THREE LEVELS TO BE PLOTTED: CONTINUE HEADER VERTICALLY
         WRITE (KANAL, '(A)') '* KASDEF INBOX'
       ENDIF
 
-C***  MARKIERUNG DER TIEFENPUNKTE 10, 20, 30, USW.
+C***  MARKIERUNG DER TIEFENPUNKTE 10, 20, 30, USW. 
       DO L=10,ND,10
         WRITE (KANAL,41) X(L), YMAX, X(L), YMIN, X(L), YMIN, L
       ENDDO
@@ -180,18 +172,18 @@ C*** Loop over all levels to be plotted
       DO II=1, MAXSETS
 C***    GIVEN LEVEL INVALID?
         IF (LI(II) .LE.0 ) CYCLE
-
+ 
         ISET = ISET + 1
         DO L=1,ND
            DEP = DEPART(L,LI(II))
            IF (DEP .GT. 1.E-99) THEN
              Y(L) = ALOG10(DEP)
 C***         dep. may noch have been calculated yet - try to calculate it here
-           ELSE IF (POPLTE(L,LI(II)) .GT. 1.E-100) THEN
+           ELSE IF (POPLTE(L,LI(II)) .GT. 1.E-100) THEN 
              DEP = POPNUM(L,LI(II)) / POPLTE(L,LI(II))
-             IF (DEP .GT. 1.E-99) THEN
+             IF (DEP .GT. 1.E-99) THEN 
                 Y(L) = ALOG10(DEP)
-             ELSE
+             ELSE 
                 Y(L) = -99.
              ENDIF
            ELSE
@@ -199,7 +191,7 @@ C***         dep. may noch have been calculated yet - try to calculate it here
            ENDIF
         ENDDO
 
-        IF (ISET .EQ. 1) THEN
+        IF (ISET .EQ. 1) THEN 
           CALL PLOTANF (KANAL,HEADER,HEADER
      $         ,CENTER//'log(&Rn&N&Ttot&M/cm&H-3&M)'
      $         ,CENTER//'log(&Rn&N&Ti&M/&Rn&N&Ti&HLTE&M)'
@@ -211,7 +203,7 @@ C***         dep. may noch have been calculated yet - try to calculate it here
         ELSE
            CALL PLOTCON (KANAL,X,Y,ND, 5)
         ENDIF
-      ENDDO   ! Loop over the levels to be plotted
+      ENDDO   ! Loop over the levels to be plotted 
 
       ENDDO plotloop ! - - - - - - - - - - - - - - - - - - - - - - - - -
 

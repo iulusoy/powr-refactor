@@ -1,7 +1,7 @@
       SUBROUTINE RMODADP (NDDIM, OLDHEAD, N, NOLD, NDIM, 
      >             NATOM, MODHEAD, ND, NDOLD, ABXYZ,LAST,MODHIST,
-     >             RADIUS,ROLD,POPHELP, POPNUM, TAURCONT, TAURCONTOLD,
-     >             POPLTE, POPLTE_OLD, ENTOT, ENTOTOLD, BTAUR)
+     >             RADIUS,ROLD,POPHELP, POPNUM, TAURCONT, 
+     >             TAURCONTOLD, POPLTE, POPLTE_OLD, BTAUR)
 C**********************************************************************
 C***  ... READS OLD AND NEW MODEL DATA FOR PROGRAM 'ADAPTER'
 C***  this routine also interpolates the population numbers 
@@ -9,7 +9,6 @@ C***    for the radius grid of the new model
 C**********************************************************************
 
       LOGICAL BTAUR
-      REAL, DIMENSION(NDDIM) :: ENTOT, ENTOTOLD
 
 
 C***  READING OF THE OLD MODEL FILE  -----------------------------------
@@ -56,8 +55,6 @@ c      write (0,*) 'NUMBER OF LEVELS IN OLD MODEL ATOM:', NOLD
          ENDIF
       ENDIF
 
-      CALL READMS (9,ENTOTOLD,    NDOLD,   'ENTOT   ', IERR)
-
       CALL CLOSMS (9, IERR)
 
 C***  READING OF THE NEW MODEL FILE  -----------------------------------
@@ -75,9 +72,7 @@ C***  READING OF THE NEW MODEL FILE  -----------------------------------
       CALL READMS (3, LAST   , 1    , 'MODHIST ', IERR)
       CALL READMS (3, MODHIST, LAST , 'MODHIST ', IERR)
       CALL READMS (3, RADIUS , ND   , 'R       ', IERR)
-      CALL READMS (3, TAURCONT, ND  , 'TAURCONT', IERR)
-      CALL READMS (3, ENTOT  , ND   , 'ENTOT   ', IERR)
-
+      CALL READMS (3, TAURCONT,ND   , 'TAURCONT', IERR)
 
       RETURN
       END

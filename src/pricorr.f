@@ -1,31 +1,25 @@
-      SUBROUTINE PRICORR (POPNUM,POP1,LEVEL,N,ND,MODHEAD,LSPOP,
-     >                    CORMAX,RTCMAX,JOBNUM,REDUCE,CKONVER,
-     >                    GAMMAC,GAMMAL,GAMMAR, GAMMAD, 
-     >                    TOLD, TNEW, EPSILON, DELTAC, SMALLPOP, BUNLU, 
-     >                    DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB,
-     >                    BTDIFFUS, TNDCORR, HNDCORFAC, GAHIST,  
-     >                    MAXGAHIST, STHLP, ICMMODE, IWARN_NEG_XJCAPP, 
-     >                    IWARN_NEG_XJLAPP, TBTAU, TAUINT, NDOUT, 
-     >                    NATOM, NOM, TRACEELEM)
+      SUBROUTINE PRICORR (POPNUM, POP1, LEVEL, N, ND, MODHEAD, LSPOP, 
+     $                   CORMAX, RTCMAX, JOBNUM, REDUCE, 
+     >                   GAMMAC, GAMMAL, GAMMAR, GAMMAD, 
+     >                   TOLD, TNEW, EPSILON, DELTAC, SMALLPOP, BUNLU, 
+     $                   DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB,
+     >                   BTDIFFUS, TNDCORR, HNDCORFAC, GAHIST, MAXGAHIST, 
+     >                   STHLP, IWARN_NEG_XJCAPP, IWARN_NEG_XJLAPP,
+     >                   TBTAU, TAUINT)
 C*******************************************************************************
 C***  PRINTOUT OF CORRECTION FACTORS OF POPULATION NUMBERS
 C***  RELATIVE TO THE LAST ITERATION
 C***  Called from: STEAL, EXTRAP
 C*******************************************************************************
-      INTEGER, INTENT(IN) :: ND, N, NDOUT, NATOM
  
-      INTEGER, DIMENSION(N) :: NOM
       DIMENSION POPNUM(ND,N),  POP1(ND,N)
       DIMENSION TOLD(ND), TNEW(ND)
       DIMENSION GAHIST(26,MAXGAHIST)
-      CHARACTER(1), DIMENSION(ND) :: CKONVER
-      CHARACTER(10), DIMENSION(N) :: LEVEL
+      CHARACTER LEVEL(N)*10
       CHARACTER MODHEAD*100
       CHARACTER PRILINE*130,NUMBER*12
       CHARACTER*10 LEVMAX,LEVMIN,LEVMA2,LEVMI2
-      LOGICAL, DIMENSION(NATOM) :: TRACEELEM
-      LOGICAL BUNLU, BTDIFFUS, STHLP, bConsiderDepth
-      INTEGER :: NDMIN, ICMMODE
+      LOGICAL BUNLU, BTDIFFUS, STHLP
 C***  COMMON /GIIIERR/ COUNTS THE ERROR MESSAGES FROM SUBR. GAUNTFF
       COMMON / GIIIERR /  NTUP,NTLOW,NFUP,NFLOW,NHELP
 C***  NEGINTL COUNTS THE ERROR MESSAGES  FROM SUBR. LINPOP
@@ -36,22 +30,14 @@ C***  ITWARN COUNTS THE NOT CONVERGED NEWTON-RAPHSON ITERATIONS FROM
 C***  SUBR. LINPOP
       COMMON / COMITWA / ITWARN, ITMAX
 
-C***  File and channel handles (=KANAL)
-      INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
-      INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
-
+ 
 C*********************************************************
 C***  SET NDMIN = FIRST DEPTH INDEX WHICH IS ACCOUNTED FOR
 C***               IN THE CONVERGENCE CRITERION
 C**********************************************************
-      IF (NDOUT > 0) THEN
-C***  CARDS option added which allows manual adjustment of NDMIN, by ansander at 02-Oct-2016
-        NDMIN = NDOUT
-      ELSE
 C***      NDMIN = 9
 C***  New Version, Lars 30-Jul-1998 10:15:26
-        NDMIN = ND / 8 + 1
-      ENDIF
+      NDMIN = ND / 8 + 1
 
 C**********************************************************************
 C***  SET SMALLPOP : SMALLER POPNUMBERS ARE NOT ACCOUNTED FOR
@@ -77,16 +63,18 @@ C**********************************************************************
  
       DO 3 L=1,ND
       IF(((L-1)/LSPOP)*LSPOP.NE.(L-1) .AND. L.NE.ND) GOTO 3
-      WRITE (UNIT=PRILINE, FMT='(I6)') L
+         WRITE(PRILINE,6) L
+    6 FORMAT (I6)
  
       DO 12 J=J1,J2
-        IF (POP1(L,J) .NE. .0) THEN
-          WRITE (UNIT=NUMBER, FMT='(F12.4)') POPNUM(L,J)/POP1(L,J)
-        ELSE
-          NUMBER='    INFINITE'
-        ENDIF
-        I=7+(J-J1)*12
-        PRILINE(I:I+11)=NUMBER
+      IF (POP1(L,J) .NE. .0) THEN
+            WRITE(NUMBER,11)  POPNUM(L,J)/POP1(L,J)
+   11       FORMAT (F12.4)
+            ELSE
+            NUMBER='    INFINITE'
+            ENDIF
+      I=7+(J-J1)*12
+      PRILINE(I:I+11)=NUMBER
    12 CONTINUE
  
       PRINT 13,PRILINE
@@ -128,17 +116,10 @@ C**********************************************************************
       LMIN=0
       LMI2=0
       NSMALL = 0
-      NTRACE = 0
 
       DO 7 L=NDMIN,ND
       DO 7 J = 1, N
       POP1LJ=POP1(L,J)
-C***  CHECK IF CURRENT LEVEL BELONGS TO TRACE ELEMENTS => not considered
-      IF (TRACEELEM(NOM(J))) THEN
-        NTRACE = NTRACE + 1
-        CYCLE
-      ENDIF
-      
 C***  TOO SMALL OR NEGATIVE POPNUMBERS ARE CONSIDERED AS BEEING = SMALLPOP  **
       IF (POP1LJ .LT. SMALLPOP) POP1LJ = SMALLPOP
       POPLJ=POPNUM(L,J)
@@ -147,19 +128,9 @@ C***    OF THE MAXMIMUM CORRECTION
       IF (POPLJ .LT. SMALLPOP) THEN
         POPLJ = SMALLPOP
         NSMALL = NSMALL + 1
-      ELSE         
-        SELECTCASE (ICMMODE)
-          CASE (0)
-            bConsiderDepth = .TRUE.                    
-          CASE (1)
-            bConsiderDepth = (CKONVER(L) == 'C')
-          CASE DEFAULT
-            WRITE (hCPR,*) 'Invalid CORMAX-MODE, please change CARDS'
-            STOP 'FATAL ERROR IN PRICORR'
-        ENDSELECT
-        IF (bConsiderDepth) THEN
-         Q=POPLJ/POP1LJ
-         IF (Q .GT. QMA2) THEN
+      ELSE
+        Q=POPLJ/POP1LJ
+        IF (Q .GT. QMA2) THEN
            IF (Q .GT. QMAX) THEN
               QMA2=QMAX
               QMAX=Q
@@ -174,8 +145,8 @@ C***    OF THE MAXMIMUM CORRECTION
               LMA2=L
               JMA2 = J
            ENDIF
-         ENDIF
-         IF (Q .LT. QMI2) THEN
+        ENDIF
+        IF (Q .LT. QMI2) THEN
            IF (Q .LT. QMIN) THEN
               QMI2=QMIN
               QMIN=Q
@@ -190,7 +161,6 @@ C***    OF THE MAXMIMUM CORRECTION
               LMI2=L
               JMI2 = J
            ENDIF
-         ENDIF
         ENDIF
       ENDIF
     7 CONTINUE
@@ -231,11 +201,11 @@ C***  MAXIMUM TEMPERATURE CORRECTION
 
         IF (DUNLU_TB .GT. .0) PRINT 36, TBTAU 
    36    FORMAT 
-     >   (15X, 'Thermal Balance term suppressed for tau_Ross >', G12.5)
+     >   (15X, 'Thermal Balance term suppressed for tau_Ross >', F6.3)
 
         IF (TAUINT > .0) PRINT 37, TAUINT
    37    FORMAT 
-     >   (15X, 'INT and RMAX term damped depth-dependent, TAUINT=', F8.2)
+     >   (15X, 'INT and RMAX term damped depth-dependent, TAUINT=', F5.1)
 
         PRINT *     
 
@@ -268,10 +238,6 @@ C**********************************************************************
    27 FORMAT ( 8X, I6, 
      >  ' WARNINGS: POP. NUMBERS .LT.', 1PE8.1, 
      >  ' NOT ACCOUNTED FOR IN THE MAX. CORRECTIONS')
-      IF (NTRACE > 0) THEN
-        WRITE (hOUT, FMT='(A,I6,A)') 'NOTE: ', NTRACE, 
-     >   ' TRACE LEVELS NOT ACCOUNTED FOR IN THE MAX. CORRECTIONS'
-      ENDIF
 
 C***  PRINTOUT OF WARNINGS FROM SUBROUTINE LINPOP  *********************
 

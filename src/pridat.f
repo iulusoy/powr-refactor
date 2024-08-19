@@ -2,7 +2,7 @@
      $                   KEY,NF,ALPHA,SEXPO,
      $                   ADDCON1, ADDCON2, ADDCON3, 
      $                   IGAUNT, SIGMATHK, SEXPOK, EDGEK, MAXATOM,
-     >                   MAXION, COCO,KEYCBB, ALTESUM,
+     >                   COCO,KEYCBB, ALTESUM,
      $                   NATOUT,NATOM,ELEMENT,NOM,ABXYZ,ATMASS,
      $                   NAUTO,MAXAUTO,LOWAUTO,WAUTO,EAUTO,AAUTO,
      $                   IONAUTO,
@@ -21,7 +21,8 @@ C*******************************************************************************
       DIMENSION ADDCON1(LASTKON), ADDCON2(LASTKON), ADDCON3(LASTKON)
       DIMENSION KONTNUP(LASTKON),KONTLOW(LASTKON),KEYCBF(LASTKON)
       DIMENSION INDNUP(LASTIND),INDLOW(LASTIND)
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
+      DIMENSION EDGEK(MAXATOM,MAXATOM)
       DIMENSION NOM(N)
       DIMENSION ABXYZ(NATOM),ATMASS(NATOM)
       DIMENSION COCO(4,LASTIND)
@@ -177,7 +178,7 @@ C***  K-SHELL IONISTION
      $'   ELEMENT       SIGMA         EXPONENT    IONISATION-ENERGY ',/,
      $'            (10**-18 CM**2)                    (KAYSER) ',/)
 
-      DO ISTATE=1, MAXION
+      DO ISTATE=1, MAXATOM
          IF (EDGEK(NA,ISTATE) .NE. .0) 
      >     PRINT 51, ELEMENT(NA), ISTATE, SIGMATHK(NA,ISTATE), 
      >                                    SEXPOK  (NA,ISTATE),

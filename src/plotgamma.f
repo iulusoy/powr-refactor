@@ -3,13 +3,12 @@
      >                     ATHOM, WORKRATIO, VELO, RADIUS, ND, ATMEAN,
      >                     ENTOT, RNE, RCON, T, TEFF, RSTAR, XMU, 
      >                     XMSTAR, Rcritical, bFULLHYDROSTAT, 
-     >                     QIONMEAN, GAMMARADMEAN, bNoArad,
+     >                     QIONMEAN, GAMMARADMEAN,
      >                     MODHEAD, JOBNUM, hPLOT)
 C******************************************************************************
-C***  DIRECT TRANSFER OF HSUM PLOT
 C***  Plot EDDINGTON GAMMA versus DEPTH INDEX, RADIUS, VELOCITY or TAUROSS
-C***  for full radiation, continuum, and thomson
-C***  (created by ansander in 2014 as a spin-off from PLOTACC)
+C***  for full radiation force, continuum contribution, and Thomson part
+C***  (created by ansander in 2014 in analogy to PLOTACC)
 C******************************************************************************
  
       IMPLICIT NONE
@@ -26,7 +25,7 @@ C******************************************************************************
       REAL, INTENT(IN) :: WORKRATIO, RCON, ATMEAN, XMSTAR, RSTAR, TEFF, 
      >                    Rcritical
      
-      LOGICAL, INTENT(IN) :: bFULLHYDROSTAT, bNoArad
+      LOGICAL, INTENT(IN) :: bFULLHYDROSTAT
 
       CHARACTER(110) :: MODHEAD, HEADLINE
       CHARACTER(8) :: CENTER, CNORM
@@ -58,14 +57,6 @@ C******************************************************************************
       !File and channel handles (=KANAL)
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
       INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
-
-      IF (bNoARAD) THEN
-         WRITE (hCPR,'(A)') 'PLOTGAMMA: Radiative acceleration ' //
-     >      'not yet calculated ***'
-         WRITE (hCPR,'(3A)') 'PLOTGAMMA: ', PLOTOPT(:IDX(PLOTOPT)),
-     >      ' SKIPPED'
-         RETURN
-      ENDIF      
 
       IF (NDMAX < ND) THEN
          WRITE (hCPR,'(A)') 'PLOTACC: NON-FATAL ERROR ******'

@@ -1,7 +1,7 @@
       SUBROUTINE ELIMIN (XLAM,EMFLUX,FLUXIN,U,Z,
      $          A,B,C,W,BX,WX,XJC,RADIUS,P,BCORE,DBDR,
      $          OPA,ETA,THOMSON,EDDI,ND,NP,NPDIM,ENTOT,K,
-     $          IWARN, IWARN2, ST, BELIFI, IVERS)
+     $          IWARN, ST, BELIFI, IVERS)
 C***  FEAUTRIER SCHEME FOR CONTINUOUS RADIATION TRANSFER IN SPHERICAL SYMMETRY
 C***  TAPE7 = MASS STORAGE FILE FOR FEAUTRIER MATRICES
 C***  LAST PARAMETER -1 IN WRITMS IS VERY IMPORTANT ]
@@ -12,10 +12,6 @@ C***  ATTENTION: B AND C MUST BE LOCATED SUBSEQUENTLY IN THE MEMORY ]
       DIMENSION EDDI(3,ND)
       DIMENSION P(NPDIM),BX(NPDIM,NPDIM),WX(NPDIM),B(2)
       DIMENSION U(ND,NP),Z(ND,NP)
-      
-C***  To avoid underflows define minimum allowed positive real/intensity/flux
-      REAL, PARAMETER :: RTINY = 1.E-300
-
 C***  To Store Feautrier Matrices ST(94*95,89)
       DIMENSION ST((NPDIM+1)*NPDIM,ND)
       LOGICAL BELIFI
@@ -91,13 +87,8 @@ C***  EDDI(3,ND-1) IS THE OUTWARD FLUX HPLUS AT THE INNER BOUNDARY
         IWARN = IWARN + 1
         EDDI(1,ND) = 0.01
       ENDIF
-      IF (EDDI(1,ND) .GT. 1.) THEN
-        IWARN2 = IWARN2 + 1
-        EDDI(1,ND) = 1.0
-      ENDIF
       FL=3.-1./EDDI(1,ND)
       DO 5 J=1,JMAX
-        IF (ABS(WX(J)) < RTINY) WX(J) = RTINY
     5 U(ND,J)=WX(J)
       CALL EQUAL (A,WX,JMAX)
       NC2=NP-ND+2
@@ -123,16 +114,8 @@ C***  DECOMPRESSING THE MATRIX BX AND VECTOR WX  OUT OF B (AND C)
       CALL VADD (WX,W,JMAX)
 C***  WX(J) IS THE FEAUTRIER-INTENSITY U AT RADIUS R(L)
       DO 3 J=1,JMAX
-        IF (ABS(WX(J)) < RTINY) WX(J) = RTINY
     3 U(L,J)=WX(J)
       CALL MOMENT0 (ND,RADIUS,L,JMAX,Z,WX,XJC(L),.FALSE.)
-c      WRITE (0,*) ' L=', L
-c      WRITE (0,*) ' RL=', RL
-c      WRITE (0,*) ' JMAX=', JMAX
-c      WRITE (0,*) ' P=', P
-c      WRITE (0,*) ' WX=', WX
-c      WRITE (0,*) ' XK=', XK
-      IF (ABS(XK) < RTINY) XK = RTINY
       CALL MOMENT2 (RL,JMAX,P,WX,XK)
       IF (XJC(L) .GT. .0) THEN
          EDDI(1,L)=XK/XJC(L)
@@ -145,10 +128,7 @@ c      WRITE (0,*) ' XK=', XK
         IWARN = IWARN + 1
         EDDI(1,L) = 0.01
       ENDIF
-      IF (EDDI(1,L) .GT. 1.) THEN
-        IWARN2 = IWARN2 + 1
-        EDDI(1,L) = 1.
-      ENDIF
+
 C***  THIS IS AN INGENIOUS (;) RECURSION FORMULA FOR THE SPHERICITY FACTOR ]
       RLP=RADIUS(L+1)
       FLP=FL

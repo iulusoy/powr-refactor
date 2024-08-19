@@ -12,7 +12,7 @@
      >                  LASTFE, SIGMAFE, INDRB, INDRF,
      >                  IFENUP, IFELOW, IFRBSTA, IFRBEND, FEDUMMY, 
      >                  VDOPFE, DXFE, XLAM0FE, SIGMAINT, BFEMODEL, 
-     >                  LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS, MAXION)
+     >                  LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS)
 
 c!!!!!! Folgende parameter wurden entfernt:
 C!!!    CBFC, BOUND, EINSTINT, COCOFE, NCOMAX, NCO
@@ -33,19 +33,20 @@ C***  KODAT(NZ) contains the index J under which this element was found
 C***    in the DATOM file; unused elements have KODAT(NZ)=0 
 C*******************************************************************************
  
-      INTEGER, INTENT(IN) :: NDIM, MAXIND, MAXION, MAXKONT, MAXAUTO
-
-      INTEGER, DIMENSION(NDIM) :: NCHARG, IONGRND, MAINQN, NOM
-      REAL, DIMENSION(NDIM) :: WEIGHT, ELEVEL, EION
-      REAL, DIMENSION(NDIM,NDIM) :: EINST
-      REAL, DIMENSION(MAXKONT) :: ALPHA, SEXPO,ADDCON1,ADDCON2,ADDCON3
-      REAL, DIMENSION(4, MAXIND) :: COCO
-      REAL, DIMENSION(4, NDIM) :: ALTESUM
-      REAL, DIMENSION(MAXATOM) :: ATMASS, STAGE
-      REAL, DIMENSION(MAXATOM,MAXION) :: SIGMATHK, SEXPOK, EDGEK
-      INTEGER, DIMENSION(MAXATOM) :: KODAT, NFIRST, NLAST
-      INTEGER, DIMENSION(MAXIND) :: INDNUP, INDLOW
-      INTEGER, DIMENSION(MAXKONT) :: KONTNUP, KONTLOW
+      DIMENSION NCHARG (NDIM), WEIGHT(NDIM),ELEVEL(NDIM)
+      DIMENSION IONGRND(NDIM)
+      DIMENSION EION(NDIM),MAINQN(NDIM),EINST(NDIM,NDIM)
+      DIMENSION ALPHA(MAXKONT),SEXPO(MAXKONT)
+      DIMENSION ADDCON1(MAXKONT), ADDCON2(MAXKONT), ADDCON3(MAXKONT)
+      DIMENSION NOM(NDIM)
+      DIMENSION COCO(4,MAXIND)
+      DIMENSION ALTESUM(4,NDIM)
+      DIMENSION KODAT(MAXATOM),ATMASS(MAXATOM),STAGE(MAXATOM)
+      DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
+      DIMENSION EDGEK(MAXATOM,MAXATOM)
+      DIMENSION NFIRST(MAXATOM),NLAST(MAXATOM)
+      DIMENSION INDNUP(MAXIND), INDLOW(MAXIND)
+      DIMENSION KONTNUP(MAXKONT), KONTLOW(MAXKONT)
       DIMENSION LOWAUTO(MAXAUTO),WAUTO(MAXAUTO),EAUTO(MAXAUTO)
      $         ,AAUTO(MAXAUTO),IONAUTO(MAXAUTO),KRUDAUT(MAXAUTO)
       CHARACTER*10 LEVUPAUTO(MAXAUTO), LEVAUTO(MAXAUTO)
@@ -56,12 +57,12 @@ C*******************************************************************************
       CHARACTER*4 CEY,KEYCBB(MAXIND)
       CHARACTER*3 KRUDI,DRRUDI
       CHARACTER*2 SYMBOL(MAXATOM), KSHELLSYM
-      CHARACTER(LEN=*), INTENT(IN) :: ROUTINE
+      CHARACTER(LEN=*)  ROUTINE
 
-      LOGICAL :: BFEMODEL
+      LOGICAL BFEMODEL
  
       DO 15 NA=1,MAXATOM
-         DO ISTAGE=1, MAXION
+         DO ISTAGE=1, MAXATOM
            SIGMATHK(NA,ISTAGE)=.0
            SEXPOK  (NA,ISTAGE)=.0
            EDGEK   (NA,ISTAGE)=.0
@@ -74,7 +75,7 @@ C*******************************************************************************
 C***  INITIALIZE TRANSTION MATRIX TO DETECT MISSING LINE TRANSITIONS
       DO 6 J=1,NDIM
     6 EINST(I,J)=-99.
-    
+
       DO IND=1,MAXIND
        INDNUP(IND)=0
        INDLOW(IND)=0
@@ -121,7 +122,7 @@ C***  INITIALIZE TRANSTION MATRIX TO DETECT MISSING LINE TRANSITIONS
       IF (KARTE(:10) .EQ. 'DRTRANSIT ' ) GOTO 60
       CALL REMARK ('UNRECOGNIZED DATA INPUT')
       GOTO 990
-      
+ 
 C***  ELEMENTS ---------------------------------------------------------
     5 CONTINUE
 C***  DECODED ELEMENT IS ALREADY KNOWN
@@ -134,7 +135,7 @@ C***  If DATOM was called with parameter ROUTINE = 'NOIRON,
 C****   the 'ELEMENT GENERIC' card is ignored. 
 C***    This feature was introduced to facilitate 
 C***    Sonja's NEWFORMAL_CARDS program
-      IF (ROUTINE(1:6) == 'NOIRON' .AND. NEWELE == 'GENERIC') GOTO 1
+      IF (ROUTINE .EQ. 'NOIRON' .AND. NEWELE .EQ. 'GENERIC') GOTO 1
 
 C***  NEW ELEMENT DECODED:
       LEVSEQ=0
@@ -168,8 +169,8 @@ C***     Iron line indices are arranged *behind* the DRTRANSITs
          LASTINDAUTO = LASTIND + NAUTO
 
          CALL FEDAT (ROUTINE, INDEXMAX, NFEREADMAX, IONLOW, IONTOP,
-     &               MAXATOM, NDIM, MAXIND, MAXKONT, NATOM,
-     &               N, LASTFE, LASTKON, LASTINDAUTO, MAXFEIND,
+     &               MAXATOM, NDIM, MAXIND, MAXKONT,
+     &               NATOM, N, LASTFE, LASTKON, LASTINDAUTO, MAXFEIND,
      &               EINST, SIGMAFE, INDRB, INDRF, IFENUP, 
      &               IFELOW, INDNUP, INDLOW, KONTNUP, KONTLOW,
      &               LEVEL, ELEMENT, SYMBOL, ATMASS, STAGE,
@@ -195,8 +196,7 @@ C***  LEVELS -----------------------------------------------------------
       ENDIF
       IF (NATOM .NE. 0) NOM(N)=NATOM
 
-      READ (KARTE,11,ERR=985) LEVEL(N),NCHARG(N),NW,ELEVEL(N),E,
-     &        MAINQN(N)
+      READ (KARTE,11,ERR=985) LEVEL(N),NCHARG(N),NW,ELEVEL(N),E,MAINQN(N)
    11 FORMAT(12X,A10,1X,I2,1X,I4,2F10.0,1X,I2)
 
       WEIGHT(N)=FLOAT(NW)
@@ -282,10 +282,6 @@ C***  FIND LOWER INDEX
       ENDIF
       IF (NUP.LE.LOW) THEN
          CALL REMARK ('LINE TRANSITION INDICES WRONG')
-         GOTO 990
-      ENDIF
-      IF (ELEVEL(NUP) < ELEVEL(LOW)) THEN
-         CALL REMARK ('LINE ERROR: UPPER LEVEL NOT IN FRONT')
          GOTO 990
       ENDIF
 C***  CORRECT LINE TRANSITION DETECTED:
@@ -604,7 +600,7 @@ C***  Consistency check for DRTRANSIT lines:
                ENDIF
                IF (EAUTO(I) .NE. EAUTO(J)) THEN
                   WRITE (0,'(A,2X,2F10.2)') 
-     >         '*** ERROR in DRTRANSIT data: different energies ' //
+     >                '*** ERROR in DRTRANSIT data: different energies ' //
      >                'for level ' // LEVUPAUTO(I),  
      >                EAUTO(I), EAUTO(J)  
                   GOTO 989
@@ -676,7 +672,17 @@ C***  NOTE: ASSUMPTION IS THAT ALL DOUBLY EXCITED STATES AUTOIONIZE
 C***        INTO THE GROUND STATE OF THE PARENT ION
       DO 97 I=1, NAUTO
          IF (IONAUTO(I) .EQ. 0) IONAUTO(I)=IONGRND(LOWAUTO(I))
-         IF (IONAUTO(I) .NE. IONGRND(LOWAUTO(I))) STOP 'IONAUTO'
+
+C***     Check if auto-ionization leads into an excited level
+         IF (IONAUTO(I) .NE. IONGRND(LOWAUTO(I))) THEN
+            WRITE (0,*)  '*** PROBLEM WITH DRTRANSIT DATA (DATOM):'
+            WRITE (0,*)  '*** Auto-ionization specified to lead into'
+            WRITE (0,*)  '*** an excited level (not ground level)'
+            WRITE (0,*)  '*** In the present form, the code is not ' //
+     >                    'able to handle this'
+            GOTO 986
+         ENDIF
+
 C***     Check that the stabilizing transitions have positive wavelength
          LOW=LOWAUTO(I)
 C***     WAVENUMBER OF STABILIZING TRANSITION

@@ -1,48 +1,37 @@
       SUBROUTINE DECCOLI (LSOPA,LSINT,MODHIST,
-     >             NOLAP,LPOPAB,LPOPABD,LEVDEBUG,LPJNUE,
-     >             LPJNUED,LASERV,PARALAS,LPSNUE,LPSNUED,
+     >             LPOPAB,LPOPABD,LEVDEBUG,LPJNUE,
+     >             LPJNUED,LASERV,PARALAS, LPSNUE,LPSNUED,
      $             MAXPLOT, RANGE1, RANGE2, EXLAM1, EXLAM2,MAXEXT,
-     $             BLLIST, 
-     >             REDISMODE, NEWWRC, BCOLIRAY, BKUDRITZKI,
-     >             CLHLP, BITCONT, BPLOT,  
-     >             IPLOT, LPLOT, ND, OPC, 
-     >             IVERS, BEMIX, EMIXSTART, BEMIXFIX, EMIXFIX, 
-     >             IVERS_FE_EXPFAC, BPLOTALPHA, ALPOPT, POPMIN,
-     >             XLAM_FINE_START, XLAM_FINE_END, LPLOT_WCHARM, XLP1,
-     >             XLP2, GAMMACOLI, GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2,
-     >             bKALPHA, bHYDROSOLVE, VELOMODFAK, iTypeAlpha, 
-     >             bForceCOLIP, bTDIFFUS, bPLOTRTAU1, bNoIronLaser, 
-     >             iHTOTCUT, bMAXEMIX, bALOTri,
-     >             bNoNEGEDDIG, bDDVDOP, LPRDH, 
-     >             bDEBUG, CUTOPAMEANTHRES, DRLINES_CARD)
+     $             BLLIST, NEWWRC, BCOLIRAY, 
+     >             CLHLP, BITCONT, BPLOT, IPLOT, LPLOT, ND, OPC, 
+     >             IVERS, BEMIX, EMIXSTART, EMIXMAX,
+     >             BEMIXFIX, EMIXFIX, IVERS_FE_EXPFAC, BPLOTALPHA,
+     >             XLAM_FINE_START, XLAM_FINE_END, LPLOT_WCHARM, 
+     >             XLP1, XLP2, GAMMACOLI, GAMMAT, UNLU_TAUMAX, 
+     >             UNLU_TAUMAX2, bKALPHA, bHYDROSOLVE, VELOMODFAK,
+     >             bForceCOLIP, bTDIFFUS, DRLINES_CARD)
 C*******************************************************************************
 C***  DECODES INPUT CARDS FOR MAIN PROGRAM "COLI"
 C*******************************************************************************
 
       !IMPLICIT NONE
  
-      CHARACTER(120) :: KARTE, DRLINES_CARD, ALPOPT
-      CHARACTER(4) :: REDISMODE
-      LOGICAL :: NOLAP, LASERSET, DRNORUD, BLLIST, 
-     >           BCOLIRAY, CLHLP, BITCONT, 
-     >           BPLOT, BKUDRITZKI,
-     >           BEMIX, BEMIXFIX, BPLOTALPHA, bCustomVMOD,
-     >           bALOTri
-      INTEGER :: IVERS_FE_EXPFAC, iHTOTCUT
+      DIMENSION LINE(1),MODHIST(1)
+      CHARACTER(80) :: KARTE
+      CHARACTER*80 DRLINES_CARD
+      LOGICAL :: BLLIST, BCOLIRAY, CLHLP, BITCONT, 
+     >           BPLOT, BEMIX, BEMIXFIX, BPLOTALPHA
       INTEGER, DIMENSION(MAXPLOT) :: LPOPAB, LPOPABD, LPJNUE, LPJNUED,
      >                               LPSNUE, LPSNUED
-      REAL, INTENT(INOUT) :: VELOMODFAK, POPMIN
-      INTEGER, INTENT(INOUT) :: iTypeAlpha
-      REAL :: PARALAS, tempREAL, CUTOPAMEANTHRES
-      CHARACTER(16), DIMENSION(20) :: ACTPAR
+      REAL, INTENT(INOUT) :: VELOMODFAK
+      REAL :: PARALAS, tempREAL
+      CHARACTER(30), DIMENSION(20) :: ACTPAR
       CHARACTER(8) :: OPC
-      LOGICAL, INTENT(INOUT) :: bKALPHA, bForceCOLIP, bTDIFFUS, bDDVDOP
-      LOGICAL, INTENT(OUT) :: bHYDROSOLVE, bPLOTRTAU1
-      LOGICAL :: bReadPOPMIN, bNoIronLaser, bMAXEMIX, 
-     >           bNoNEGEDDIG, bDEBUG
+      LOGICAL, INTENT(INOUT) :: bKALPHA, bForceCOLIP, bTDIFFUS
+      LOGICAL, INTENT(OUT) :: bHYDROSOLVE
        
-      INTEGER :: LSOPA, LSINT, IPLOT, LPLOT, LPRDH
-      REAL :: RANGE1, RANGE2
+      INTEGER :: LSOPA, LSINT, IPLOT, LPLOT
+      REAL :: RANGE1, RANGE2, DUNLU, DUNLUR
 
 
       !File and channel handles (=KANAL)
@@ -53,13 +42,10 @@ C*******************************************************************************
 C***  DEFAULT VALUES
       LSOPA   = -1
       LSINT   = -1
-      NOLAP   = .FALSE.
-      LASERSET= .FALSE.
       LEVDEBUG= 0
       LASERV  = 1
       PARALAS = 0.01
       BLLIST  = .FALSE.
-      REDISMODE = 'CONT'
       BCOLIRAY = .FALSE.
       CLHLP = .FALSE.
       BITCONT = .TRUE.
@@ -71,22 +57,7 @@ C***  DEFAULT VALUES
       BPLOTALPHA = .FALSE.
       bHYDROSOLVE = .FALSE.
       bTDIFFUS = .TRUE.
-      bCustomVMOD = .FALSE.
-      iTypeAlpha = 0
-      VELOMODFAK = 0.9          !default value for velocity field modification factor
-      bReadPOPMIN = (POPMIN < 1.E-99)
-      IF (bReadPOPMIN) THEN
-        POPMIN = 1.E-25           !default value should be the same as in STEAL -> DECSTE
-      ENDIF
-      bPLOTRTAU1 = .FALSE.
-      bNoIronLaser = .FALSE.
-      bALOTri = .FALSE.
-      iHTOTCUT = 0
-      bNoNEGEDDIG = .FALSE.     !default: Do not reset negative EDDIG
-      bDDVDOP = .FALSE.         !default: No depth-dependent VDOP
-      LPRDH = 0
-      bDEBUG = .FALSE.
-      CUTOPAMEANTHRES = 0.      !default: Do not cut out strong lines from mean opacities
+      DRLINES_CARD = ''
     
 C***  Version of exponential factor in Fe lines (rates and eta) 
       IVERS_FE_EXPFAC = 1
@@ -100,7 +71,7 @@ C***  EDDIMIX enabled
       EMIXSTART = 1.0
       BEMIXFIX = .FALSE.
       EMIXFIX = 1.0
-      bMAXEMIX = .FALSE.
+      EMIXMAX=-1.
 
       DO I=1,MAXPLOT
         LPOPAB (I) = 0
@@ -139,8 +110,6 @@ C***  Parameters for Unsoeld-Lucy method, needed by FREQUINT
       GAMMAT = 0.
       UNLU_TAUMAX = 1000.
       UNLU_TAUMAX2 = 100.
-      
-      ALPOPT = ""
 
       OPEN (1, FILE='CARDS', STATUS='UNKNOWN')
       REWIND 1
@@ -172,33 +141,21 @@ C                                 ====
         ELSE IF ( ACTPAR(2) .EQ. 'LINELIST') THEN
 C                                 ========
             BLLIST = .TRUE.
-        ELSE IF ( ACTPAR(2) .EQ. 'DELTAH') THEN
-C                                 ======
-            READ (ACTPAR(3),8, ERR=99) XL
-            LPRDH=IFIX(XL)
-            IF (LPRDH == 0) LPRDH = 1
         ENDIF
-        GOTO 6
-      ENDIF
 
-      IF ( ACTPAR(1)(:6) .EQ. 'DRLINE' ) THEN
-C                                  ======
+      ELSEIF ( ACTPAR(1)(:7) .EQ. 'DRLINES' ) THEN
+C                              =======
          DRLINES_CARD = KARTE
  
       ELSEIF (ACTPAR(1) .EQ. 'CMFDLEV') THEN
-C                             =======
+C                         =======
         READ(ACTPAR(2),'(I10)', ERR=99) LEVDEBUG
         GOTO 6
-      ENDIF
+        ENDIF
 
-      IF (ACTPAR(1) == 'OPAMEANTHRES') THEN
-        READ(ACTPAR(2), '(G10.3)', ERR=99) CUTOPAMEANTHRES
-        GOTO 6
-      ENDIF
 
       IF (ACTPAR(1) .EQ. 'LASERV') THEN
 C                         ======
-        LASERSET = .TRUE.
         READ (ACTPAR(2),'(I10)', ERR=99) LASERV
         IF (NPAR == 3) THEN
           READ (ACTPAR(3),'(G10.1)', ERR=99) PARALAS
@@ -212,13 +169,6 @@ C                         ======
                     PARALAS = tempREAL
                   ENDIF                    
                 ENDIF
-cc              CASE ('KONT', 'CONT', 'K', 'C')
-cc                IF (NPAR >= (IPAR+1)) THEN
-cc                  READ (ACTPAR(IPAR+1), '(F10.0)', IOSTAT=IERR) tempREAL
-cc                  IF (IERR == 0) THEN
-cc                    PARALKONT = tempREAL
-cc                  ENDIF                    
-cc                ENDIF
             ENDSELECT
           ENDDO
         ENDIF
@@ -230,12 +180,6 @@ C                         ======
         READ (ACTPAR(2), '(F10.0)', ERR=99) EXLAM1
         READ (ACTPAR(3), '(F10.0)', ERR=99) EXLAM2
         GOTO 6
-      ENDIF
-
-      IF (ACTPAR(1) .EQ. 'REDISMODE') THEN
-C                         =========
-         REDISMODE = ACTPAR(2) 
-         GOTO 6
       ENDIF
 
       IF (ACTPAR(1) .EQ. 'NEWWRC' ) THEN
@@ -251,14 +195,6 @@ C                         =======
          ENDIF
       ENDIF
 
-      IF (KARTE(:4) == 'VDOP') THEN
-C                       ====
-         IF (NPAR > 2) THEN
-           IF (ACTPAR(3) == 'AUTO') bDDVDOP = .TRUE.
-         ENDIF
-         GOTO 6
-      ENDIF
-      
       IF (ACTPAR(1) == 'NOTDIFFUS') THEN
 C                       =========
          bTDIFFUS = .FALSE.
@@ -325,15 +261,8 @@ C                           ====
 C                           ====
            IF (ACTPAR(2) == 'ALPHA') THEN
               BPLOTALPHA = .TRUE.
-              ALPOPT = KARTE
               GOTO 6
            ENDIF
-
-           IF (ACTPAR(2) == 'RTAU1COLI') THEN
-              bPLOTRTAU1 = .TRUE.
-              GOTO 6
-           ENDIF
-           
         ENDIF
 
         IF (ACTPAR(1) .EQ. 'PURE' .AND. ACTPAR(2) .EQ. 'COLIRAY') THEN
@@ -394,28 +323,6 @@ C                             =====
             READ (ACTPAR(3),'(F10.0)', ERR=99) GAMMACOLI
             GOTO 6
           ENDIF
-          IF (ACTPAR(2) == 'KUDRITZKI') THEN
-            BKUDRITZKI = .TRUE.
-            GOTO 6
-          ENDIF
-          IF (ACTPAR(2) == 'NONEGACC') THEN
-            iHTOTCUT = 1
-            GOTO 6
-          ENDIF
-          IF (ACTPAR(2) == 'NO' .AND. ACTPAR(3)(1:3) == 'NEG'
-     >           .AND. ACTPAR(4) == 'EDDIG') THEN
-            bNoNEGEDDIG = .TRUE.
-            GOTO 6
-          ENDIF          
-          IF (ACTPAR(2) == 'NOFELASER') THEN
-            bNoIronLaser = .TRUE.
-            WRITE (0,*) 'COLI: NO IRON LASER ALLOWED'
-            GOTO 6
-          ENDIF
-          IF (ACTPAR(2) == 'DEBUG') THEN
-            bDEBUG = .TRUE.
-            GOTO 6
-          ENDIF
         ENDIF
 C***  End of Options beginning with COLI ...
 
@@ -449,15 +356,20 @@ C                           =======
          GOTO 6
          ENDIF
 
-        IF (ACTPAR(1) == 'EDDIMIX' .AND.  ACTPAR(2) == 'MAX') THEN
-C                         =======                       ===
-          bMAXEMIX = .TRUE.
-          GOTO 6
-        ENDIF
+        IF (ACTPAR(1) .EQ. 'EDDIMIX' .AND. 
+     >      ACTPAR(2) .EQ. 'MAX') THEN
+C                           =======
+         IF (NPAR .LT. 3) THEN
+           WRITE (0,*) 'ERROR: EDDIMIX MAX needs a value'
+           GOTO 99
+         ENDIF
+         
+         READ (ACTPAR(3),'(F10.0)', ERR=99) EMIXMAX
+         ENDIF
 
-        IF (ACTPAR(1)(:16) .EQ. 'IRONLINES-EXPFAC') THEN
-C                                ================
-           IF (ACTPAR(2) .EQ. 'OFF') THEN
+        IF (ACTPAR(1)(:16) == 'IRONLINES-EXPFAC') THEN
+C                              ================
+           IF (ACTPAR(2) == 'OFF') THEN
               IVERS_FE_EXPFAC = 0
               WRITE (0,*) '*** WARNING: non-standard ' // KARTE
            ELSEIF (ACTPAR(2) == 'TEFF') THEN
@@ -468,16 +380,9 @@ C                                ================
            ELSE
               WRITE (0,*) '*** WARNING: Invalid option ' // KARTE
            ENDIF
-          GOTO 6
-        ENDIF
+         GOTO 6
+         ENDIF
 
-
-        IF (ACTPAR(1)(1:6) == 'POPMIN' .AND. bReadPOPMIN) THEN
-C                              ======
-          READ (ACTPAR(2),'(F10.0)', ERR=99) POPMIN
-          GOTO 6
-        ENDIF         
-         
         !Force calculation of force multipliers
         ! Note: Usually this is automatically forced from the HYDRO interval option
         !       By using the FORCEMULTIPLIERS card you can ensure that the calculation
@@ -486,23 +391,13 @@ C                              ======
         IF (ACTPAR(1)(1:9) == 'FORCEMULT') THEN
 C                              =========
          bKALPHA = .TRUE.
-         IF (.NOT. bHYDROSOLVE .AND. iTypeAlpha == 0) THEN
-           iTypeAlpha = 1
-         ENDIF
          IF (NPAR > 2) THEN
            DO I=2, NPAR
              IF ((ACTPAR(I) == 'VMOD') .AND. (NPAR >= (I+1))) THEN
                READ (ACTPAR(I+1), '(F20.0)', IOSTAT=IERR) tempREAL
                IF (IERR == 0) THEN
                  VELOMODFAK = tempREAL
-                 bCustomVMOD = .TRUE.
                ENDIF               
-             ENDIF
-             IF ((ACTPAR(I) == 'AT') .AND. (NPAR >= (I+1))) THEN
-               READ (ACTPAR(I+1), '(F10.0)', IOSTAT=IERR) tempREAL
-               IF (IERR == 0) THEN
-                 iTypeAlpha = IFIX(tempREAL)
-               ENDIF        
              ENDIF
            ENDDO
          ENDIF
@@ -518,27 +413,11 @@ C                         =====
                READ (ACTPAR(I+1), '(F20.0)', IOSTAT=IERR) tempREAL
                IF (IERR == 0) THEN
                  VELOMODFAK = tempREAL
-                 bCustomVMOD = .TRUE.
                ENDIF               
-             ENDIF
-             IF ((ACTPAR(I) == 'AT') .AND. (NPAR >= (I+1))) THEN
-               READ (ACTPAR(I+1), '(F10.0)', IOSTAT=IERR) tempREAL
-               IF (IERR == 0) THEN
-                 iTypeAlpha = IFIX(tempREAL)
-               ENDIF        
              ENDIF
            ENDDO
          ENDIF
          GOTO 6
-        ENDIF
-
-        IF (ACTPAR(1) .EQ. 'XJLAPP' .AND.
-     >         ACTPAR(2) .EQ. 'COLI') THEN
-          DO I=3, NPAR
-            IF (ACTPAR(I)(:3) .EQ. 'TRI') THEN
-              bALOTri = .TRUE.
-            ENDIF
-          ENDDO
         ENDIF
 
         IF (ACTPAR(1) .EQ. 'XJLAPP' .AND.
@@ -564,24 +443,7 @@ C                              ===========
 
 C***  END-OF-DATA REACHED: REGULAR EXIT
   100 CONTINUE
-      CLOSE(1)
-  
-C***  Check if Alpha-Type is in valid range:
-      IF (iTypeAlpha < 0 .OR. 
-     >     (iTypeAlpha > 3  .AND. iTypeAlpha < 10) .OR.
-     >     (iTypeAlpha > 12 .AND. iTypeAlpha /= 31)) THEN
-        WRITE (hCPR,*) 'INVALID ALPHA TYPE SPECIFIED!'
-        STOP 'ERROR in DECCOLI'
-      ENDIF
-
-C***  Default is different if response factor is calculated instead of alpha (AT == 3)
-      IF (iTypeAlpha == 3 .AND. (.NOT. bCustomVMOD)) THEN
-c        VELOMODFAK = 0.99   !more accurate default for response factor calculation
-        VELOMODFAK = 0.9   !try this first
-      ENDIF
-       
-C***  IF LASER VERSION NOT EXPLICITELY DECLARED, SET DEFAULT VALUE
-      IF (.NOT. LASERSET  .AND. NOLAP) LASERV = 0
+      CLOSE (1)
 
       RETURN
 

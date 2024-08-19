@@ -1,112 +1,103 @@
       SUBROUTINE DECSTE (                                                   !Parameter count
      >     LSRAT,LSPOP,JOBMAX,EPSILON,REDUCE,IHIST,                         !6
      >     IFRRA, ITORA, IPRICC, IPRILC, LSEXPO, LSTAU, IFLUX,              !13
-     >     IDAT, LEVELPL, MAXSETS, NPLOT, NDIM, NEWWRC,                     !19
-     >     NGAMC,NGAMR,NGAML,NGAMD,AGAMC,AGAMR,AGAML,AGAMD,DELTAC,          !28
-     >     TPLOT, TPLOTOPT, JOBNUM, NOEXTRAP, MODHIST,                      !33
-     >     STHLP,NODATOM,NSCHAR,NOLAP,ITBR,ITMAX,OLDSTART,COMPO,            !41
-     >     ELEMENT,SYMBOL,NATOM,NATOUT,BRRESET,                             !46
-     >     DRLINES_CARD, NOPOP, BAUTO, BAUTO_ABORT, SMALLPOP, POPMIN,       !52
-     >     BINBOX, POPRANG,                                                 !54
-     >     COREX, BCOREX, VPLOT, BUNLU, UNLUTECLINE, BPRIUNLU,              !60
-     >     ND, IPRINTZERORATES, PRILEVRA,                                   !63
-     >     LEVELPLDEP, NPLOTDEP,                                            !65
-     >     BITCONT, bTDIFFUS, BPGAHIST, AG, BAG, BPGAHISTE,                 !71
-     >     PLOTOPT, MAXPLOTOPT, NPLOTOPT, OPC, BTALTER,                     !76
-     >     BPLOCC, LPLOCC, KPLOCC, BRUDZERO,                                !80
-     >     BXJLAPPNEW, BXJCAPPNEW, BNEWOPER, IPLOT_XJLAPP, IPLOT_XJCAPP,    !85
-     >     LPLOT_XJCAPP, NITER_PLOT_JAPP, BPLOTAPP, BNEWTONRESET,           !89
-     >     XLAM_FINE_START, XLAM_FINE_END, BTRACE_POPNUM,                   !92
-     >     BGAMMACFIX, BGAMMALFIX, BGAMMARFIX, BGAMMADFIX,                  !96
-     >     BNUEFE, BXJLAPPCORE, WJCMIN, NKONV_THRESH,                       !100
-     >     iBLOCKINVERSION, RSTAR, RMAX, TAUMAX, bENSURETAUMAX, TAUACC,     !106
-     >     bTauStrict,                                                      !107
-     >     RadiusGridParameters, VMIN, bThinWind, ThinCard, bSUMMARY,       !112   
-     >     TaumaxCard, bHYDROSOLVE, bLateTau, HydroCard, AlphaCard,         !117
-     >     DENSCON_FIX, DENSCON_LINE, MFORM, XMSTAR, GLOG, bUpdateMass,     !123
-     >     WRTYPE, MODHEAD, bModHeadUpdate, bOLDVELO,                       !127
-     >     bFULLHYDROSTAT, bGAMMARADMEAN, GEDDreduce, iZRType, iAMT,        !132
-     >     CLUMP_SEP, MacroCard, OPALINE_SCALE, NBACKUP, GEFFKEY,           !137
-     >     bHydroHelp, bHYSTloose, ICMMODE, bUCPP,                          !141
-     >     bUpdateVT, VTURB, fTNDCOR, bTMTHOM, bKUBATDEBUG,                 !146
-     >     bRELSCHARMERACC, bUseTWOPNT, FLUXEPS, HYSTACC, IHSSTATUS,        !151
-     >     NDOUT, VTURB_LINE, ALOMIN, bLAMAPPCOLI, bDDVDOP,                 !156
-     >     bFRACINV, bForceTDIFFUS, bNoFeTCORR, TRACEELEM, bINCADV,         !161
-     >     ENTOT, RHO, iALOentry, bALOTri)                                  !165
-
+     >     IDAT, LEVELPL, MAXSETS, NPLOT, NDIM, NEWWRC, 
+     >     NGAMC,NGAMR,NGAML,NGAMD,AGAMC,AGAMR,AGAML,AGAMD,DELTAC,          !29
+     >     TPLOT, TPLOTOPT, JOBNUM, NOEXTRAP, MODHIST,        !36
+     >     STHLP,NODATOM,NSCHAR,NOLAP,ITBR,ITMAX,OLDSTART,COMPO,            !44
+     >     ELEMENT,SYMBOL,NATOM,NATOUT,BRRESET,                             !49
+     >     DRLINES_CARD,NOPOP, BAUTO, BAUTO_ABORT, SMALLPOP, POPMIN,             !55
+     >     BINBOX, POPRANG,                                                 !57
+     >     COREX, BCOREX, VPLOT, BUNLU, UNLUTECLINE, BPRIUNLU,              !63
+     >     ND, IPRINTZERORATES, PRILEVRA,                                   !66
+     >     LEVELPLDEP, NPLOTDEP,                                            !68
+     >     BITCONT, bTDIFFUS, BPGAHIST, AG, BAG, BPGAHISTE,                 !74
+     >     PLOTOPT, MAXPLOTOPT, NPLOTOPT, OPC, BTALTER,                     !79
+     >     BPLOCC, LPLOCC, KPLOCC, BRUDZERO,                                !83
+     >     BXJLAPPNEW, BXJCAPPNEW, BNEWOPER, IPLOT_XJLAPP, IPLOT_XJCAPP,    !90
+     >     LPLOT_XJCAPP, NITER_PLOT_JAPP, BPLOTAPP, BNEWTONRESET,           !94
+     >     XLAM_FINE_START, XLAM_FINE_END, BTRACE_POPNUM,                   !97
+     >     BGAMMACFIX, BGAMMALFIX, BGAMMARFIX, BGAMMADFIX,                  !101
+     >     BNUEFE, BXJLAPPCORE, WJCMIN, NKONV_THRESH,                       !105
+     >     iBLOCKINVERSION, RSTAR, RMAX, TAUMAX, bENSURETAUMAX, TAUACC,     !111
+     >     bTauStrict, ReduceTauCorrections, TauCorLimits, FQLIMIT,         !115
+     >     RadiusGridParameters, VMIN, bThinWind, ThinCard, bSUMMARY,       !120   
+     >     bHYDROSOLVE, bLateTau, HydroCard, AlphaCard,                     !124
+     >     DENSCON_FIX, DENSCON_LINE, MFORM, XMSTAR, GLOG, bUpdateMass,     !130
+     >     WRTYPE, MODHEAD, bModHeadUpdate, bOLDVELO, bTauMaxSafe,          !135
+     >     bFULLHYDROSTAT, bGAMMARADMEAN, GEDDreduce, iZRType, iAMT,        !140
+     >     CLUMP_SEP, MacroCard, OPALINE_SCALE, NBACKUP, GEFFKEY, bUCPP,    !146
+     >     FLUXEPS, HYSTACC, IHSSTATUS, bNoFeTCORR, bUseTWOPNT,             !151
+     >     bRELSCHARMERACC)     
 C*******************************************************************************
 C***  DECODING INPUT OPTIONS FOR MAIN PROGRAM "STEAL"
 C*******************************************************************************
 
       IMPLICIT NONE
 
-      INTEGER :: I, J, K, IN, MAXPLOTOPT, MAXSETS, NDIM, ND, L,
-     >           NA, NATOM, NATOUT, ITBR, IPRINTZERORATES, NPAR,
-     >           IND, ISTART, IERR, IHSSTATUS, NZ,
-     >           LSTAU, LSRAT, LSPOP, LSEXPO, 
+      INTEGER :: I, J, IN, MAXPLOTOPT, MAXSETS, NDIM, ND,
+     >           NA, NATOM, NATOUT, ITBR, NLINE, IPRINTZERORATES, NPAR,
+     >           IND, ISTART, IERR, IHSSTATUS,
+     >           LSTAU, LSRAT, LSPOP, LSEXPO,
      >           IHIST, IFLUX, IDAT, IPRICC, IPRILC,
      >           JOBNUM, JOBMAX, NPLOT, NPLOTDEP, NPLOTOPT,
      >           NEWWRC, NSCHAR, ITMAX, MASSORIGIN, NKONV_THRESH,
      >           IDX, LPLOCC, KPLOCC, IFRRA, ITORA,
-     >           MGC, MGR, MGL, MGD, MFORM, iAMT, ICMMODE, NDOUT,
+     >           MGC, MGR, MGL, MGD, MFORM, iAMT,
      >           DELTAC, NITER_PLOT_JAPP, iBLOCKINVERSION, iZRType,
      >           IPLOT_XJLAPP, IPLOT_XJCAPP, LPLOT_XJCAPP, NBACKUP
-
-      INTEGER, INTENT(IN) :: iALOentry
 
       !INTEGER :: IFIX   !IFIX(x) ist ein Alias von INT(x) : konvertiert Real in Integer
 
 
       CHARACTER(256) :: KARTE, TPLOTOPT
-      CHARACTER(1200) :: UNLUTECLINE, HydroCard
-      CHARACTER(120) :: DENSCON_LINE, VTURB_LINE, DRLINES_CARD,
-     >                 ThinCard, AlphaCard, MacroCard, TaumaxCard
+      CHARACTER(1200) :: UNLUTECLINE
+      CHARACTER(120) :: DENSCON_LINE, 
+     >                 ThinCard, HydroCard, AlphaCard, MacroCard
       CHARACTER(256), DIMENSION(MAXPLOTOPT) :: PLOTOPT
       CHARACTER(10), DIMENSION(MAXSETS, NDIM) :: LEVELPL, LEVELPLDEP
       CHARACTER(10), DIMENSION(NATOM) :: ELEMENT
-      LOGICAL, DIMENSION(NATOM) :: TRACEELEM
       CHARACTER(2), DIMENSION(NATOM) :: SYMBOL
       CHARACTER(10) :: PRILEVRA
       CHARACTER(8) :: OPC, GEFFKEY
       CHARACTER(2) :: WRTYPE
       CHARACTER(40) :: CURPAR
       CHARACTER(100) :: MODHEAD, HEADLINE
-
+      CHARACTER*80  DRLINES_CARD
       REAL, DIMENSION(10) :: AGAMC,AGAMR,AGAML,AGAMD
       REAL, DIMENSION(7) :: AG
-      REAL, DIMENSION(ND) :: VTURB, ENTOT, RHO
+      REAL, DIMENSION(2), INTENT(OUT) :: TauCorLimits
 
       INTEGER, DIMENSION(1) :: MODHIST
       INTEGER, DIMENSION(10) :: NGAMC,NGAMR,NGAML,NGAMD
 
 
-      LOGICAL :: NOEXTRAP, TPLTAU, STHLP, NODATOM, NOLAP, OLDSTART,
-     >           COMPO, DRNORUD, NOPOP, BAUTO, BAUTO_ABORT, NEWATOM,
-     >           BCOREX, BUNLU, BPRIUNLU, bUCPP, bTMTHOM, BNEWTONRESET,
-     >           bUseTWOPNT, BRUDZERO, RMAX_IN_RSUN, bRELSCHARMERACC,
-     >           BITCONT, bTDIFFUS, BPGAHIST, BAG, BPGAHISTE, bDDVDOP,
-     >           bForceTDIFFUS, bNoFeTCORR, bALOTri
+      LOGICAL NOEXTRAP, TPLTAU, STHLP, NODATOM, NOLAP, OLDSTART,
+     >        COMPO, NOPOP, BAUTO, BAUTO_ABORT, NEWATOM,
+     >        BCOREX, BUNLU, BPRIUNLU, bUCPP, bNoFeTCORR
+      LOGICAL BRUDZERO, bUseTWOPNT, bRELSCHARMERACC
+      LOGICAL BITCONT, bTDIFFUS, BPGAHIST, BAG, BPGAHISTE, BNEWTONRESET
+      LOGICAL RMAX_IN_RSUN
       REAL :: RSTAR, RMAX, DENSCON_FIX, XL, XLC, XMSTAR, HYSTACC,
-     >        EPSILON, REDUCE, Y0, BRRESET, COREX, ALOMIN,
-     >        YMAX, YMIN, XMAX, XMIN, fTNDCOR,
+     >        EPSILON, REDUCE, Y0, BRRESET, COREX,
+     >        YMAX, YMIN, XMAX, XMIN,
      >        GAMMA, GAMMAC, GAMMAR, GAMMAL, GAMMAD, 
      >        ANG, ANGC, ANGR, ANGL, ANGD,
      >        SMALLPOP, SMALLPOP2, POPMIN, POPRANG, WJCMIN,
      >        XLAM_FINE_START, XLAM_FINE_END, CLUMP_SEP, OPALINE_SCALE,
-     >        tempREAL, GEDDreduce, HYSTACCMIN, RONSET, RSTARorg
+     >        tempREAL, ReduceTauCorrections, GEDDreduce, HYSTACCMIN
       REAL :: VFINAL, VMIN, VMINCAND, BETA, BETA2, BETA2FRACTION,
-     >        VPAR1, VPAR2, VPAR1_2, VPAR2_2, RCON, HSCALE, VTURBND,
-     >        TAUMAX, TAUACC, GLOG, POPMIN_OLD, VCON, FLUXEPS
-      LOGICAL NOTEMP,TPLOT, BINBOX, VPLOT, bFRACINV, bINCADV
+     >        VPAR1, VPAR2, VPAR1_2, VPAR2_2, RCON, HSCALE,
+     >        TAUMAX, TAUACC, GLOG, FQLIMIT, FLUXEPS
+      LOGICAL NOTEMP,TPLOT, BINBOX, VPLOT
       LOGICAL BPLOCC, BNUEFE
       LOGICAL BXJLAPPNEW, BXJCAPPNEW, BNEWOPER, BXJLAPPCORE,
      >        BPLOTAPP, BTRACE_POPNUM, BTALTER,
      >        BGAMMACFIX, BGAMMALFIX, BGAMMARFIX, BGAMMADFIX,
      >        bENSURETAUMAX, bHYDROSOLVE, bLateTau,
      >        bThinWind, bTauStrict, bSUMMARY, bUpdateMass, 
-     >        bModHeadUpdate, bOLDVELO, bLAMAPPCOLI,
-     >        bFULLHYDROSTAT, bGAMMARADMEAN, bKUBATDEBUG,
-     >        bHydroHelp, bHYSTloose, bUpdateVT, bSMOCO
+     >        bModHeadUpdate, bOLDVELO, bTauMaxSafe, 
+     >        bFULLHYDROSTAT, bGAMMARADMEAN
       CHARACTER(80), DIMENSION(3) :: RadiusGridParameters           !contains all RADIUS-GRID CARDS (for subr. RGRID)
 
       COMMON/VELPAR/ VFINAL,VMINCAND,BETA,VPAR1,VPAR2,RCON,HSCALE,
@@ -191,8 +182,7 @@ C***  NO SCHARMER AMPLIFICATION OF CORRECTIONS
       MGL=1
       MGD=1
       DELTAC=1.0
-      bLAMAPPCOLI = .FALSE.
-      bALOTri = .FALSE.
+
 C***  DR-RATES CALCULATED WITH CONTINUUM RADIATION FIELD
       DRLINES_CARD = ''
 C***  RUDIMENTAL LINES ARE SET TO f=0 (NO RADIATIVE RATES)
@@ -245,36 +235,19 @@ C***  NO INBOX
       BINBOX = .FALSE.
 C***  DIFFUSION APPROXIMATION is now standard (old TDIFFUS cards line)
       bTDIFFUS = .TRUE.
-      bForceTDIFFUS = .FALSE.
-      fTNDCOR = 0.
-C***  Default: TAUMAX value does not refer to THOMSON scale
-      bTMTHOM = .FALSE.
-C***  Default: No debug output for thermal balance routine
-      bKUBATDEBUG = .FALSE.
 C***  Default: Absolute accuracy for Scharmer iteration (instead of relative)
       bRELSCHARMERACC = .FALSE.
 C***  Default: Allow the use of the Two-point Broyden method
       bUseTWOPNT = .TRUE.
-C***  Default: Do not invert DM matrix for fractional corrections
-      bFRACINV = .FALSE.
 C***  Default: Do not switch off temperature correction of COLI Fe rates
       bNoFeTCORR = .FALSE.
-C***  Default: Do not consider advection terms in INITFCORR
-      bINCADV = .FALSE.
-      
+
 C***  SMALLPOP: smaller POPNUMS are not accounted for covergence criterion
 C***            of the inner iteration
       SMALLPOP = 1.E-12
-C***  NDOUT: outermost depth point considered for convergence criterion 
-C***         Default: Negative or zero value = automatic calculation in PRICORR
-      NDOUT = -1
 
 C***  POPMIN: smaller POPNUMs are set to this value 
-      IF (POPMIN < 1.E-99) THEN
-        POPMIN = 1.E-25
-      ELSE 
-        POPMIN_OLD = POPMIN
-      ENDIF
+      POPMIN = 1.E-25
 
 C***  RANGE OF POPNUM PLOT
       POPRANG = -15.
@@ -299,9 +272,7 @@ C***  Initialize radius grid lines
 C***  Clumping stuff 
       DENSCON_FIX = 1.
       DENSCON_LINE = ' '
-C***  Depth-dependent microturbulence
-      VTURB_LINE = ' '
-      
+
 C***  Do not use new Integration of Approximate Radiation Fields
       BXJLAPPNEW  = .FALSE.
       BXJLAPPCORE = .FALSE.
@@ -336,8 +307,7 @@ C***  No Tracing of Popnumbers
       BTRACE_POPNUM = .FALSE.
 
 C***  Minimum Scharmer Weight
-      WJCMIN = 0.1    !continua
-      ALOMIN = 0.1    !lines
+      WJCMIN = 0.1
 
 C***  Threshold for maximum number of allowed diverged points in LINPOP
       NKONV_THRESH = 30      
@@ -353,6 +323,11 @@ C***  new steal options from wrstart (added 08.08.2011 by ansander)
       TAUACC = 1.E-4
       bENSURETAUMAX = .FALSE.
       bTauStrict = .TRUE.
+      ReduceTauCorrections = 1.0    !default reducing factor for vmin changes in taumax enforcement routine
+      TauCorLimits(1) = -999.       !
+      TauCorLimits(2) = -999.
+      bTauMaxSafe = .FALSE.
+      FQLIMIT = -1.                 !default: no flux ratio limit for TAUMAX fixing
       GEDDreduce = 1.               !default: do not take a fraction of last GEDDRAD
       FLUXEPS = -1.
       bUCPP = .FALSE.
@@ -362,13 +337,8 @@ C***  new steal options from wrstart (added 08.08.2011 by ansander)
 C***  HYDRO PARAMATERS (added 17.08.2011 by ansander)           
       bHYDROSOLVE = .FALSE.     !Default: hydro branch is not used
       bLateTau = .FALSE.        !Default: Tau iteration is done directly after hydro
-      bHYSTloose = .FALSE.
       
       UNLUTECLINE = 'UNLUTEC'
-      HydroCard = 'HYDRO'
-      
-C***  Use Depth-dependent doppler profiles? (Default = no)
-      bDDVDOP = .FALSE.
       
 C***  Write model parameter summary file in this steal job
       bSUMMARY = .FALSE.
@@ -377,7 +347,6 @@ C***  Write model parameter summary file in this steal job
       iZRType = 1               !Default: Standard method for ZERO_RATES determination
                                 !Values: 0 = no ZERO_RATES, 1 = standard/wrh, 2 = Goetz method
       iAMT = 0                  !AUTO MODIFY TEMPERATURE switch (0 = UNLU, 1 = TEMP, -1 = NOTEMP)                                
-      ICMMODE = 1               !CORRMAX calculation modus (0 = consider everything, 1 = consider only converged)
       
       !how to calculate stellar mass (needed? perhaps not here but in wrstart)
       ! 0 = Mass-luminosity relation   
@@ -387,17 +356,11 @@ C***  Write model parameter summary file in this steal job
       MFORM = 2         !New default: Use Goetz formula if MASSORIGIN = 0
       bUpdateMass = .FALSE.
       bModHeadUpdate = .FALSE.
-      bUpdateVT = .FALSE.
       bOLDVELO = .FALSE.
       CLUMP_SEP = 0.            !default: no macroclumping
       OPALINE_SCALE = 1.        !default: no scaling of line opacities (changes a_lines)
-      DO K=1, NATOM
-        TRACEELEM(K) = .FALSE.
-      ENDDO
 
 C***  END OF DEFAULT SETTINGS  -----------------------------------------
-
-      RSTARorg = RSTAR          !Backup input RSTAR (for update option)
 
       OPEN (1, FILE='CARDS', STATUS='UNKNOWN')
       REWIND 1
@@ -417,6 +380,7 @@ C***  Get actual parameters
    20  CONTINUE
 C***  Erase not used parameter fields
       DO 98, I=NPAR+1, 20
+ccc??        ACTPAR(I) = ''
         ACTPAR(I) = '0.0'
 98    CONTINUE
 
@@ -506,9 +470,7 @@ C                                      =
      >            ACTPAR(2)  ==  'ALPHA' .OR. 
      >            ACTPAR(2)  ==  'GAMMA' .OR. 
      >            ACTPAR(2)  ==  'SIGMAFE' .OR. 
-     >            ACTPAR(2)  ==  'FGSTRAT' .OR. 
      >            ACTPAR(2)  ==  'FORCEMULT' .OR. 
-     >            ACTPAR(2)  ==  'ACCELEM' .OR. 
      >            ACTPAR(2) .EQ. 'ACC'        ) THEN
             IF (NPLOTOPT .EQ. MAXPLOTOPT) THEN
                WRITE (0, '(A,/,A,/,A)') 'STEAL: WARNING ----  MORE ' //
@@ -731,10 +693,10 @@ C                              ======
 C                              ======
             READ (ACTPAR(2), '(F10.0)', ERR=1) DELTAC
 
-      ELSE IF (KARTE(:6) .EQ. 'DRLINE') THEN
-C                              ======
-            DRLINES_CARD = KARTE
-
+      ELSE IF (ACTPAR(1) .EQ. 'DRLINES') THEN
+C                              =======
+         DRLINES_CARD = KARTE
+ 
       ELSE IF (KARTE(:8) .EQ. 'NO TEMPE') THEN
 C                              ========
             NOTEMP=.TRUE.
@@ -747,7 +709,7 @@ C                              =======
             BUNLU = .TRUE.
 
       ELSE IF (ACTPAR(1).EQ.'NO'.AND.ACTPAR(2)(1:6).EQ.'EXTRAP') THEN
-C                            ==                         ======
+C                            ==                        ======
             IF (NPAR .EQ. 2) THEN
               NOEXTRAP = .TRUE.
             ELSE IF (ACTPAR(3) .EQ. 'UNTIL' .AND. 
@@ -769,9 +731,6 @@ C                              ======
 C                              =====
             READ(ACTPAR(2),'(I10)',ERR=1) ITMAX
             
-      ELSE IF (ACTPAR(1)(1:7) == 'FRACINV') THEN
-C                                 =======
-            bFRACINV = .TRUE.
       ELSE IF (ACTPAR(1) == 'SPLITINVERSION') THEN
 C                            ==============
             iBLOCKINVERSION = 1
@@ -787,43 +746,7 @@ C                            ==============
                   ENDIF
                ENDIF
             ENDIF            
-
-      ELSE IF (ACTPAR(1) == 'ZERORATES') THEN
-C                            =========
-C     @TODO:  Check for good keywords for the particular methods
-            IF (NPAR == 2) THEN
-               IF (ACTPAR(2) == 'NONE') THEN
-                 iZRType = 0
-               ELSEIF (ACTPAR(2) == 'PREDICT') THEN
-                 iZRType = 1
-               ELSEIF (ACTPAR(2) == 'LADDER') THEN
-                 iZRType = 2
-               ELSE
-                  READ (ACTPAR(2), '(F10.0)', IOSTAT=IERR) tempREAL
-                  IF (IERR == 0) THEN
-                      iZRType = IFIX(tempREAL)
-                  ENDIF
-               ENDIF
-            ENDIF                  
-
-      ELSE IF (ACTPAR(1) == 'CMMODE') THEN
-C                            ======
-C     @TODO:  Check for good keywords for the particular methods
-            IF (NPAR == 2) THEN
-               IF (ACTPAR(2) == 'ALL') THEN
-                 ICMMODE = 0
-               ELSEIF (ACTPAR(2) == 'CONVERGED') THEN
-                 ICMMODE = 1
-C               ELSEIF (ACTPAR(2) == 'LADDER') THEN
-C                 iZRType = 2
-               ELSE
-                  READ (ACTPAR(2), '(F10.0)', IOSTAT=IERR) tempREAL
-                  IF (IERR == 0) THEN
-                      ICMMODE = IFIX(tempREAL)
-                  ENDIF
-               ENDIF
-            ENDIF                  
-            
+ 
       ELSE IF (ACTPAR(1) .EQ. 'NO' .AND. ACTPAR(2) .EQ. 'OVERLAP') THEN
 C                              ==                        =======
             NOLAP = .TRUE.
@@ -882,19 +805,9 @@ C                                   ========
          IF (SMALLPOP2 .NE. SMALLPOP) THEN
             WRITE (*,'(A, G12.3, A, G12.3)') 
      >        'STEAL/DECSTE: WARNING: SMALLPOP=', SMALLPOP2, 
-     >        ' chosen different from recommended default', SMALLPOP 
-         ENDIF
-         SMALLPOP = SMALLPOP2
-C***     Optional parameter for outermost depth point considered in CORMAX
-C***     (This is passed to STEAL->PRICORR)   added by ansander, 05-Oct-2016
-         IF (ACTPAR(3) == 'NDOUT') THEN
-           IF (ACTPAR(4) /= 'AUTO') THEN
-             READ (ACTPAR(4),'(F10.0)', ERR=1, IOSTAT=IERR) tempREAL
-             IF (IERR == 0) THEN
-               NDOUT = tempREAL
-             ENDIF
-           ENDIF
-         ENDIF
+     >        'choosen different from recommended default', SMALLPOP 
+            ENDIF
+            SMALLPOP = SMALLPOP2
 
       ELSE IF (ACTPAR(1)(1:6) .EQ. 'POPMIN' ) THEN
 C                                   =======
@@ -913,22 +826,6 @@ C                                    =============
 C                             ======================
             BITCONT = .FALSE.
 
-      ELSE IF (ACTPAR(1) == 'TDIFFCOR') THEN
-C                              =======
-            fTNDCOR = 1.
-            IF (NPAR > 1) THEN
-              READ (ACTPAR(2), '(F10.0)', IOSTAT=IERR) tempREAL
-              IF (IERR == 0) THEN
-                  fTNDCOR = tempREAL
-              ENDIF
-            ENDIF
-            
-      ELSE IF (ACTPAR(1) == 'TDIFFUS' .AND. ACTPAR(2) == 'ALWAYS') THEN
-C                            =======
-C***        Perform TDIFFUS corrections even if no other temperature
-C***        corrections are applied
-            bForceTDIFFUS = .TRUE.
-
       ELSE IF (ACTPAR(1) == 'NOTDIFFUS') THEN
 C                              =======
             bTDIFFUS = .FALSE.
@@ -941,11 +838,6 @@ C                              ===
      >         ACTPAR(2) .EQ. 'ALTERNATE') THEN
 C                              =========
          BTALTER = .TRUE.
-         
-      ELSE IF (ACTPAR(1) == 'TCORR' .AND. 
-     >         ACTPAR(2) == 'ADVECTION') THEN
-C                            =========
-         bINCADV = .TRUE.
 
       ELSE IF (ACTPAR(1) == 'TCORR' .AND. 
 C                            =====
@@ -961,32 +853,8 @@ C                              =====================
 
       ELSE IF (ACTPAR(1) .EQ. 'XJLAPP') THEN
 C                              ======
-         IF (ACTPAR(2) == 'COLI') THEN
-C                          ====         
-            IF (iALOentry > 0) THEN
-              bLAMAPPCOLI = .TRUE.
-            ELSE
-              WRITE (hCPR,*) '* WARNING: ALO from COLI requested'
-     >            // ' but not found -- fallback to default OPC'
-            ENDIF
-            DO I=3, NPAR
-C***          Optional parameter: Specify ALOMIN = min "TAU" for using ALO
-              IF (I < NPAR .AND. ACTPAR(3) == 'MIN') THEN
-                READ (ACTPAR(4),'(F10.0)', ERR=1) ALOMIN
-              ENDIF
-C***          Optional parameter to request using the tri-diagonal ALO
-              IF (ACTPAR(I)(:3) == 'TRI') THEN
-                IF (iALOEntry < 3) THEN
-                  WRITE (hCPR,*) '* WARNING: Tri-diagonal ALO requested'
-     >            // ' but not found -- applying diagonal ALO instead'
-                ELSE
-                  bALOTri = .TRUE.
-                ENDIF
-              ENDIF
-            ENDDO
-
-         ELSE IF (ACTPAR(2) .EQ. 'NEW') THEN
-C                                 ===
+         IF (ACTPAR(2) .EQ. 'NEW') THEN
+C                            ===
             BXJLAPPNEW = .TRUE.
          ELSE IF (ACTPAR(2) .EQ. 'CORE') THEN
 C                                 ====
@@ -1060,10 +928,9 @@ C                            =====
 
       ELSE IF (KARTE(:6) == 'VELPAR') THEN
 C                            ======
-         VMINCAND = VMIN
          CALL DECVELPAR(KARTE, VFINAL, VMINCAND, BETA, RMAX)
          IF (VMIN < 0) THEN
-C***        use VMIN from CARDS only if not stored in MODEL
+            !use VMIN from CARDS only if not stored in MODEL
             VMIN = VMINCAND
          ELSE
             VMINCAND = VMIN
@@ -1083,8 +950,6 @@ C                             =========
          IF (NPAR > 2) THEN
            DO i=3, NPAR
              SELECTCASE (ACTPAR(i))
-               CASE ('LOOSE')
-                 bHYSTloose = .TRUE.
                CASE ('FULL', 'FULLHD')
                  bFULLHYDROSTAT = .TRUE.
                CASE ('MEAN')
@@ -1094,13 +959,13 @@ C                             =========
                  IF (NPAR >= (i+1)) THEN
                    READ (ACTPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
                    IF (IERR == 0) THEN
-                     IF (tempREAL > 1. .OR. tempREAL < 0.)  THEN
+                     GEDDreduce = tempREAL
+                     IF (GEDDreduce > 1. .OR. GEDDreduce < 0.)  THEN
                        WRITE (hCPR,'(A)') ' *** Error: invalid choice'
      >                    // ' of REDUCE parameter, must be '
      >                    // ' between 0 and 1!'
                        GOTO 1
-                     ENDIF
-                     GEDDreduce = tempREAL
+                     ENDIF                   
                    ENDIF
                  ENDIF
                CASE ('ACC', 'EPS')
@@ -1139,11 +1004,6 @@ C***     In addition, prevent unrealistically small accuracies
       ELSE IF (ACTPAR(1) == 'TAUMAX') THEN
 C                            ======
          READ (ACTPAR(2), '(F10.0)', ERR=1) TAUMAX
-         TaumaxCard = KARTE
-C***     Only parameters which are also required for other routines
-C***     than just ENSURETAUMAX are decoded here. The rest, such as 
-C***     accuracy settings or numerical paramers, is decoded
-C***     in ENSURETAUMAX itself.
          IF (NPAR > 2) THEN
           DO i=3, NPAR 
             SELECTCASE (ACTPAR(i))
@@ -1155,6 +1015,8 @@ C***     in ENSURETAUMAX itself.
                     TAUACC = tempREAL
                   ENDIF
                 ENDIF
+              CASE ('SAFE')
+                bTauMaxSafe = .TRUE.
               CASE ('MIN')
                 bTauStrict = .FALSE.
                 bENSURETAUMAX = .TRUE.
@@ -1173,20 +1035,52 @@ C***            allows a relative specification of the accuracy
                     TAUACC = tempREAL * TAUMAX
                   ENDIF                  
                 ENDIF
-              CASE ('THOM', 'THOMSON')
-                bTMTHOM = .TRUE.               
+              CASE ('REDUCE')
+                ReduceTauCorrections = 0.2
+                IF (NPAR >= (i+1)) THEN
+                  READ (ACTPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
+                  IF (IERR == 0) THEN
+                     IF (tempREAL > 1. .OR. tempREAL < 0.)  THEN
+                       WRITE (hCPR,'(A)') ' *** Error: invalid choice'
+     >                    // ' of REDUCE parameter, must be '
+     >                    // ' between 0 and 1!'
+                       GOTO 1
+                     ENDIF                   
+                    ReduceTauCorrections = tempREAL
+                  ENDIF                  
+                ENDIF
+              CASE ('CORLIMIT', 'CORRLIMIT')
+                IF (NPAR >= (i+1)) THEN
+                  READ (ACTPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
+                  IF (IERR == 0) THEN
+                    TauCorLimits(1) = tempREAL
+                    IF (NPAR >= (i+2)) THEN
+                      !Note: This second parameter is not interpreted yet
+                      READ (ACTPAR(i+2),'(F10.0)',IOSTAT=IERR) tempREAL
+                      IF (IERR == 0) THEN
+                        TauCorLimits(2) = tempREAL
+                      ELSE
+                        TauCorLimits(2) = 1.0
+                      ENDIF                                    
+                    ENDIF
+                  ELSE
+                    !Use default values
+                    TauCorLimits(1) = -1.0
+                  ENDIF                                    
+                ENDIF
+              CASE ('FLUXQUOTLIMIT', 'FQLIM', 'FQL')
+                FQLIMIT = 0.05  !default if criterion is set
+                IF (NPAR >= (i+1)) THEN
+                  READ (ACTPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
+                  IF (IERR == 0) THEN
+                    FQLIMIT = tempREAL
+                  ENDIF           
+                ENDIF            
             ENDSELECT
           ENDDO
 
          ENDIF
 
-      ELSE IF (ACTPAR(1) .EQ. 'TAUFIX') THEN
-C                              ======
-C     note: Deprecated CARD => use TAUMAX card
-        WRITE (hCPR,*) '*** ERROR: DEPRECARED TAUFIX CARD FOUND ***'
-        WRITE (hCPR,*) '--- Use TAUMAX card options instead! ---'
-        STOP 'FATAL ERROR in DESCTE'
-        
       ELSE IF (ACTPAR(1) .EQ. 'DENSCON') THEN
 C                              =======         
          READ (ACTPAR(2), '(F10.0)',ERR=1) DENSCON_FIX
@@ -1204,13 +1098,11 @@ C                            =======
       ELSE IF (ACTPAR(1) == 'HYDRO') THEN
 C                            =====
         bHYDROSOLVE = .TRUE.
-        HydroCard = TRIM(HydroCard) // KARTE(6:)
+        HydroCard = KARTE
         DO I=2, NPAR
           SELECTCASE (ACTPAR(I))
             CASE ('LATETAU', 'LTAU', 'LT')
               bLateTau = .TRUE.
-            CASE ('ANALYSE')
-              bHydroHelp = .TRUE.
           ENDSELECT
         ENDDO
     
@@ -1234,7 +1126,7 @@ C                            =======
 C                            =======
         MFORM = 2
       ELSE IF (ACTPAR(1) == 'MSTAR') THEN
-C***    Fallback if MSTAR was not in model file
+        !Fallback if MSTAR was not in model file
         IF ((XMSTAR < -90.) .AND. (GLOG < -90.)) THEN
           READ (ACTPAR(2), '(F10.0)') XMSTAR
           IF (XMSTAR <= 0.) THEN
@@ -1244,16 +1136,6 @@ C***    Fallback if MSTAR was not in model file
             GLOG = ALOG10(GCONST * XMSTAR * XMSUN / RSTAR / RSTAR)
           ENDIF
         ENDIF
-      ELSE IF (ACTPAR(1) == 'VTURB' .OR. ACTPAR(1) == 'VMIC') THEN
-C                            =====                     ====      
-        VTURB_LINE = KARTE
-        
-c      ELSE IF (ACTPAR(1) == 'VTURBUPDATE') THEN
-c        bUpdateVT = .TRUE.
-c        READ (ACTPAR(2), '(F10.0)', ERR=1) VTURBND
-c        DO L=1, ND
-c          VTURB(L) = VTURBND
-c        ENDDO
       ELSE IF (ACTPAR(1) == 'MASSUPDATE') THEN
 C                            ==========
 C       !Changes the mass on the fly (either direct input or m-r relation)
@@ -1261,69 +1143,20 @@ C       !This is a debug option that should only be used for tests
         bUpdateMass = .TRUE.
         IF (NPAR > 1) THEN
           READ (ACTPAR(2), '(F10.0)', ERR=1) XMSTAR          
-          GLOG = ALOG10(GCONST * XMSTAR * XMSUN / RSTAR / RSTAR)
         ELSE
           XMSTAR = 0.
         ENDIF
-      ELSE IF (ACTPAR(1) == 'RSTARUPDATE') THEN
-C                            ===========
-C***    Manual change of RSTAR on the fly 
-C***    This is only a debug option that should be used with care
-C***    Input is expected in solar radii
-        IF (NPAR > 1) THEN
-          READ (ACTPAR(2), '(F10.0)', ERR=1) RSTAR
-          RSTAR = RSTAR * RSUN
-          GLOG = ALOG10(GCONST * XMSTAR * XMSUN / RSTAR / RSTAR)
-C***      Scale total density with new radius
-          DO L=1, ND
-            ENTOT(L) = ENTOT(L) * (RSTARorg/RSTAR)**2
-            RHO(L) = RHO(L) * (RSTARorg/RSTAR)**2
-          ENDDO           
-          bUpdateMass = .TRUE.
-        ELSE
-          WRITE (0,*) '*** ERROR: RSTARUPDATE NEEDS A PARAMETER'
-          STOP '*** FATAL ERROR IN STEAL->DECSTE'
-        ENDIF        
-
       ELSE IF (KARTE(:8) == 'HEADLINE') THEN
 C                            ========
         HEADLINE = KARTE(10:)        
       ELSE IF (KARTE(:14) == 'RENEW HEADLINE') THEN
 C                             ==============
         bModHeadUpdate = .TRUE.
-      ELSE IF (ACTPAR(1) == 'DEBUGTB') THEN
-C                            =======
-        bKUBATDEBUG = .TRUE.
       ELSE IF (ACTPAR(1) == 'BACKUP') THEN
 C                            ======
         NBACKUP = 50
         IF (NPAR > 1) THEN
           READ (ACTPAR(2), '(I10)', ERR=1) NBACKUP
-        ENDIF
-      ELSE IF (KARTE(:4) == 'VDOP') THEN
-C                            ====
-         IF (NPAR > 2) THEN
-           IF (ACTPAR(3) == 'AUTO') bDDVDOP = .TRUE.
-         ENDIF
-      ELSE
-C***  Check if the card refers to an element name
-        CALL FINDCHARGE (ACTPAR(1), NZ)
-C***    NZ > 0 means that an element of this name is known
-        IF (NZ > 0) THEN
-c          IFOUNDELEMENT = 0
-          DO K=1, NATOM
-            IF (ACTPAR(1) == ELEMENT(K)) THEN      
-C***          ELEMENT IS NOT ONLY IN CARDS, BUT ALSO IN DATOM            
-c              IFOUNDELEMENT = 1
-C***          Look for keyword 'TRACE' -> this element will not be 
-C***           considered for max/min correction calculation
-              DO I=3, NPAR
-                IF (ACTPAR(I) == 'TRACE') THEN
-                  TRACEELEM(K) = .TRUE.
-                ENDIF
-              ENDDO
-            ENDIF
-          ENDDO
         ENDIF
       ENDIF
       GOTO 8

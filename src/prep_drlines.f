@@ -7,7 +7,7 @@ C***    - "rudimental" lines: KRUDAUT = 1
 C***  This depends on the CARDS line DRLINES
 C***  called from: WRSTART, COLI, STEAL
 C******************************************************************
-      CHARACTER*120 DRLINES_CARD
+      CHARACTER*80 DRLINES_CARD
       CHARACTER*4 ACTPAR
       DIMENSION KRUDAUT(NAUTO), EAUTO(NAUTO)
 

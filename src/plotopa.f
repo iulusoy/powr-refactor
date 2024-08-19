@@ -6,7 +6,7 @@
      $           LEVEL,NCHARG,WEIGHT,ELEVEL,EION,EINST,
      $           SIGMATHK,SEXPOK,EDGEK,
      $           K,NF,SIGMAKI,RADIUS,
-     $           KONTNUP,KONTLOW,LASTKON,XDATA,POPMIN)
+     $           KONTNUP,KONTLOW,LASTKON,XDATA)
 C***********************************************************************
 C***  PLOT of opacity over radius at given wavelength
 C***  CALLED FROM: COMO
@@ -17,8 +17,7 @@ C***********************************************************************
       DIMENSION OPA(ND), RADIUS(ND), FILLFAC(ND), ENTOT(ND)
       DIMENSION ABXYZ(MAXATOM), ATMASS(MAXATOM)
       CHARACTER MODHEAD*100, YTEXT*60
-      CHARACTER XLAMSTR*20, ACTPAR*20
-      CHARACTER(80), DIMENSION(NPLOTOPA) :: OPTIONPLOTOPA
+      CHARACTER OPTIONPLOTOPA(NPLOTOPA)*(80), XLAMSTR*20, ACTPAR*20
       LOGICAL BPERMASS
 C***  Atomic Mass Unit
       DATA AMU /1.66E-24/
@@ -56,7 +55,7 @@ C**  OPACITY PLOTS
         CYCLE
   100   CONTINUE  
 
-      CALL COOP (XLAM, ND,T,RNE,POPNUM,POPMIN,ENTOT,RSTAR,
+      CALL COOP (XLAM, ND,T,RNE,POPNUM,ENTOT,RSTAR,
      $           OPA,ETA,THOMSON,IWARN,MAINPRO,MAINLEV,
      $           NOM,KODAT,NDIM,N,MAXATOM,
      $           LEVEL,NCHARG,WEIGHT,ELEVEL,EION,EINST,

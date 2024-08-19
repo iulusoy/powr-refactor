@@ -14,9 +14,6 @@ C******************************************************************
 
 C***  IRECL : RECORD LENGTH OF THE FILE OPENENED BY FORTRAN. THE VARIABLE 
 C***                     LENGTH IS 4 BYTE
-C***   => changed with compiler parameter "assume byterecl" to be compartible with gfortran
-C***  IADRL = IRECL / 2, BECAUSE ALL VARIABLES, EVEN THE CHARACTERS, SHOULD 
-C***                     HAVE 8 BYTE
 
 C***  Variable-names have 8 Characters. Note that the Character ^ is not valid
 C***    because it is used to transport blanks from the MSFILE plotutility
@@ -39,12 +36,12 @@ C***  MODE IS NOT USED SO FAR
       CHARACTER(1) :: CKIND
       CHARACTER(7) :: CSTATUS, FN
       CHARACTER(8) :: ACTION, MODE, KSTR, KINDSTR, CNAME, CNAME2
-      CHARACTER(10) :: FMTSTR, CACTION
+      CHARACTER(10) :: FMTSTR
 
-      REAL :: RDUMMY, RSCRATCH
-      INTEGER :: IKIND, IDEFKIND, NDIMR, LFMT, IFMTLEN, INTSCRATCH
+      REAL :: RDUMMY
+      INTEGER :: IKIND, IDEFKIND, NDIMR, LFMT, IFMTLEN
 
-      LOGICAL BEXIST, BVARKN, BDIMEQ, BNEWKINDINFO, bWRINT
+      LOGICAL BEXIST, BVARKN, BDIMEQ, BNEWKINDINFO
 
       INTEGER, EXTERNAL :: IDX  !function to obtain the (non-blank) length of a string
 
@@ -126,16 +123,12 @@ C***  FILE-NAME ON DISK: fort.<ICHANNEL>
 
 C***  CHECK IF FILE DOES EXIST
         INQUIRE (FILE=FN, EXIST=BEXIST)
-        CACTION = 'READWRITE'
         IF (CNAME == 'AUTO') THEN
           IF (BEXIST) THEN
             CSTATUS = 'OLD'
           ELSE
             CSTATUS = 'NEW'
           ENDIF
-        ELSEIF (CNAME == 'READ') THEN
-          CSTATUS = 'OLD'
-          CACTION = 'READ'
         ELSE
           CSTATUS = CNAME(1:7)
           IF ((CSTATUS == 'REPLACE') .OR. (CSTATUS(1:3) == 'NEW')) THEN
@@ -149,7 +142,6 @@ C***  CHECK IF FILE DOES EXIST
      >        FORM='UNFORMATTED',
      >        RECL=IRECL,
      >        STATUS=CSTATUS,
-     >        ACTION=CACTION,
      >        ERR=90,
      >        IOSTAT=IOS)
 
@@ -612,7 +604,7 @@ C***        EXIT THIS LOOP
         ENDDO
    44   CONTINUE
         IF (.NOT. BVARKN) THEN
-          WRITE (0,'(3A)') 'Variable ',CNAME, ' not known'
+          WRITE (0,'(3A)') 'Variable ',NAME, ' not known'
           STOP 'ERROR WHEN ACTION = INFO-D'
         ENDIF
         IERR = 0
@@ -659,7 +651,6 @@ C***    Ausgabe der Variable mit der Nummer I
         NIND3 = (INUM-1) / IADRL + 1
         NREST = INUM
         LFMT = IDX(CNAME2)
-        bWRINT = .FALSE.
         IF ((CNAME2(1:4) == 'AUTO') .OR. (CNAME2(1:4) == 'auto')) THEN
           IF (CKIND == 'I') THEN
             IFMTLEN = INT(  LOG10(2. ** FLOAT(IKIND * 8)) + 2. )
@@ -686,7 +677,6 @@ C***    Ausgabe der Variable mit der Nummer I
           FMTSTR = CNAME2
         ENDIF
         FMTSTR = ADJUSTL(FMTSTR)
-        IF (FMTSTR(1:2) == '(I') bWRINT = .TRUE.
         WRITE (*,*) 'N=?'
         DO I=1, NIND3
           IF (CKIND /= ' ') THEN
@@ -694,21 +684,13 @@ C***    Ausgabe der Variable mit der Nummer I
      >              SCRATCHBYTE
             INDEX = (I-1) * IADRL
             DO J=1, MIN(IADRL, NREST), IKIND
-              WRITE (*,FMT=TRIM(FMTSTR)) (SCRATCHBYTE(JJ), 
-     >                                    JJ=J, J+IKIND-1)
+              WRITE (*,TRIM(FMTSTR)) (SCRATCHBYTE(JJ), JJ=J, J+IKIND-1)
             ENDDO
           ELSE
             READ(UNIT=ICHANNEL, REC=(IFIRST-1+I), ERR=94, IOSTAT=IOS)
      >              SCRATCH
             INDEX = (I-1) * IADRL
-            DO J=1, MIN(IADRL, NREST)    
-              IF (bWRINT) THEN
-                INTSCRATCH = TRANSFER(SCRATCH(J), INTSCRATCH)
-                WRITE (*,FMT=TRIM(FMTSTR)) INTSCRATCH
-              ELSE 
-                WRITE (*,FMT=TRIM(FMTSTR)) SCRATCH(J)
-              ENDIF               
-            ENDDO
+            WRITE (*,TRIM(FMTSTR)) (SCRATCH(J), J=1, MIN(IADRL, NREST))
           ENDIF
           NREST = NREST - IADRL
         ENDDO
@@ -728,19 +710,15 @@ C********** Error Stops ****************************************
       GOTO 99
 
    91 WRITE (0,*) ' ERROR WHEN READING MASS-STORAGE FILE (LABEL=91)'
-      WRITE (0,*) ' FILE NAME = ', FN
       GOTO 99
 
    92 WRITE (0,*) ' ERROR WHEN WRITING MASS-STORAGE FILE (LABEL=92)'
-      WRITE (0,*) ' FILE NAME = ', FN
       GOTO 99
 
    93 WRITE (0,*) ' ERROR WHEN WRITING MASS-STORAGE FILE (LABEL=93)'
-      WRITE (0,*) ' FILE NAME = ', FN
       GOTO 99
 
    94 WRITE (0,*) ' ERROR WHEN READING MASS-STORAGE FILE (LABEL=94)'
-      WRITE (0,*) ' FILE NAME = ', FN
       GOTO 99
 
 

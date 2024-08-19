@@ -13,23 +13,19 @@ C***  THE NG-EXTRAPOLATION IS CONTROLLED FOR THE INCREASE OF POPNUMBERS
 C***********************************************************************
  
 C***  DEFINE ARRAY DIMENSIONS ******************************************
-      INTEGER, PARAMETER :: MAXATOM =           26 
-      INTEGER, PARAMETER :: NDIM    =         2560 
-      INTEGER, PARAMETER :: NFDIM   = 2*NDIM + 400 
-      INTEGER, PARAMETER :: MAXKONT =      NFDIM/2 
-      INTEGER, PARAMETER :: MAXKODR =         NDIM 
-      INTEGER, PARAMETER :: MAXIND  =        45000 
-      INTEGER, PARAMETER :: MAXFEIND  =       2500 
-      INTEGER, PARAMETER :: NDDIM   =           89 
-      INTEGER, PARAMETER :: MAXHIST =         4000 
+      PARAMETER ( MAXATOM =          26 )
+      PARAMETER ( NDIM    =        2560 )
+      PARAMETER ( NFDIM   = 2*NDIM + 400 )
+      PARAMETER ( MAXKONT =     NFDIM/2 )
+      PARAMETER ( MAXIND  =       45000 )
+      PARAMETER ( MAXFEIND  =       1500 )
+      PARAMETER ( NDDIM   =          89 )
+      PARAMETER ( MAXHIST =        4000 )
 C***  NUMBER OF ENTRYS STORED IN THE GAMMA HISTORY
-      INTEGER, PARAMETER :: MAXGAHIST = 100
-
-C***  MAXIMUM ION CHARGE WHICH MAY OCCUR (SEE ALSO SUBR. GAUNTFF)
-      INTEGER, PARAMETER :: MAXION = 27 
-      
+      PARAMETER (MAXGAHIST = 100)
+ 
 C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
-      INTEGER, PARAMETER :: MAXAUTO = 3200 
+      PARAMETER ( MAXAUTO = 2850 )
       COMMON / COMAUTO / LOWAUTO(MAXAUTO),WAUTO(MAXAUTO)
      $                  ,EAUTO(MAXAUTO),AAUTO(MAXAUTO),IONAUTO(MAXAUTO)
      $                  ,KRUDAUT(MAXAUTO)
@@ -50,6 +46,7 @@ C***  HANDLING OF DIELECTRONIC RECOMBINATION / AUTOIONIZATION (SUBR. DATOM)
      $ ,MDUMMY(MAXHIST)
       CHARACTER*8 IGAUNT(MAXKONT), KEYCBF(MAXKONT)
       CHARACTER(MAXHIST*8) :: MODHIST
+      CHARACTER BUFFER40*40, BUFFER32*32
       DIMENSION GAHIST(26,MAXGAHIST)
 C***  PREVENT UNNECESSARY OUTPUT FROM SUBR. PRICORR:
       COMMON / COMNEGI / NEGINTL,INEGMIN,INEGMAX,LNEGMIN,LNEGMAX
@@ -58,49 +55,38 @@ C***  PREVENT UNNECESSARY OUTPUT FROM SUBR. PRICORR:
       DATA NEGINTL, NEGT, ITWARN / 0, 0, 0 /
       DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
       DIMENSION EDGEK(MAXATOM,MAXATOM)
-      CHARACTER(255) :: HISTENTRY
-      CHARACTER(40) :: BUFFER40
-      CHARACTER(32) :: BUFFER32
       CHARACTER KARTE*80,MODHEAD*100
       CHARACTER LEVEL(NDIM)*10
       CHARACTER*10 ELEMENT(MAXATOM), ARG(5)
       CHARACTER*4 KEYCBB(MAXIND)
-      CHARACTER(2), DIMENSION(MAXATOM) :: SYMBOL
-      CHARACTER(1), DIMENSION(NDDIM) :: CKONVER
-      LOGICAL, DIMENSION(MAXATOM) :: TRACEELEM
-      LOGICAL :: NGACC, NOTEMP, NOEXTEMP, NGWEIGHT, BEX4
+      CHARACTER*2 SYMBOL(MAXATOM)
+      CHARACTER*10 LEVUPAUTO(MAXAUTO), LEVAUTO(MAXAUTO)
+      LOGICAL NGACC, NOTEMP, NOEXTEMP, NGWEIGHT, BEX4
  
 C***  IRON: COMMON BLOCK FOR IRON-SPECIFIC DATA
 C***  include "dimblock"
-C      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5     !std
+      INTEGER, PARAMETER :: INDEXMAX = 1E7, NFEREADMAX = 3E5    !std
 C      INTEGER, PARAMETER :: INDEXMAX = 4E7, NFEREADMAX = 5E5     !vd20
-      INTEGER, PARAMETER :: INDEXMAX = 1E8, NFEREADMAX = 6E5     !xxl
+C      INTEGER, PARAMETER :: INDEXMAX = 1E8, NFEREADMAX = 6E5     !xxl
 
-      REAL, DIMENSION(NFEREADMAX) :: FEDUMMY
-      REAL, DIMENSION(INDEXMAX) :: SIGMAFE
-      REAL, DIMENSION(MAXFEIND) :: SIGMAINT
-      INTEGER, DIMENSION(MAXFEIND) :: INDRB, INDRF, IFRBSTA, IFRBEND,
-     >                                IFENUP, IFELOW
+      COMMON /IRON/ FEDUMMY(NFEREADMAX),
+     >              INDRB(MAXFEIND),INDRF(MAXFEIND), SIGMAFE(INDEXMAX),
+     >              IFRBSTA(MAXFEIND), IFRBEND(MAXFEIND),
+     >              IFENUP(MAXFEIND), IFELOW(MAXFEIND),
+     >              SIGMAINT(MAXFEIND)
       LOGICAL :: BFEMODEL
 
-C***  File and channel handles (=KANAL)
-      INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
-      INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
-      INTEGER, PARAMETER :: hMODEL = 3      !write to MODEL file
-      INTEGER, PARAMETER :: hHIST = 21      !write to MODHIST file
-      
-      
 C***  Operating system:
       COMMON / COMOS / OPSYS
       CHARACTER*8 OPSYS
 
       CHARACTER TIM1*10, TIM2*10
 
-c      IF (OPSYS .EQ. 'CRAY' .OR. OPSYS .EQ. 'SGI') THEN
-c        CALL CLOCK(TIM1)
-c      ELSE
-c        CALL TIME(TIM1)
-c      ENDIF
+      IF (OPSYS .EQ. 'CRAY' .OR. OPSYS .EQ. 'SGI') THEN
+        CALL CLOCK(TIM1)
+      ELSE
+ccc not in gfortran         CALL TIME(TIM1)
+      ENDIF
 
       CALL       DATOM (NDIM,N,LEVEL,NCHARG , WEIGHT,ELEVEL,EION,MAINQN,
      $                  EINST,ALPHA,SEXPO,
@@ -117,7 +103,7 @@ C***  IRON: ADDITIONAL PARAMETERS FOR IRON-GROUP LINE BLANKETING
      >             LASTFE, SIGMAFE, INDRB, INDRF,
      >             IFENUP, IFELOW, IFRBSTA, IFRBEND, FEDUMMY,
      >             VDOPFE, DXFE, XLAM0FE, SIGMAINT, BFEMODEL, 
-     >             LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS, MAXION)
+     >             LEVUPAUTO, LEVAUTO, N_WITH_DRLEVELS)
  
 C***  READING OF THE MODEL FILE  ---------------------------------------
       CALL OPENMS(3, IDUMMY, IDUMMY, 1, IERR)
@@ -221,12 +207,15 @@ C                          ========
             ENDIF
       IF ( KARTE(:9) .EQ. 'PRINT POP' ) THEN
 C                          =========
-            DECODE (80,4,KARTE) XL
-    4       FORMAT (9X,F10.0)
-            LSPOP=IFIX(XL)
-            IF (LSPOP.EQ.0) LSPOP=1
-            GOTO 7
+            IF (NPAR .LT. 3) THEN
+               LSPOP = 1
+            ELSE
+               CALL SARGV (KARTE, 3, ARG(3))
+               READ (ARG(3),'(F10.0)') XL
+               LSPOP=IFIX(XL)
             ENDIF
+            GOTO 7
+      ENDIF
       IF (ARG(1) .EQ. 'EXTRAP' .AND. ARG(2) .EQ. 'NOTEMP') THEN
 C                      ======                     ======
             NOEXTEMP = .TRUE.
@@ -308,17 +297,6 @@ C      IF (JOBNUM .GE. 1000) JOBNUM=JOBNUM-1000
       CALL WRITMS (3,TNEW,ND,'T       ',-1, IDUMMY, IERR)
  
 C***  PRINTOUT  -------------------------------------------------------
-
-C     Dummy setting for CKONVER array (mark all points as converged)
-      DO L=1, ND
-        CKONVER(L) = 'C'
-      ENDDO
-C     Dummy setting for TRACEELEM array 
-      DO K=1, NATOM
-        TRACEELEM(K) = .FALSE.
-      ENDDO
-
-
       IF (LSPOP.GT.0)
      $  CALL PRIEX (ND,N,RNE,LEVEL,POPNUM,JOBNUM,MODHEAD,LSPOP,
      $              TNEW,NOTEMP)
@@ -328,20 +306,18 @@ C     Dummy setting for TRACEELEM array
 
 C***  Commented Lines; full call as in STEAL
       CALL PRICORR (POPNEW, POPNUM, LEVEL, N, ND, MODHEAD, LSPOP,
-C*   $              CORMAX, RTCMAX, JOBNUM, REDUCE, CKONVER,
-     $              CORMAX, RTCMAX, JOBNUM, 1., CKONVER,     
+C*   $              CORMAX, RTCMAX, JOBNUM, REDUCE,
+     $              CORMAX, RTCMAX, JOBNUM, 1.,      
 C*   >              GAMMAC, GAMMAL, GAMMAR, GAMMAD,
      >               0.,      0.,      0.,     0., 
 C*   $              T, TNEW, EPSILON, DELTAC, SMPOP,
      $              T, TNEW, 0.,       1.,    0.,  
-C*   $              BUNLU,  DUNLU_LOC, DUNLU_INT, DUNLU_RMAX, DUNLU_TB, bTDIFFUS, TNDCORR,
-     >              .NOT.NOTEMP, 0.,    0.,    0.,  0.,  .FALSE.,  0., 
-C*   >              HNDCORFAC, GAHIST, MAXGAHIST, STHLP, ICMMODE,
-     >              1., GAHIST, MAXGAHIST, .FALSE., 1, 
-C*   >              IWARN_NEG_XJCAPP, IWARN_NEG_XJLAPP,
-     >              0,                 0              ,
-C*   >              TBTAU, TAUINT, NDOUT, NATOM, NOM, TRACEELEM)
-     >                -1.,   -1., NOUT+1, NATOM, NOM, TRACEELEM)
+C*   $              BUNLU,  DUNLU, DUNLUR, DUNLU2, BTND, TNDCORR,
+     >              .NOT.NOTEMP, 0.,    0.,     0.,   .FALSE.,  0., 
+C*   >              GAHIST, MAXGAHIST, STHLP,
+     >              GAHIST, MAXGAHIST, .FALSE., 
+C*   >              IWARN_NEG_XJCAPP, IWARN_NEG_XJLAPP)
+     >              0,                 0              )
 
       IF (NOTEMP) THEN
         GAHIST(26,1) = 0.
@@ -371,7 +347,6 @@ C***  UPDATING THE MODEL HISTORY  --------------------------------------
       IF (CORMAX > 1.E-100) CORMAX=ALOG10(CORMAX)
       IF (BEX4) THEN
         WRITE(UNIT=BUFFER40, FMT=22) JOBNUM, CORMAX
-C        ENCODE (32,22,MODHIST(LAST+1)) JOBNUM,CORMAX
 C***  NOTE : The word Cor. must not be written in capitals in order to 
 C***         distinguish from COR. of the Main Program STEAL
    22   FORMAT ('/',I7,'. EXTRAP4 Cor.=',F8.4)
@@ -406,13 +381,6 @@ C***         distinguish from COR. of the Main Program STEAL
       ENDIF
       CALL WRITMS (3,MODHIST,MAXHIST,'MODHIST ',-1, IDUMMY, IERR)
       CALL WRITMS (3, GAHIST, 26*MAXGAHIST, 'GAHIST  ',-1, IDUMMY, IERR)
- 
-C***  write model history entry into explicit history file
-      CALL GETHISTENTRY(HISTENTRY,JOBNUM,MODHIST,MAXHIST)
-      OPEN (hHIST, FILE='MODHIST', STATUS='UNKNOWN',
-     >              ACTION='READWRITE', POSITION='APPEND')
-      WRITE (hHIST,FMT='(A)') TRIM(ADJUSTL(HISTENTRY))
-      CLOSE(hHIST)      
  
    99 CALL CLOSMS (3, IERR)
 

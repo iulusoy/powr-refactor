@@ -1,8 +1,8 @@
       SUBROUTINE CLLOADE (NCHANE, NZE1, NZE2, NFRO, EDDIA, NDEDDIA, 
-     >                    EDDIF, EDDIG, ND, EDDIHOUT, 
-     >                    EDDIHIN, EDDIHINM, EDDINOUT, EDDININ, 
+     >                    EDDIF, EDDIG, ND, 
+     >                    EDDIHOUT, EDDIHIN, EDDINOUT, EDDININ, 
      >                    BCLEERR, BCOLIP, XHI, XHO, EPSG, 
-     >                    XHOM, XNOM, EDDIHOUTP, EDDINOUTP, EDDIHINT)
+     >                    XHOM, XNOM, EDDIHOUTP, EDDINOUTP)
 C**********************************************************************
 C***  Reads the old EDDIEs from file fort.<NCHANE>
 C***  If this file does not exist or is inappropriate (BCLEERR = .TRUE.)
@@ -16,10 +16,6 @@ C**********************************************************************
       CHARACTER NAME*8
       LOGICAL BCLEERR, BCOLIP
 
-      !File and channel handles (=KANAL)
-      INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
-      INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
-      
 C***  In the first call of this routine, the EDDIMIX-Factors are read
 C***    (or set ZERO, if not present on old EDDI file)
       IF (NZE1 .EQ. 0) THEN
@@ -45,10 +41,8 @@ C***  Read next array from file
           WRITE (NAME,'(A2,I5,A1)') 'ED', NZE1, ' '
           CALL READMS (NCHANE, EDDIA, NDEDDIA*NFRO, NAME, IERR)
           IF (IERR .NE. 0) THEN
-            WRITE (0,'(A,I5,A,I2)') 
-     >        'Error ', IERR,' when reading from file fort.', NCHANE
-            WRITE (hCPR,'(A,A,A,I8)') 
-     >        'Missing Entry: ', NAME, ' of length ', NDEDDIA*NFRO
+            WRITE (0,'(A,I2)') 
+     >        'Error when reading from file fort.', NCHANE
             STOP 'ERROR in Subr. CLLOADE'
           ENDIF
         ENDIF
@@ -75,8 +69,6 @@ C***  Restore EDDIs if data is present
         XNOM     = EDDIA(NDA+8, NZE2)
         EDDIHOUTP= EDDIA(NDA+9, NZE2)
         EDDINOUTP= EDDIA(NDA+10, NZE2)
-        EDDIHINM = EDDIA(NDA+11, NZE2)
-        EDDIHINT = EDDIA(NDA+12, NZE2)
       ENDIF
 
       RETURN

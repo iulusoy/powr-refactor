@@ -7,40 +7,34 @@
      >                 GLOG, GEFFLOG, bFixGEFF, GEDD, bGEddFix, 
      >                 ENTOTDENS, XMDOT, Rcritical, GEDDRAD,
      >                 XMSTAR, NAUTO, DRXJL, MAXXDAT,XDATA, 
-     >                 HTOTL, BHTOTERR, HTOTND, HTOTCUT, DTDRIN,
+     >                 HTOTL, BHTOTERR, HTOTND, DTDRIN,
      >                 DENSCON, FILLFAC, 
      >                 LASTFE, ARAD, bNoARAD, WFELOW, WFENUP, NCOLIP,
-     >                 FTCOLI, EMCOLI, ARADELEM, ACONTELEM, 
-     >                 MAXION, ARADION, ACONTION,
-     >                 GAHIST, MAXGAHIST, MAXIND, MAXINDE, MAXKONT, 
-     >                 LASTKON, XJTOTL, XKTOTL, XNTOTL, WJC, GF, OPARND,
+     >                 FTCOLI, EMCOLI, GAHIST, 
+     >                 MAXGAHIST, MAXIND, MAXINDE, MAXKONT, LASTKON,
+     >                 XJTOTL, XKTOTL, XNTOTL, WJC, GF, OPARND,
      >                 OPASMEAN, OPASMEANTC, QFJMEAN, OPAJMEAN, SMEAN,
-     >                 OPAJMEANTC, OPAPMEAN, QOPAHMEAN,
-     >                 EDDIHOUTJMEAN, HMEAN, XLAMBDA2, NF2,
-     >                 HTOTOUTMINUS, HTOTMINUSND, HTOTNDCOR, 
+     >                 OPAJMEANTC, OPAPMEAN, QOPAHMEAN, EDDIHOUTJMEAN, 
+     >                 XLAMBDA2, NF2, HTOTOUTMINUS, 
      >                 FF_INFO, IFF_DK, IFF_MAX_MS, IFF_N_MS, 
      >                 OPALAMBDAMEAN, TAUROSS, TAUROSScont, VMIN, N, 
      >                 POPNUM, SIGMAKI, ATMASS, ACONT, ATHOM, OPAROSS,
-     >                 RHO, XMU, ALPHAF, ARMDRESP, HYDROF, NEXTHYDRO,
-     >                 LASTHYDRO, VTURB, VMIC, POPMIN, ZERO_RATES,
-     >                 GRSTATIC, GRDYN, LASTBACKUP, LASTTAU, GEFFKEY,
-     >                 XLAMAPPMEAN, XLAMAPPUMEAN, XLAMAPPLMEAN,
-     >                 iALOentry, bHDNoAG, CORDELTAHDLAST, TAUHDRAW)  
+     >                 RHO, XMU, ALPHAF, NEXTHYDRO, LASTHYDRO, VTURB,
+     >              GRSTATIC, LASTBACKUP, LASTTAU, GEFFKEY, ZERO_RATES)  
 C*******************************************************************************
 C***  READING THE MODEL FILE FOR MAIN PROGRAM "STEAL"
 C*******************************************************************************
  
-      IMPLICIT NONE
+ccc      IMPLICIT NONE
 
       INTEGER, PARAMETER :: TINYINT = SELECTED_INT_KIND(2)
 
       INTEGER :: ND, NDDIM, NP, NPDIM, NF, NFDIM, N, NDDENSCON,
      >           JOBNUM, NF2, NCOLIP, MAXHIST, LAST, MAXINDE,
-     >           IND, NUP, LOW, INDFE, LASTFE,
+     >           IND, NUP, INDNUP, LOW, INDLOW, INDFE, LASTFE,
      >           LASTIND, MAXXDAT, NATOM, NDIM, MAXAUTO, NAUTO,
      >           INDDR, IFF_N_MS, IFF_MAX_MS, MAXGAHIST, MAXIND,
-     >           MAXKONT, LASTKON, KON, LASTBACKUP, LASTTAU, NDVT,
-     >           LASTHYDGA, MAXION, iALOentry
+     >           MAXKONT, LASTKON, KON, LASTBACKUP, LASTTAU
  
       REAL, DIMENSION(NDDIM), INTENT(OUT) :: RNE
       CHARACTER(8), DIMENSION(NDDIM) :: INCRIT, VCRIT
@@ -48,48 +42,41 @@ C*******************************************************************************
       REAL, DIMENSION(NDIM,NDIM) :: EINST
       REAL, DIMENSION(NFDIM,MAXKONT) :: SIGMAKI
       REAL, DIMENSION(NATOM) :: ABXYZ, ATMASS
-      REAL, DIMENSION(NATOM*NDDIM) :: ARADELEM, ACONTELEM
-      REAL, DIMENSION(NDDIM*NATOM*MAXION) :: ARADION, ACONTION
       REAL, DIMENSION(MAXXDAT) :: XDATA
-      INTEGER, DIMENSION(LASTIND) :: INDNUP, INDLOW
-      REAL, DIMENSION(NDDIM) :: HTOTL, ENTOT, ENTOTDENS, ARAD,
-     >                          XJTOTL, XKTOTL, XNTOTL, SMEAN,
-     >                          RADIUS, VELO, GRADI, T, FTCOLI,
-     >                          OPASMEAN, OPASMEANTC, QFJMEAN,
-     >                          OPAJMEAN, OPAJMEANTC, HMEAN,
-     >                          QOPAHMEAN, QOPAHMEANL, OPAPMEAN,
-     >                          OPALAMBDAMEAN, OPAROSS, VTURB,
-     >                          GRSTATIC, GRDYN, HYDROF, VMIC,
-     >                          HTOTCUT
+      DIMENSION INDNUP(LASTIND),INDLOW(LASTIND)
+      REAL, DIMENSION(ND) :: HTOTL, ENTOT, ENTOTDENS, ARAD,
+     >                       XJTOTL, XKTOTL, XNTOTL, SMEAN,
+     >                       RADIUS, VELO, GRADI, T, FTCOLI,
+     >                       OPASMEAN, OPASMEANTC, QFJMEAN,
+     >                       OPAJMEAN, OPAJMEANTC, OPAPMEAN, 
+     >                       QOPAHMEAN, OPALAMBDAMEAN, OPAROSS, 
+     >                       GRSTATIC
       REAL, DIMENSION(NF) :: EMCOLI, EMFLUX, FWEIGHT
       REAL, DIMENSION(NDDIM * MAXIND) :: WFELOW, WFENUP
-      REAL, DIMENSION(NDDIM * MAXINDE) :: XJL, XLAMAPPMEAN,
-     >                                    XLAMAPPUMEAN, XLAMAPPLMEAN
+      REAL, DIMENSION(NDDIM * MAXINDE) :: XJL
       REAL, DIMENSION(NDDIM * NFDIM) :: XJC, WJC
       REAL, DIMENSION(26,MAXGAHIST) :: GAHIST
-      LOGICAL, DIMENSION(NDIM*NDDIM) :: ZERO_RATES
       LOGICAL, DIMENSION(MAXAUTO) :: DRXJL
-      LOGICAL :: STHLP, BHTOTERR, bGEddFix, bFixGEFF, 
-     >           bNoARAD, bHDNoAG, bSMOCO, bNoALOfile
+      LOGICAL :: STHLP, BHTOTERR, bGEddFix, bFixGEFF, bNoARAD
       REAL, DIMENSION(10) :: FF_INFO
       INTEGER (KIND=TINYINT), DIMENSION(IFF_MAX_MS) :: IFF_DK
       CHARACTER(8*MAXHIST) :: MODHIST
 
-      INTEGER :: I, J, K, L, IERR, IDUMMY, NA, LARM,
-     >           LASTINDAUTO, LASTINDALL
+      INTEGER :: I, J, K, L, IERR, IDUMMY, NA
       REAL, INTENT(OUT) :: GF, RSTAR, VDOP, XLAMBDA, XLAMBDA2, GEDD,
-     >                     TEFF, XMDOT, Rcritical, TAUHDRAW
+     >                     TEFF, XMDOT, Rcritical
       REAL, INTENT(INOUT) :: GLOG, GEFFLOG, VMIN, RCON, XMSTAR
-      REAL :: ATMEAN, OPARND, EDDIHOUTJMEAN, HTOTOUTMINUS, HTOTMINUSND,
-     >        HTOTND, TOTIN, TOTOUT, FM, RSTARSU, GEDDRAD, HTOTNDCOR,
+      REAL :: ATMEAN, OPARND, EDDIHOUTJMEAN, HTOTOUTMINUS, 
+     >        TOTIN, TOTOUT, FM, RSTARSU, GEDDRAD,
      >        VFINAL, VMINorg, BETA, VPAR1, VPAR2, RCONorg, HSCALE, 
-     >        BETA2, BETA2FRACTION, VPAR1_2, VPAR2_2, POPMIN, 
-     >        VCON, VOFF, DTDRIN, UNDEFINIT, CORDELTAHDLAST
+     >        BETA2, BETA2FRACTION, VPAR1_2, VPAR2_2, VTURB,
+     >        HTOTND, DTDRIN
 
       REAL, DIMENSION(NDDIM), INTENT(INOUT) :: TAUROSS, TAUROSScont
       REAL, DIMENSION(NPDIM) :: P
       REAL, DIMENSION(NDDIM,NPDIM) :: Z
       REAL, DIMENSION(NDDIM, NDIM) :: POPNUM
+      LOGICAL ZERO_RATES (NDIM*NDDIM)
 
       !Transfer RCON from MODEL file to routines needing the velocity field parameters (e.g. PLOTV)
       COMMON /VELPAR/ VFINAL,VMINorg,BETA,VPAR1,VPAR2,RCONorg,HSCALE,
@@ -97,7 +84,7 @@ C*******************************************************************************
 
 C***  hydro stuff
       REAL, DIMENSION(NDDIM-1) :: ATHOM, ACONT
-      REAL, DIMENSION(NDDIM) :: RHO, ALPHAF, ARMDRESP, XMU
+      REAL, DIMENSION(NDDIM) :: RHO, ALPHAF, XMU
       INTEGER, INTENT(OUT) :: NEXTHYDRO, LASTHYDRO
 
       CHARACTER(8) :: NAME, GEFFKEY
@@ -116,15 +103,7 @@ C***  Physical constants
       !File and channel handles (=KANAL)
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
       INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
-      INTEGER, PARAMETER :: hALO  = 23      !integer handle of the ALO file
 
-
-      LASTINDAUTO = LASTIND + NAUTO
-      LASTINDALL  = LASTIND + NAUTO + LASTFE
-
-      bNoALOfile = .FALSE.
-      iALOentry = 1
-      
 C***  Preset VMIN (if none read)
       VMIN = -1.0
 
@@ -138,12 +117,6 @@ C***  Preset GAMMA HISTORY
 
 C***  Preset GF
       GF = 0.
-
-      CALL OPENEXMS (hALO, IDUMMY, IDUMMY, 'ALO', 'UNKNOWN', IERR)
-      IF (IERR .EQ. -10) THEN
-        bNoALOfile = .TRUE.
-        iALOentry = 0
-      ENDIF
 
       CALL OPENMS(3, IDUMMY, IDUMMY, 1, IERR)
       CALL READMS(3,ND,1,       'ND      ', IERR)
@@ -213,13 +186,6 @@ c      FILLFAC = 1. / DENSCON
       ELSE 
         bNoARAD = .FALSE.
       ENDIF
-      LARM = NATOM * (ND-1)
-      CALL READMS (3,ARADELEM, LARM, 'ARADELEM', IERR)
-      CALL READMS (3,ACONTELEM,LARM, 'ACNTELEM', IERR)
-      LARM = (ND-1) * NATOM * MAXION
-      CALL READMS (3,ARADION , LARM, 'ARADION ', IERR)
-      CALL READMS (3,ACONTION, LARM, 'ACONTION', IERR)
-      
       CALL READMS (3,FTCOLI,ND, 'FTCOLI  ', IERR)
       CALL READMS (3,OPAROSS,ND,'OPAROSS ', IERR)
       CALL READMS (3,TAUROSS,ND,'TAUROSS ', IERR)
@@ -255,18 +221,13 @@ c      FILLFAC = 1. / DENSCON
       
       CALL READMS (3,POPNUM,ND*N,'POPNUM  ', IERR)
       IERR=1
-*      CALL READMS (3,SIGMAKI,NF*LASTKON, 'SIGMAKI ', IERR)
+      CALL READMS (3,SIGMAKI,NF*LASTKON, 'SIGMAKI ', IERR)
       IF (IERR == -10) THEN
         DO K=1, NF
           DO KON=1, LASTKON
             SIGMAKI(K,KON) = 0.
           ENDDO
         ENDDO
-      ENDIF
-      CALL READMS (3,POPMIN,1,   'POPMIN  ', IERR)
-      IF (IERR < 0) THEN
-C***  Mark if POPMIN not on MODEL file 
-        POPMIN = 1.E-100
       ENDIF
 
 C***  Read opacity at inner boundary from MODEL file
@@ -322,8 +283,7 @@ C***  CONTAINING "HELIUM" AS THE ONLY ELEMENT
       CALL READMS(3,FWEIGHT,NF,'FWEIGHT ', IERR)
       CALL READMS (3,KEY,NF,   'KEY     ', IERR)
       CALL READMS (3,TOTOUT, 1,'TOTOUT  ', IERR)
-      UNDEFINIT = TRANSFER('UNDEF.   ', TOTOUT)
-      IF (TOTOUT .NE. UNDEFINIT) THEN
+      IF (TOTOUT .NE. -999. ) THEN
             CALL READMS (3,TOTIN , 1,'TOTIN   ', IERR)
             CALL READMS (3,EMFLUX,NF,'EMFLUX  ', IERR)
             CALL READMS (3,EMCOLI,NF,'EMCOLI  ', IERR)
@@ -333,33 +293,11 @@ C***  CONTAINING "HELIUM" AS THE ONLY ELEMENT
       CALL READMS (3,XMSTAR, 1, 'XMSTAR  ', IERR)
       IF (IERR .EQ. -10) XMSTAR = .0
       CALL READMS (3,VDOP,1,   'VDOP    ', IERR)
-
-      
-      CALL READMS (3,VMIC, ND,  'VMIC    ', IERR)
-      IF (IERR == -10) THEN
-        !old MODEL file => only one VTURB value 
-        CALL READMS(3,VTURB(ND),1, 'VTURB   ', IERR)
-        !update MODEL file: add new variable
-        IF (IERR == -10) VTURB(ND) = 0.
-        DO L=1, ND
-          IF (L /= ND) VTURB(L) = VTURB(ND)
-          VMIC(L) = VTURB(L) * SQRT(2.)
-        ENDDO
-        CALL WRITMS(3,VMIC, ND, 'VMIC    ',-1, IDUMMY, IERR)
-      ELSE
-        DO L=1, ND
-          VTURB(L) = VMIC(L) / SQRT(2.)
-        ENDDO
-      ENDIF
+      CALL READMS (3,VTURB,1,  'VTURB   ', IERR)
+      IF (IERR .EQ. -10) VTURB = .0
 
 C***  Variables for the hydrodynamics branch (Andreas Sander)
 
-      CALL READMS (3,HYDROF,ND,'HYDROF  ', IERR)
-      IF (IERR == -10) THEN
-        DO L=1, ND
-          HYDROF(L) = -99.
-        ENDDO
-      ENDIF
       CALL READMS (3,NEXTHYDRO,1,'NXTHYDRO', IERR)
       !If NXTHYDRO does not exist in the MODEL (=old model)
       ! set value to -1 to deactivate any hydro-related stuff
@@ -372,29 +310,13 @@ C***  Variables for the hydrodynamics branch (Andreas Sander)
       ELSE
         LASTHYDRO = LASTHYDRO + 1
       ENDIF
-      CALL READMS (3,LASTHYDGA,1,'LSTHYDGA', IERR)
-      IF (IERR == -10) THEN
-        bHDNoAG = .FALSE.
-      ELSEIF (LASTHYDGA > 0) THEN
-        bHDNoAG = .FALSE.
-      ELSE
-        bHDNoAG = .TRUE.
-      ENDIF
       CALL READMS (3,ATHOM  ,ND-1, 'ATHOM   ', IERR)
       CALL READMS (3,ACONT  ,ND-1, 'ACONT   ', IERR)
       CALL READMS (3,ALPHAF ,ND  , 'ALPHAF  ', IERR)
       IF ((IERR == -10) .AND. (NEXTHYDRO == 1)) THEN
         !Failsafe if HYDRO calculation would be this turn
         ! but no force multipliers have been calculated so far
-        DO L=1, ND-1
-          ALPHAF(L) = -99.
-        ENDDO
-      ENDIF
-      CALL READMS (3,ARMDRESP, ND, 'ARMDRESP', IERR)
-      IF ((IERR == -10) .AND. (NEXTHYDRO == 1)) THEN
-        DO L=1, ND
-          ARMDRESP(L) = 1.
-        ENDDO
+        NEXTHYDRO = 2
       ENDIF
 C      CALL READMS (3,XMU    ,ND  , 'XMU     ', IERR)      
       !IF XMU does not exist in the MODEL (=old model)
@@ -421,10 +343,6 @@ C      ENDIF
       IF (IERR == -10) THEN
         Rcritical = -1.
       ENDIF
-      CALL READMS (3, TAUHDRAW, ND, 'TAUHDRAW', IERR)
-      IF (IERR == -10) THEN
-        TAUHDRAW = -99.
-      ENDIF
 
       CALL READMS (3,MODHEAD,13,'MODHEAD ', IERR)
       CALL READMS (3,JOBNUM,1, 'JOBNUM  ', IERR)
@@ -438,8 +356,8 @@ C      ENDIF
         CALL READMS(3,WJC(1+ND*(K-1)),ND,NAME, IERR)
       ENDDO
 
-C***  read all mean intensities
-      DO IND=1, LASTINDALL
+C***  read all mean intensities 
+      DO IND=1, LASTIND+NAUTO+LASTFE
 C***     Different checks apply for XJL presence:
 C***     Normal lines
          IF (IND .LE. LASTIND) THEN 
@@ -458,25 +376,9 @@ C***     encode record name
          IERR=1
          CALL READMS (3,XJL(1+ND*(IND-1)),ND,NAME, IERR)
 
-C***     ALOs from "XJLAPP COLI" are only calculated for normal lines
-         IF (IND .LE. LASTINDAUTO .AND. (.NOT. bNoALOfile)) THEN
-            WRITE (NAME, '(A3, I5)')   'ALO', IND
-            CALL READMS (hALO,XLAMAPPMEAN(1+ND*(IND-1)),ND,NAME, IERR)
-            IF (IND == 1 .AND. IERR == -10) iALOentry = 0
-            IF (iALOentry > 0) THEN
-              IF (IND == 1) iALOentry = 3
-              WRITE (NAME, '(A3, I5)')   'ALU', IND
-              CALL READMS (hALO,XLAMAPPUMEAN(1+ND*(IND-1)),ND,NAME, IERR)
-              IF (IND == 1 .AND. IERR == -10) iALOentry = 1
-              WRITE (NAME, '(A3, I5)')   'ALL', IND
-              CALL READMS (hALO,XLAMAPPLMEAN(1+ND*(IND-1)),ND,NAME, IERR)
-              IF (IND == 1 .AND. IERR == -10) iALOentry = 1
-            ENDIF
-         ENDIF
-
 C***     Check for DRTRANSITs
-         IF (IND .GT. LASTIND .AND. IND .LE. LASTINDAUTO) THEN
-C***      IF XJL RECORD DID NOT EXIST (IERR=-10),
+         IF (IND .GT. LASTIND .AND. IND .LE. LASTIND+NAUTO) THEN
+C***      IF XJL RECORD DID NOT EXIST (IERR=-10), 
 C***      THE LOGICAL DRXJL(INDDR) IS SET TO .FALSE.
 C***      This should only be the case if that transition is rudimental; 
 C***      The corresponding consistency check will be performed later in STEAL
@@ -490,8 +392,8 @@ C***      The corresponding consistency check will be performed later in STEAL
           ENDIF
          ENDIF
 
-***     Check if an iron superline is missing (--> ERROR STOP)
-         IF (IND .GT. LASTINDAUTO) THEN
+C***     Check if an iron superline is missing (--> ERROR STOP)
+         IF (IND .GT. LASTIND+NAUTO) THEN
             IF ((IERR .LT. 0) .AND. (IERR .NE. -10)) THEN
               CALL REMARK ('ERROR WHEN READING DR-XJL FROM MODEL FILE')
               STOP 'ERROR'
@@ -502,14 +404,14 @@ C***      The corresponding consistency check will be performed later in STEAL
             ENDIF
          ENDIF
       ENDDO
-
-C***  IRON: READING WFELOW, WFENUP      
-      DO INDFE=1,LASTFE
-        IND = LASTINDAUTO+INDFE
+ 
+C***  IRON: READING WFELOW, WFENUP 
+      DO INDFE=1, LASTFE
+        IND = LASTIND+NAUTO+INDFE
         WRITE (NAME, '(A3, I4, A1)') 'WFL', INDFE, ' '
-        CALL READMS (hALO,WFELOW(1+ND*(IND-1)),ND,NAME, IERR)
+        CALL READMS (3,WFELOW(1+ND*(IND-1)),ND,NAME, IERR)
         WRITE (NAME, '(A3, I4, A1)') 'WFU', INDFE, ' '
-        CALL READMS (hALO,WFENUP(1+ND*(IND-1)),ND,NAME, IERR)
+        CALL READMS (3,WFENUP(1+ND*(IND-1)),ND,NAME, IERR)
       ENDDO
  
       CALL READMS (3,LAST,1,'MODHIST ', IERR)
@@ -581,17 +483,7 @@ C***  Read GF
       IF (IERR == -10) THEN
         GRSTATIC = -1.0
       ENDIF
-      CALL READMS (3, GRDYN, ND  , 'GRDYN   ', IERR)
-      IF (IERR == -10) THEN
-        GRDYN = -1.0
-      ENDIF
       
-      CALL READMS (3,CORDELTAHDLAST, 1, 'CODHDLST', IERR)
-      IF (IERR < 0) THEN
-C***  Mark if CORDELTAHDLAST not on MODEL file
-        CORDELTAHDLAST = -1.
-      ENDIF
-
 C***  TRY TO READ HTOTL ARRAY gives errormessage if there is no HTOTL
       IERR = 0
       CALL READMS(3, HTOTL, ND, 'HTOTL   ', IERR)
@@ -599,15 +491,6 @@ C***  TRY TO READ HTOTL ARRAY gives errormessage if there is no HTOTL
       CALL READMS(3,XJTOTL, ND, 'JTOTL   ', IERR)
       CALL READMS(3,XKTOTL, ND, 'KTOTL   ', IERR)
       CALL READMS(3,XNTOTL, ND, 'NTOTL   ', IERR)
-      CALL READMS(3, HTOTMINUSND, 1, 'HTMND   ', IERR)
-      CALL READMS(3, HTOTNDCOR, 1, 'HTNDCOR ', IERR)
-      CALL READMS(3, HMEAN, ND-1, 'HMEAN   ', IERR)
-      CALL READMS(3, HTOTCUT, ND-1, 'HTOTCUT ', IERR)
-      IF (IERR == 10) THEN
-        DO L=1, ND-1
-          HTOTCUT(L) = HMEAN(L)
-        ENDDO
-      ENDIF
 
 C***  Read NCOLIP
       CALL READMS(3, NCOLIP,        1,        'NCOLIP  ', IERR)

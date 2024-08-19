@@ -1,7 +1,6 @@
-      SUBROUTINE ADJGAMMA(GAHIST, MAXGAHIST, AG, LASTHYDRO, LASTTAU,
-     >                    BTALTER, GAMMAC, GAMMAL, GAMMAR, GAMMAD, 
-     >                    BGFIN, GF, BGAMMACFIX, BGAMMALFIX, 
-     >                    BGAMMARFIX, BGAMMADFIX, bHDNoAG)
+      SUBROUTINE ADJGAMMA(GAHIST, MAXGAHIST, AG, LASTHYDRO, BTALTER,
+     >                    GAMMAC, GAMMAL, GAMMAR, GAMMAD, BGFIN, GF, 
+     >                BGAMMACFIX, BGAMMALFIX, BGAMMARFIX, BGAMMADFIX)
 C*************************************************************
 C***  Automatic Gamma Adjustment
 C***    GAMMA HISTORY has been already shifted!
@@ -10,8 +9,6 @@ C*************************************************************
       DIMENSION GAHIST(26,MAXGAHIST), AG(7)
       LOGICAL :: BKONVER1, BKONVER2, BGFIN, BTALTER, bPrintZeroInfo
       LOGICAL :: BGAMMACFIX, BGAMMALFIX, BGAMMARFIX, BGAMMADFIX
-      LOGICAL :: bHDNoAG   ! if true, last HD corrections are so large that GAMMAs should be reset to inf (0)
-      INTEGER :: LASTHYDRO, LASTTAU
 
       bPrintZeroInfo = .FALSE.
 
@@ -140,27 +137,17 @@ C***  Set BGFIN = .TRUE., if final gammas are reached
         GAMMAD = GF
       ENDIF
 
-C***  Prevent very large GAMMA values as they could crash the code
-C***  (and ruin the MODHIST output)
-      IF (GAMMAC > 9999.) THEN
-        GAMMAC = 0.
-        GAMMAL = 0.
-        GAMMAR = 0.
-        GAMMAD = 0.
-      ENDIF      
 
       IF (BGAMMACFIX) GAMMAC = GAMMACFIX 
       IF (BGAMMALFIX) GAMMAL = GAMMALFIX
       IF (BGAMMARFIX) GAMMAR = GAMMARFIX
       IF (BGAMMADFIX) GAMMAD = GAMMADFIX
 
-C***  If this is the first iteration with temperature equation/correction, 
-C***  start with GAMMA=0
-      IF ((LASTHYDRO == 1) .OR. (bHDNoAG .AND. LASTHYDRO == 2) .OR.
-     >    ((.NOT. BTALTER .AND. LASTHYDRO /= 2) .AND. 
+C***  Reset GAMMAs if temperature corrections were just switched on 
+      IF ((LASTHYDRO == 1) .OR. 
+     >    ((.NOT. BTALTER) .AND. 
      >            (GAHIST(26,1) > .0 .AND. GAHIST(26,2) == .0)) .OR. 
-C***  Go back two STEAL jobs if TCORR ALTERNATE or HD update happened two jobs ago
-     >    ((BTALTER .OR. LASTHYDRO == 2) .AND.           
+     >    (BTALTER .AND.            !go two STEAL jobs back if TCORR ALTERNATE is used
      >            (GAHIST(26,1) > .0 .AND. GAHIST(26,3) == .0)) ) THEN
 
 C***      reset to the upper-limit Gamma (first AUTO GAMMA parameter) 
@@ -184,15 +171,12 @@ C***      reset to zero -- wrh  2-Apr-2020
      >   'New:', GAMMAC, GAMMAL, GAMMAR, GAMMAD
       ENDIF
       IF (bPrintZeroInfo) THEN
-        IF (bHDNoAG) THEN
+        IF (LASTHYDRO == 1) THEN
           WRITE (0,'(A)') 
-     >      "STEAL: GAMMA reset due to large HD stratification updates"
-        ELSEIF (LASTHYDRO == 1) THEN
-          WRITE (0,'(A)') 
-     >      "STEAL: First STEAL after HD update -> all GAMMAs = 0"
+     >       "STEAL: AFTER HYDRO -> All GAMMAs = 0"
         ELSE
           WRITE (0,'(A)') 
-     >      'STEAL: GAMMA reset due to onset of temperature corrections' 
+     >       'GAMMAs reset because TEMPERATURE updated first time' 
         ENDIF
       ENDIF
 

@@ -2,7 +2,8 @@
      >                    DELXLAP,NBLINE,MAXLAP,INDLOW,INDNUP,LASTIND,
      >                    MAXIND,LEVEL,WEIGHT,ELEVEL,N,EINST,NDIM,
      >                    POPNUM,T,ND,ALN,VDOP, 
-     >                    MAXSUBL,NSUBLOW,NSUBNUP,BROAD,LINPRO,AVOIGT,
+     >                    MAXNSUBLEVEL, MAXNSUBLINE,
+     >                    NSUBLOW,NSUBNUP,BROAD,LINPRO,AVOIGT,
      >                    NMOD, MAXMOD, NDDIM, 
      >                    MAINQN, NCHARG, EION, NOM, IND_ORIGLEV)
 C***********************************************************************
@@ -30,7 +31,7 @@ C***  DEFINE FORTRAN CHANNEL FOR LOGFILE MESSAGES
       DIMENSION EINST(NDIM,NDIM), IND_ORIGLEV(NDIM)
       DIMENSION INDLOW(LASTIND),INDNUP(LASTIND)
       DIMENSION POPNUM(NDDIM,NDIM,NMOD),T(NDDIM,NMOD)
-      DIMENSION NSUBLOW(MAXSUBL),NSUBNUP(MAXSUBL)
+      DIMENSION NSUBLOW(MAXNSUBLINE), NSUBNUP(MAXNSUBLINE)
       CHARACTER KARTE*80
       CHARACTER*10 LEVEL(N), LEV, LEVUP, LEVLOW
       CHARACTER*8 LINPRO(MAXLAP)
@@ -45,7 +46,7 @@ C***  NLOW, NNUP: NUMBER OF LOWER, UPPER SUBLEVELS
       NLOW=0
       NNUP=0
 C***  NSUBLOW, NSUBNUP: POINTER TO SUBLEVELS IN THE ORIGINAL ARRAYS
-      DO 10 I=1,MAXSUBL
+      DO 10 I=1, MAXNSUBLINE
       NSUBLOW(I)=0
    10 NSUBNUP(I)=0
 
@@ -101,11 +102,12 @@ C***     LEVEL NOT YET DEFINED
          ENDIF
 
          NLOW=NLOW+1
-         IF (NLOW .GT. MAXSUBL) THEN
-            PRINT *,
-     >           ' >>>>> SUBR. MULTIPLE: ERROR STOP (NLOW .GT. MAXSUBL)'
-            CALL REMARK ('MULTIPLE: NLOW GREATER THAN MAXSUBL')
-            STOP 'NLOW'
+
+C***     Error exit
+         IF (NLOW .GT. MAXNSUBLEVEL) THEN
+            WRITE (0,*)  '*** More sublevels than dimensioned!'
+            WRITE (0,*)  '*** FATAL ERROR in subr. MULTIPLE'
+            STOP '*** ERROR: NLOW'
          ENDIF
          NSUBLOW(NLOW)=JLOW
 
@@ -154,10 +156,9 @@ C***     LEVEL NOT YET DEFINED
          ENDIF
 
          NNUP=NNUP+1
-         IF (NNUP .GT. MAXSUBL) THEN
-            PRINT *,
-     >           ' >>>>> SUBR. MULTIPLE: ERROR STOP (NNUP .GT. MAXSUBL)'
-            CALL REMARK ('MULTIPLE: NNUP GREATER THAN MAXSUBL')
+         IF (NNUP .GT. MAXNSUBLEVEL) THEN
+            WRITE (0,*)  '*** More sublevels than dimensioned!'
+            WRITE (0,*)  '*** FATAL ERROR in subr. MULTIPLE'
             STOP 'NNUP'
          ENDIF
          NSUBNUP(NNUP)=JNUP
@@ -251,8 +252,8 @@ C***  NO SUBLINES DECODED
 
 C***  3. SPLITTING OF THE ENERGY LEVELS: BOLTZMANN (LTE POPNUMBERS)
       DO IMOD=1, NMOD
-        CALL MULTSPLI(ND(IMOD), N, NSUBLOW, MAXSUBL, NLOW, POPNUM(1,1,IMOD), 
-     >                ELEVEL, 
+        CALL MULTSPLI(ND(IMOD), N, NSUBLOW, MAXNSUBLEVEL, 
+     >                NLOW, POPNUM(1,1,IMOD), ELEVEL, 
      >                T(1,IMOD), WEIGHT, NNUP, NSUBNUP, LOW, NUP, 
      >                LEVEL)
       ENDDO

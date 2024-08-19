@@ -1,5 +1,4 @@
-      SUBROUTINE TDIFFUS(T, RADIUS, ND, TEFF, OPARND, TNDCORR,
-     >                   bNoARAD, HTOTNDCOR, fTNDCOR)
+      SUBROUTINE TDIFFUS(T, RADIUS, ND, TEFF, OPARND, TNDCORR)
 C***********************************************************************
 C*** Correction of the innermost temperature point via the (pure)
 C*** diffusion approximation => THIS UPDATES T(ND)
@@ -13,20 +12,14 @@ C***********************************************************************
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: ND   
-      REAL, INTENT(IN) :: TEFF, OPARND, HTOTNDCOR, fTNDCOR
+      REAL, INTENT(IN) :: TEFF, OPARND
       REAL, INTENT(INOUT) :: TNDCORR
-      LOGICAL, INTENT(IN) :: bNoARAD
       
       REAL, DIMENSION(ND), INTENT(IN) :: RADIUS
       REAL, DIMENSION(ND), INTENT(INOUT) :: T
       
-      REAL :: TSAVE, TMID, TLAST, TL, DTDR, DTDRplus, DTDRminus
+      REAL :: TSAVE, TMID, TLAST, TL, DTDR
       INTEGER :: L, ICOUNT
-      
-      LOGICAL, PARAMETER :: bPRINT = .FALSE. !print debug information
-
-      !Physical constants
-      REAL, PARAMETER :: STEBOLDPI = 1.8046E-5      !Stephan-Boltzmann constant (CGS) / Pi
       
       !File and channel handles (=KANAL)
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
@@ -52,28 +45,7 @@ C***  Iteration counter
       
       DO
         TMID = 0.5 * (T(ND-1) + TL)
-        
-        IF ((bNoARAD .OR. HTOTNDCOR == 0.) .OR. (fTNDCOR <= 0.)) THEN
-c***      Classic version
-          DTDR = 0.1875 * OPARND * TEFF*(TEFF/TMID)**3.
-        ELSE
-C***      Include inner boundary correction terms (seems to be unstable)
-C***      ( switched on by fTNDCOR > 0 via TDIFFCOR CARDS line )
-          DTDR = 0.1875 * OPARND * ( TEFF*(TEFF/TMID)**3. )
-     >            - 0.75 * OPARND/STEBOLDPI 
-     >                     * HTOTNDCOR / TMID**(3.)
-        ENDIF
-        
-C***    Debug print
-        IF (bPRINT .AND. (.NOT. bNoARAD) .AND. HTOTNDCOR /= 0.) THEN
-           DTDRplus = 0.1875 * OPARND * ( TEFF*(TEFF/TMID)**3. )
-           DTDRminus = - 0.75 * OPARND/STEBOLDPI 
-     >                     * HTOTNDCOR / TMID**(3.)
-           WRITE (hCPR,'(A,4(G15.5),2X,L1)') 'DTDR: ', 
-     >        DTDRplus, DTDRminus, DTDR, 
-     >        (T(L-1) + (RADIUS(L-1)-RADIUS(L))*DTDR ) / 1000., fTNDCOR
-        ENDIF
-        
+        DTDR = 0.1875 * OPARND * TEFF*(TEFF/TMID)**3.
         TLAST = TL
         
         TL = T(ND-1) + (RADIUS(ND-1)-RADIUS(ND))*DTDR
@@ -93,11 +65,6 @@ C***     and we have not done more than 100 iterations
         
       ENDDO
 
-C***  optional damping of the change in T(ND)
-      IF (fTNDCOR > 0.) THEN
-        TL = TSAVE + (TL - TSAVE) * fTNDCOR
-      ENDIF
-      
 C***  Save new (converged) temperature
       T(ND) = TL
       
@@ -106,3 +73,4 @@ C***  Calculate relative correction to T(ND) for PRICORR routine
       
       RETURN
       END
+            

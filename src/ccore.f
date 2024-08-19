@@ -1,6 +1,6 @@
       SUBROUTINE CCORE (WCHARM,NF,GAMMAC,DELTAC,IPRICC,MODHEAD,JOBNUM,
-     $      SCOLD,RADIUS,XLAMBDA,ND,T,RNE,POP1,POPMIN,ENTOT,
-     $      RSTAR,OPA,ETA,THOMSON,IWARN,MAINPRO,MAINLEV,NOM,
+     $      SCOLD,RADIUS,XLAMBDA,ND,T,RNE,POP1,ENTOT,RSTAR,
+     $      OPA,ETA,THOMSON,IWARN,MAINPRO,MAINLEV,NOM,
      $      NDIM,N,LEVEL,NCHARG,WEIGHT,ELEVEL,EION,EINST,SIGMAKI,
      $      MAXATOM,SIGMATHK,SEXPOK,EDGEK,KODAT,XDATA,
      $      KONTNUP,KONTLOW,LASTKON, FILLFAC, WJC, OPC, WJCMIN,
@@ -19,8 +19,7 @@ C***  This does not affect SCOLD, as the scaling factor cancels out
 C*******************************************************************************
  
       DIMENSION WCHARM(ND,NF),SCOLD(NF,ND), WJC(ND,NF)
-      DIMENSION RADIUS(ND),OPA(ND),ETA(ND),THOMSON(ND),FILLFAC(ND)
-      DIMENSION XLAMBDA(NF)
+      DIMENSION RADIUS(ND),OPA(ND),ETA(ND),THOMSON(ND),XLAMBDA(NF)
       CHARACTER*8 VERSION, OPC
       LOGICAL BPLOCC
 
@@ -33,12 +32,12 @@ C***  VALID VERSIONS: 'LOCAL', 'GLOBAL', 'OAB'
       ELSE IF (OPC(1:4) .EQ. 'DIAG') THEN
         VERSION = 'DIAG'
       ENDIF
-      write (0,*) 'CCORE: VERSION=', VERSION
+      write (0,*) 'VERSION=', VERSION
 
 C***  LOOP OVER ALL CONTINUUM FREQUENCIES  *************************************
       DO 4 K=1,NF
       XLAM=XLAMBDA(K)
-      CALL COOP (XLAM,ND,T,RNE,POP1,POPMIN,ENTOT,RSTAR,
+      CALL COOP (XLAM,ND,T,RNE,POP1,ENTOT,RSTAR,
      $           OPA,ETA,THOMSON,IWARN,MAINPRO,MAINLEV,NOM,KODAT,
      $           NDIM,N,MAXATOM,LEVEL,NCHARG,WEIGHT,ELEVEL,EION,EINST,
      $           DUMMY,DUMMY,DUMMY,
@@ -48,8 +47,8 @@ C***  LOOP OVER ALL CONTINUUM FREQUENCIES  *************************************
      $           KONTNUP,KONTLOW,LASTKON,XDATA)                  
  
       DO L=1, ND
-        OPA(L) = OPA(L) * FILLFAC(L)
-        ETA(L) = ETA(L) * FILLFAC(L)
+        OPA(L) = OPA(L) * FILLFAC
+        ETA(L) = ETA(L) * FILLFAC
       ENDDO
 
 C***  BRANCH FOR  GAMMAC .EQ. .0  -----------------

@@ -1,8 +1,7 @@
       SUBROUTINE NEXTJOB (JOBNUM,JOBMAX,MODHIST,LAST,CORMAX,EPSILON,
      $                    NEWWRC,MOREJOBS,CONVERG,NOEXTRAP, NOCON, 
      >                    BPRICORR, COREX, BCOREX, NCOLIP, BAG, BGFIN, 
-     >                    BAUTO_ABORT, FLUXEPS, ND, FLUXERR, IHSSTATUS, 
-     >                    IHDSTATUS, bRESTART, bHYDROSOLVE, bHydroHelp)
+     >                    BAUTO_ABORT, FLUXEPS, ND, FLUXERR, IHSSTATUS)
 C**********************************************************************
 C***  CALLED FROM: STEAL
 C***  THIS SUBROUTINE DECIDES UPON THE NEXT JOB TO BE EXECUTED.
@@ -16,25 +15,24 @@ C**********************************************************************
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: JOBNUM, JOBMAX, LAST, NEWWRC, NCOLIP, 
-     >                       IHSSTATUS, IHDSTATUS, ND
+     >                       IHSSTATUS, ND
       REAL, INTENT(IN) :: COREX, CORMAX, EPSILON, FLUXEPS
       REAL, DIMENSION(ND), INTENT(IN) :: FLUXERR
-      LOGICAL, INTENT(INOUT) :: CONVERG, MOREJOBS, bHydroHelp
+      LOGICAL, INTENT(INOUT) :: CONVERG, MOREJOBS
       LOGICAL, INTENT(IN) :: NOEXTRAP, NOCON, BPRICORR, BCOREX,
-     >                       BAG, BGFIN, BAUTO_ABORT, bRESTART,
-     >                       bHYDROSOLVE
+     >                       BAG, BGFIN, BAUTO_ABORT
       CHARACTER(8*LAST), INTENT(IN) :: MODHIST
 
       REAL, PARAMETER :: CORLIMIT = 1E-8 !used to avoid LOG if CORMAX = 0
       REAL :: LOGCORMAX
 
       INTEGER :: JOBDIFF, LASTEX, LASTCHAR, LASTWRC, LASTMOD, NGDIFF,
-     >           MODDIFF, LASTWHATEVER, NRFOUND, NSTEAL,
+     >           MODDIFF, LASTWHATEVER, NRFOUND,
      >           I, J, ISTART, IEND, ILEN, IMAX
 
       CHARACTER(1) :: NAM1
       CHARACTER(6) :: NAM2
-      CHARACTER(8) :: NEXTNAME, NEXTNORG
+      CHARACTER(8) :: NEXTNAME
       CHARACTER(20) :: BUFFER20
       CHARACTER(40) :: JOBFMT
       CHARACTER(255) :: HISTENTRY
@@ -205,24 +203,11 @@ C***  CONVERGENCE TEST
      >       'STEAL: not converged: HYDROSTATIC PART not consistent'
         ENDIF
       ENDIF            
-      
-      IF (bCONVCRIT .AND. IHDSTATUS >= 0) THEN
-        IF (IHDSTATUS == 0) THEN
-          bCONVCRIT = .FALSE.
-          WRITE (0,'(A)')
-     >       'STEAL: not converged: HD consistency not reached'
-          WRITE (*,'(A)')
-     >       'STEAL: not converged: HD consistency not reached'
-        ENDIF
-      ENDIF            
-      
+            
       IF (bCONVCRIT) THEN
          CALL REMARK ('STEAL: REPEAT CYCLE IS CONVERGED')
          PRINT *,'STEAL: REPEAT CYCLE IS CONVERGED'
-         NEXTNORG=NEXTNAME
          NEXTNAME='WRCONT'
-         bCONVCRIT = .TRUE.
-         NSTEAL=0
          DO J=LASTWRC+1, JOBNUM-1
            !new convergence check: only COLI and COMO since last WRCONT allowed
            CALL GETHISTENTRY(HISTENTRY,J,MODHIST,LAST)
@@ -234,39 +219,18 @@ C***  CONVERGENCE TEST
                HISTENTRY = ADJUSTL(HISTENTRY(I+1:IMAX))
                IF ( (HISTENTRY(1:4) /= 'COLI') .AND. 
      >              (HISTENTRY(1:4) /= 'COMO') ) THEN
-                 IF (HISTENTRY(1:5) == 'STEAL') THEN
-                   NSTEAL = NSTEAL + 1
-                   IF (NSTEAL > 1) THEN
-                     !only one STEAL should be in-between, due to hydro analysis
-                     bCONVCRIT = .FALSE.
-                   ENDIF
-                 ELSE
                  bCONVCRIT = .FALSE.
-                 ENDIF
                ENDIF
                EXIT jnloop
              ENDIF
            ENDDO jnloop
          ENDDO
-         IF (bCONVCRIT .AND. (.NOT. bHydroHelp) 
-     >                 .AND. (.NOT. bHYDROSOLVE)) THEN
-           bCONVCRIT = .FALSE.
-           bHydroHelp = .TRUE.  !switch on hydro analysis for converged model
-           CALL REMARK ('STEAL: CONVERGED: HYDRO ANALYSIS NEXT!')
-           PRINT *, 'STEAL: CONVERGED: HYDRO ANALYSIS NEXT!'
-           NEXTNAME=NEXTNORG
-C         ELSEIF (bCONVCRIT) THEN
-         ELSE
-           bHydroHelp = .FALSE. !switch off after hydro analysis
-         ENDIF
-C         IF (JOBDIFF .LE. 3) THEN
+
          IF (bCONVCRIT) THEN
             CALL REMARK ('STEAL: MODEL FINALLY CONVERGED!')
             PRINT *, 'STEAL: MODEL FINALLY CONVERGED!'
             NEXTNAME='MODEL'
          ENDIF
-      ELSEIF (bHydroHelp) THEN
-        bHydroHelp = .FALSE.    !HydroHelp should only run once!
       ENDIF
 
       !prevent log(0) error
@@ -276,10 +240,6 @@ C         IF (JOBDIFF .LE. 3) THEN
         LOGCORMAX = ALOG10(CORMAX)
       ENDIF
       
-      IF (NEXTNAME == 'REPEAT' .AND. bRESTART) THEN
-        NEXTNAME='RESTART'
-      ENDIF
-
 C***  EXTRAPOLATION
 C***  Old Version (NEWWRC=6)
       IF (NEXTNAME == 'REPEAT' .AND.
@@ -338,13 +298,6 @@ C***  BRANCH FOR NEXTJOB = MODEL (... FINALLY CONVERGED)
          PRINT *,' -------  MODEL FINALLY CONVERGED ]  ---------'
          CALL JSYMSET ('G1','MODEL')
          CONVERG=.TRUE.
-      ENDIF
-
-C***  RESTART MODEL if forced (optional after hydro iteration)
-      IF (NEXTNAME == 'RESTART') THEN
-         CALL REMARK ('STEAL: NEXTJOB=WRSTART')
-         PRINT *,'STEAL: NEXTJOB=WRSTART'
-         CALL JSYMSET ('G1','RESTART')
       ENDIF
       
 C***  MAX. NUMBER OF JOBS EXCEEDED? 

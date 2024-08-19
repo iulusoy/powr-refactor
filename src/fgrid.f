@@ -1,9 +1,8 @@
       SUBROUTINE FGRID (NFDIM, NF, XLAMBDA, FWEIGHT, KEY, NOM, SYMBOL, 
      $                  N, NCHARG, ELEVEL, EION, EINST, NDIM,
-     $                  EDGEK, KODAT, MAXATOM, MAXION,
+     $                  EDGEK, KODAT, MAXATOM,
      $                  INDNUP, INDLOW, LASTIND, KONTNUP, KONTLOW, 
-     >                  LASTKON, OLDFGRID, NF2, XLAMBDA2, 
-     >                  VDOP, XLAMBLUE)
+     >                  LASTKON, OLDFGRID, NF2, XLAMBDA2, VDOP, XLAMBLUE)
  
 C***********************************************************************
 C***  GENERATION OF THE FREQUENCY GRID AND INTEGRATION WEIGHTS
@@ -12,14 +11,12 @@ C***  AND THE CONTINUUM FREQUENCY POINTS (NO LINE FREQUENCY POINTS)
 C***  XLAMBDA = CORRESPONDING WAVELENGTH POINTS IN ANGSTROEMS
 C***********************************************************************
  
-C***  ATTENTION: The following common block is not complete 
-C                since only VFINAL is used in this routine
       COMMON/VELPAR/ VFINAL,VMIN,BETA,VPAR1,VPAR2,RCON,HSCALE
 
       REAL, DIMENSION(NDIM,NDIM) :: EINST
       REAL, DIMENSION(NFDIM) :: XLAMBDA, XLAMBDA2, FWEIGHT
       REAL, DIMENSION(N) :: ELEVEL, EION
-      REAL, DIMENSION(MAXATOM,MAXION) :: EDGEK
+      REAL, DIMENSION(MAXATOM,MAXATOM) :: EDGEK
       INTEGER, DIMENSION(N) :: NCHARG, NOM
       INTEGER, DIMENSION(LASTIND) :: INDNUP, INDLOW
       INTEGER, DIMENSION(LASTKON) :: KONTNUP, KONTLOW
@@ -29,10 +26,6 @@ C                since only VFINAL is used in this routine
       CHARACTER(8) :: NAME, NEDGE, CKEY
       CHARACTER(8), DIMENSION(NFDIM) :: KEY
       CHARACTER(100) :: CFORMAT, MODOLD
-      REAL, INTENT(IN) :: XLAMBLUE
-      
-      REAL :: WINGpos, WINGneg
-      INTEGER :: KOMIT, KLASTK
  
 C***  Constants
       REAL, PARAMETER :: STEBOL = 1.8046E-5     !STEFAN-BOLTZMANN CONSTANT / PI  (ERG/CM**2/S/STERAD/KELVIN**4)

@@ -14,7 +14,8 @@ C***          and: WRSTART --> GREY --> OPAGREY
 C***********************************************************************
  
       DIMENSION NOM(N)
-      REAL, DIMENSION(MAXATOM, MAXION) :: SIGMATHK, SEXPOK, EDGEK
+      DIMENSION SIGMATHK(MAXATOM,MAXATOM),SEXPOK(MAXATOM,MAXATOM)
+      DIMENSION EDGEK(MAXATOM,MAXATOM)
       DIMENSION XDATA(10)
       DIMENSION KODAT(MAXATOM)
       DIMENSION NCHARG(N),WEIGHT(N),ELEVEL(N),EION(N),EN(N)
@@ -23,7 +24,7 @@ C***********************************************************************
       DIMENSION SIGMAKI(NF,LASTKON),SIGMAFF(NF,0:MAXION)
       LOGICAL XRAYS, KSHELL
 C***  Dimension of the core-charge data locally provided here
-      PARAMETER ( MAXATOMDIM = 30)
+      PARAMETER ( MAXATOMDIM = 26)
       DIMENSION KODATIND(MAXATOMDIM)
 
 C***  Output of laser warnings for bound-free transitions
@@ -71,7 +72,7 @@ C***  PARAMETER FOR X-RAY SOURCE
       T32=TL*SQRT(TL)
  
 ccC***  Safety against negative opacities from lasering bound-free trans.
-ccC***  Note: In contrast to the oher opacity routines, in COOPFRQ
+ccC***  Note: In contrast to the other opacity routines, in COOPFRQ
 ccC***   all lasering b-f continue are suppressed *at all frequencies* 
 ccC**    if a negative "true" opacity is encountered at any frequency 
 cc      NBFLASER = 0
@@ -111,11 +112,6 @@ C***  Set emissivities zero if both levels are equal (=POPMIN)
 
 C***  LASER bf continua are skipped!  3-Feb-2016
 cc      IF (SUM .LT. .0 .AND. NBFLASER .EQ. 1) THEN
-C***    Note: the above version, which makes use of NBLASER. has been
-C***          replaced by the more radical version that any lasering b-f
-C***          transition is immediately disregarded - wrh  4-Apr-2019
-
-cc      IF (SUM .LT. .0) THEN
 cc         IF (NWARN .EQ. 0)   WRITE (0, 90) 
 cc   90    FORMAT ('*** WARNING FROM Subr. COOPFRQ: ',
 cc     >   'LASERING BOUND-FREE CONTINUA SUPPRESSED')
@@ -270,9 +266,6 @@ cc      OPACMIN = OPAC(1)
 cc      DO K=2, NF
 cc         IF (OPAC(K) .LT. OPACMIN) OPACMIN = OPAC(K) 
 cc      ENDDO
-C***  Note: in the version with strict suppression (wrh  4-Apr-2019)
-C***        this condition should never be met, and is therefore
-C***        commented
 cc      IF (OPACMIN .LE. .0 .AND. NBFLASER .EQ. 0) THEN
 cc         NBFLASER = 1
 cc         GOTO 55

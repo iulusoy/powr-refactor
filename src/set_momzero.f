@@ -1,5 +1,5 @@
       SUBROUTINE SET_MOMZERO(ND, XJL, XHL, XKL, XNL, 
-     >                           XHO, XHI, XNO, XNI,
+     >                           XHO, XHI, XNO, XNI, 
      >                           XHOM, XHOP, XNOM, XNOP)
 C****************************************************************
 C***  The Moments, integrated by SHORTRAY are set to Zero
@@ -13,7 +13,6 @@ C****************************************************************
       XKL = 0.
       XNL = 0.
       XHO = 0.
-C***  For special treatment of inner boundary      
       XHI = 0.
       XNO = 0.
       XNI = 0.

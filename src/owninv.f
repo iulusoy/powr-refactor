@@ -21,7 +21,6 @@ C*******************************************************************************
       LOGICAL BNORM
 
       PARAMETER (BNORM = .TRUE.)
-C      PARAMETER (BNORM = .FALSE.)
 C      PARAMETER (NMAX = 560)  old version before split
       PARAMETER (NMAX = 2002)
 
@@ -49,7 +48,7 @@ C*** Calculation of the Row-Norm (Quadratic Norm)
           R = 0.
           DO L=1, N
             XM = A(L,K)
-            IF (ABS(XM) .GT. 1.D100) THEN
+            IF (ABS(XM) .GT. 1.E100) THEN
               R = 1.
               EXIT
             ENDIF
@@ -83,6 +82,9 @@ C     SUCHE MAXIMALES MATRIXELEMENT
       ABSAMAX=0.
       DO 30 J=K,N
         L=N+1-K
+C ISU commented this out since it is not defined
+C ISU using isamax instead
+C       IMAX=MY_ISAMAX(L,A(K,J),1)+K-1
         IMAX=ISAMAX(L,A(K,J),1)+K-1
         IF(ABSAMAX.GT.ABS(A(IMAX,J))) GOTO 30
         AMAX=A(IMAX,J)

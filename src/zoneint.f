@@ -46,7 +46,7 @@ C***********************************************************************
       REAL, DIMENSION(NBLINE) :: XMAXLIN
       REAL POROLENGTHRAY(LTOT), POROLENGTHFINE(MAXXN)
       INTEGER, DIMENSION(NATOM) :: KODAT
-      REAL ZINTER(2)      
+      REAL ZINTER(4)
       REAL, DIMENSION
      > (-NFDIMPHITAB:NFDIMPHITAB, NDDIM, NLDIMPHITAB,MAXMOD) :: PHITAB
 
@@ -231,7 +231,8 @@ C***        Opacities at XKCMF at (L)
 C***     Check if current point lies in second-model domain
             IMOD=1
             IF (NMOD .EQ. 2) THEN
-               IF ((ZFINE(I)-ZINTER(1))*(ZFINE(I)-ZINTER(2)) .LT. .0)
+               IF ((ZFINE(I)-ZINTER(1))*(ZFINE(I)-ZINTER(2)) .LT. .0
+     >            .OR. (ZFINE(I)-ZINTER(3))*(ZFINE(I)-ZINTER(4)).LT. .0)
      >            IMOD=2
             ENDIF
 
@@ -291,7 +292,8 @@ C***     have not been calculated yet (for Subr. STARKPROF)
 C***     Check if current point lies in second-model domain
          IMOD=1
          IF (NMOD .EQ. 2) THEN
-            IF ((ZFINE(I)-ZINTER(1))*(ZFINE(I)-ZINTER(2)) .LT. .0) 
+            IF ((ZFINE(I)-ZINTER(1))*(ZFINE(I)-ZINTER(2)) .LT. .0
+     >          .OR. (ZFINE(I)-ZINTER(3))*(ZFINE(I)-ZINTER(4)) .LT. .0)
      >         IMOD=2
          ENDIF
 
@@ -441,8 +443,9 @@ C***        have not been calculated yet (for Subr. STARKPROF)
 C***        Check if current point lies in second-model domain
             IMOD=1
             IF (NMOD .EQ. 2) THEN
-               IF ((ZFINE(I+1)-ZINTER(1))*(ZFINE(I+1)-ZINTER(2)) .LT. .0) 
-     >            IMOD=2
+              IF ((ZFINE(I+1)-ZINTER(1))*(ZFINE(I+1)-ZINTER(2)) .LT. .0
+     >             .OR.(ZFINE(I+1)-ZINTER(3))*(ZFINE(I+1)-ZINTER(4))
+     >             .LT. .0) IMOD=2
             ENDIF
 
 C***        ADD LINE PLUS CONTINUUM OPACITIES

@@ -1,10 +1,8 @@
       SUBROUTINE FORMOSA (ND, R, NP, P, Z, ENTOT, RNE, ABXYZ, NATOM, 
-     >                    T, VELO, NF, XLAMBDA, GRADI,
-     >                    POPNUM, RSTAR, VDOP, VMIC,
-     >                    JOBNUM, N, NDDIM, NPDIM, NFDIM,
-     >                    MODHEAD, TEFF, MAXXDAT, XDATA, XJC, IMOD, 
-     >                    DENSCON, FILLFAC, TAURCONT, POPMIN, 
-     >                    ZERO_RATES, RCON, NDIM, XMDOT)
+     >                 T,VELO,NF,XLAMBDA,GRADI,
+     >        POPNUM, RSTAR, VDOP, JOBNUM, N, NDDIM, NPDIM, NFDIM,
+     >        MODHEAD,TEFF,MAXXDAT,XDATA, XJC, IMOD, 
+     >        DENSCON, FILLFAC, TAURCONT, ZERO_RATES, RCON, NDIM, XMDOT)
 C***********************************************************************
 C***  CALLED FROM FORMAL, READS THE MODEL FILE
 C***********************************************************************
@@ -12,18 +10,10 @@ C***********************************************************************
       DIMENSION XDATA(MAXXDAT), ABXYZ(NATOM)
       DIMENSION XJC(2),EDDI(2),xlambda(2)
       CHARACTER*8 NAME, MODHEAD*(*)
-      DIMENSION DENSCON(ND), FILLFAC(ND), TAURCONT(ND), VMIC(ND)
+      DIMENSION DENSCON(ND), FILLFAC(ND), TAURCONT(ND)
       LOGICAL, DIMENSION(NDIM*NDDIM) :: ZERO_RATES
       REAL :: RCON
 
-C***  Local arrays:      
-      INTEGER, PARAMETER :: NDMAX = 200
-      REAL, DIMENSION(NDMAX) :: VTURB
-           
-C***  File and channel handles (=KANAL)
-      INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
-      INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
-           
       M = IMOD - 1
 
       CALL OPENMS(3+M, IDUMMY, IDUMMY, 1, IERR)
@@ -32,11 +22,6 @@ C***  File and channel handles (=KANAL)
             CALL REMARK ('TOO MANY DEPTH POINTS')
             STOP 'ERROR'
             ENDIF
-      IF (ND > NDMAX) THEN
-          WRITE (hCPR,'(A)') 'FORMOSA: FATAL ERROR ******'
-          WRITE (hCPR,'(A)') 'FORMOSA: LOCAL DIMENSION FOR VTURB INSUFFICIENT'
-          STOP 'ERROR IN FORMOSA'
-      ENDIF
       CALL READMS (3+M, R,ND,         'R       ', IERR)
       CALL READMS (3+M, NP,1,         'NP      ', IERR)
       IF (NP.GT.NPDIM) THEN
@@ -47,7 +32,6 @@ C***  File and channel handles (=KANAL)
       CALL READMS (3+M, Z,ND*NP,      'Z       ', IERR)
       CALL READMS(3+M, ENTOT,ND,      'ENTOT   ', IERR)
       CALL READMS(3+M, TAURCONT,ND,   'TAURCONT', IERR)
-      CALL READMS(3+M, POPMIN,1,      'POPMIN  ', IERR)
       DENSCON(1:ND) = 0.0
       CALL READMS(3+M,DENSCON,ND, 'DENSCON ', IERR)
       IF (IERR .EQ. -10) DENSCON(1:ND) = 1.
@@ -82,25 +66,6 @@ C***  File and channel handles (=KANAL)
       CALL READMS (3+M, TEFF,1,       'TEFF    ', IERR)
       CALL READMS (3+M, XMDOT,1,      'XMDOT   ', IERR)
 
-C***  Read microturbulence vector from main iteration      
-      CALL READMS (3,VMIC, ND,  'VMIC    ', IERR)
-      IF (IERR == -10) THEN
-C*      old MODEL file => only one VTURB value 
-        CALL READMS(3,VTURB(ND),1, 'VTURB   ', IERR)
-C*      very old MODEL file => neither VMIC nor VTURB        
-        IF (IERR == -10) VTURB(ND) = -99.
-        DO L=1, ND
-C*        convert VTURB values to VMIC 
-          IF (L /= ND) VTURB(L) = VTURB(ND)
-          VMIC(L) = VTURB(L) * SQRT(2.)
-        ENDDO
-      ELSE
-C*      Indicate non-existing VMIC      
-        DO L=1, ND
-          VMIC(L) = -99.
-        ENDDO
-      ENDIF
-      
 C***  Flags for the POPMIN levels
       CALL READMS (3+M,ZERO_RATES,  N*ND, 'ZERO_RAT', IERR)
 C*    Default if variable does not exist yet

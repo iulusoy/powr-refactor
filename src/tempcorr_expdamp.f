@@ -1,5 +1,4 @@
       SUBROUTINE TEMPCORR_EXPDAMP(TAUDAMP, METHOD, TAUROSS, bSKIPCORR, 
-     >                            bDAMPOUT, 
      >                            L, ND, DE_LOC, DE_INT, DE_RMAX, DE_TB)
 C***********************************************************************
 C***  Optional exponential tau-based damping for temperature corrections
@@ -11,7 +10,7 @@ C***********************************************************************
       
       INTEGER, INTENT(IN) :: L, ND
       REAL, INTENT(IN) :: TAUDAMP
-      LOGICAL, INTENT(IN) :: bSKIPCORR, bDAMPOUT
+      LOGICAL, INTENT(IN) :: bSKIPCORR
       CHARACTER(4), INTENT(IN) :: METHOD
 
       REAL, INTENT(INOUT) :: DE_LOC, DE_INT, DE_RMAX, DE_TB
@@ -76,16 +75,7 @@ C***      COS damping between TAUDAMP and 10*TAUDAMP
           STOP 'FATAL ERROR in STEAL->TEMPCORR_EXPDAMP'
         ENDIF  
       ENDIF
-        
-C***  Option for massive additional damping in the outer part        
-        IF (bDAMPOUT) THEN
-          IF (TAUROSS(L) < 1.) THEN
-            DE_LOC = DE_LOC * EXP(10. * (TAUROSS(L) - 1.))
-            DE_INT = DE_INT * EXP(10. * (TAUROSS(L) - 1.))
-            DE_RMAX = DE_RMAX * EXP(10. * (TAUROSS(L) - 1.))
-            DE_TB = DE_TB * EXP(10. * (TAUROSS(L) - 1.))
-          ENDIF
-        ENDIF                
+                  
 
 C***    Option: In case of negative flux or arad, skip TCORR completely
         IF (bSKIPCORR) THEN

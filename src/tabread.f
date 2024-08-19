@@ -5,6 +5,7 @@ C***  ITAB = 0: NO TABLE INPUT (DEFAULT)
 C***  ITAB = 1: INPUT OF TABULATED TEMPERATURE STRUCTURE T(R)
 C***  ITAB = 2: INPUT OF TABULATED VELOCITY FIELD V(R)
 C***  ITAB = 3: INPUT OF T(R) AND V(R)
+C***  Called from: WRSTART
 C***********************************************************************
  
       REAL RADIUS(ND),VELO(ND),GRADI(ND),T(ND)
@@ -20,8 +21,9 @@ C***********************************************************************
 
       IF (KARTE(:1) .EQ. '*' ) GOTO 1
       IF (KARTE(:5).EQ.'TABLE') THEN
-         DECODE (80,11,KARTE) NRP,VTAB,TTAB
+c         DECODE (80,11,KARTE) NRP,VTAB,TTAB
    11    FORMAT (15X,I3,7X,F7.1,7X,F8.0)
+         READ (KARTE,11) NRP,VTAB,TTAB
          IF (NRP.LE.0) THEN
             CALL REMARK ('NO TABLE INPUT')
             STOP 'ERROR'
@@ -35,8 +37,9 @@ C***********************************************************************
       IF (KARTE(:7).EQ.'ENDGRID') GOTO 30
  
 C***  DECODE INPUT
-      DECODE (80,12,KARTE) L,R(L),V(L),G(L),TH(L)
+c      DECODE (80,12,KARTE) L,R(L),V(L),G(L),TH(L)
    12 FORMAT (I5,4F10.5)
+      READ (KARTE,12) L,R(L),V(L),G(L),TH(L)
       IP(L)=1
       GOTO 1
    30 CONTINUE

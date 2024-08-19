@@ -1,18 +1,17 @@
-      SUBROUTINE DECADP (OLDSTART, BDEPART, BTAUR, bUseENTOT, POPMIN, 
+      SUBROUTINE DECADP (OLDSTART, BDEPART, BTAUR, POPMIN, 
      >                LEVELCARD, NLEVELCARD, MAXLEVELCARD)
-C**********************************************************************
+C*****************************************************************
 C***  DEECODE INPUT OPTIONS FOR PROGRAM 'ADAPTER'
-C**********************************************************************
+C*****************************************************************
 
-      LOGICAL OLDSTART, BDEPART, BTAUR, bUseENTOT
+      LOGICAL OLDSTART, BDEPART, BTAUR
       CHARACTER KARTE*80, ACTPAR1*20
-      CHARACTER LEVELCARD(MAXLEVELCARD)*80
+      CHARACTER(80), DIMENSION(MAXLEVELCARD) :: LEVELCARD
 
 C***  DEFAULT VALUES: 
       OLDSTART=.FALSE.
       BDEPART = .FALSE. 
       BTAUR   = .FALSE.
-      bUseENTOT = .TRUE.
 C***  POPMIN: NULL popnums are set to this value
       POPMIN = 1.E-25
       NLEVELCARD = 0
@@ -48,9 +47,6 @@ C                                 ======
             ELSE IF (ACTPAR1(:3) .EQ. 'TAU') THEN
 C                                      ===
                BTAUR   = .TRUE.
-            ELSE IF (ACTPAR1(:6) == 'RADIUS') THEN
-C                                    ======
-               bUseENTOT = .FALSE.
             ENDIF
          ENDDO
       ENDIF

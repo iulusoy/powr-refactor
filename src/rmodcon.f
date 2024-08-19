@@ -1,36 +1,25 @@
       SUBROUTINE RMODCON (ND,NDDIM,RADIUS,NP,NPDIM,P,Z,ENTOT,T,RNE,NF,
      $             NFDIM,MODHIST,MAXHIST,LAST,ALTESUM,XLAMBDA,
-     $             TEFF,NOTEMP,XJCOLD,HEDDI,EDDI,NCOLIP,FWEIGHT,
-     $             KEY,POPNUM,RSTAR,MODHEAD,JOBNUM,NEXTK,N,NDIM,
-     $             MAXXDAT,XDATA, DENSCON, FILLFAC, OPARND, 
-     >             POPMIN, ZERO_RATES, bNoARAD, bNoXJC)
+     $             TEFF,NOTEMP,XJCOLD,HEDDI,EDDI,NCOLIP,
+     $             FWEIGHT,KEY,POPNUM,RSTAR,MODHEAD,JOBNUM,NEXTK,N,
+     $             MAXXDAT,XDATA, DENSCON, FILLFAC, OPARND, ZERO_RATES,
+     >             NDIM)
 C***********************************************************************
 C***  READING OF THE MODEL FILE, CALLED FROM WRCONT ****************************
 C***********************************************************************
-      INTEGER, INTENT(IN) :: NDDIM, NPDIM, NDIM
-      INTEGER, INTENT(INOUT) :: ND, NP, N
-
       DIMENSION XDATA(MAXXDAT)
       DIMENSION HEDDI(NF)
       DIMENSION XJCOLD(2),EDDI(2)
-      REAL, DIMENSION(NDDIM-1) :: ARAD
+      LOGICAL NOTEMP
+      LOGICAL ZERO_RATES (NDIM*NDDIM)
 
-      REAL, DIMENSION(NDDIM*NDIM) :: POPNUM
-      LOGICAL, DIMENSION(NDIM*NDDIM) :: ZERO_RATES
-      
-      LOGICAL :: NOTEMP, bNoARAD, bNoXJC
-
-      REAL, INTENT(INOUT) :: POPMIN      
-      
 c***  tiefenabh. clumping
-      REAL, DIMENSION(NDDIM) :: DENSCON, FILLFAC
+      DIMENSION DENSCON(NDDIM),FILLFAC(NDDIM)
  
 C *** NOTE: ASSURE 64-BIT TYPE FOR USE IN WRITMS
-      CHARACTER(8) :: NAME
-      
-      bNoXJC = .FALSE.
+      CHARACTER NAME*8   
 
-      CALL OPENMS (3, IDUMMY, IDUMMY, 1, IERR)
+      CALL OPENMSR (3, IDUMMY, IDUMMY, 1, IERR)
 C***  IN CASE OF FIRST WRCONT-JOB:  SET OPTION "NOTEMP"
       CALL READMS (3,JOBNUM,1,'JOBNUM  ', IERR)
       JOBNUM=JOBNUM+1
@@ -71,15 +60,16 @@ C***  READ 'XDATA' AND CHECK WHETHER THE RECORD EXISTS
 C***     XFILL EQ 0.
          XDATA(1) = 0.  
       ENDIF
-      
-C***  Determine if COLI has already been run (at least once)
-      CALL READMS (3,ARAD,ND-1, 'ARAD    ', IERR)
-      IF (IERR == -10) THEN
-        bNoARAD = .TRUE.
-      ELSE 
-        bNoARAD = .FALSE.
+
+C***  Flags for the POPMIN levels
+      CALL READMS (3,ZERO_RATES,  N*ND, 'ZERO_RAT', IERR)
+C*    Default if variable does not exist yet
+      IF (IERR .EQ. -10) THEN
+        DO I=1, N*ND
+         ZERO_RATES(I) = .FALSE.
+        ENDDO
       ENDIF
-      
+
       CALL READMS (3,TEFF,1,'TEFF    ',IERR)
       CALL READMS (3,T,ND,       'T       ', IERR)
       CALL READMS (3,RNE,ND,     'RNE     ', IERR)
@@ -92,32 +82,14 @@ C***  Determine if COLI has already been run (at least once)
       CALL READMS (3,FWEIGHT,NF, 'FWEIGHT ', IERR)
       CALL READMS (3,KEY,NF,     'KEY     ', IERR)
       CALL READMS (3,POPNUM,ND*N,'POPNUM  ', IERR)
-      CALL READMS (3,POPMIN,1,   'POPMIN  ', IERR)
-      IF (IERR < 0) THEN
-C***  POPMIN not on MODEL file => read from CARDS      
-        POPMIN = 1.E-100
-      ENDIF
       CALL READMS (3,RSTAR,1,    'RSTAR   ', IERR)
       OPARND = 0.       
       CALL READMS (3, OPARND, 1, 'OPARND  ', IERR)
-
-C***  Flags for the POPMIN levels
-      CALL READMS (3,ZERO_RATES,  N*ND, 'ZERO_RAT', IERR)
-      IF (IERR == -10) THEN
-        DO I=1, N*ND
-          ZERO_RATES(I) = .FALSE.
-        ENDDO
-      ENDIF 
  
       ND3=3*ND
       DO 15 K=1,NF
       WRITE (NAME,'(A3,I4,A1)') 'XJC',K, ' '
       CALL READMS (3,XJCOLD(1+ND*(K-1)),ND,NAME, IERR)
-      IF (IERR == -10) THEN
-C***    no XJC on model file
-        bNoXJC = .TRUE.
-        GOTO 15
-      ENDIF
       IF (.NOT. NOTEMP) THEN
         IF (K <= 999) THEN
           WRITE (NAME,'(A4,I3,A1)') 'EDDI',K, ' '

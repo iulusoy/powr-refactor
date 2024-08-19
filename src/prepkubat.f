@@ -9,10 +9,7 @@
      >                     LASTKON, LASTIND, LASTINDAUTO, LASTINDALL, 
      >                     OPAROSS, TOLD, RADIUS,
      >                     RSTAR, OPALAMBDAMEAN, OPASMEANTC, 
-     >                     MAXKONT, ADDCON1, ADDCON2, ADDCON3,
-     >                     IGAUNT, ALPHA, SEXPO, MAXION, 
-     >                     DTKUBAT, BCOLLIDONE, ZERO_RATES,
-     >                     bKUBATDEBUG)
+     >                     DTKUBAT, BCOLLIDONE)
 C***********************************************************************
 C***  calculates the Q values for the THERMAL BALANCE method 
 C***  cf. Kubat et al. (1999), Kubat (2001) 
@@ -24,17 +21,14 @@ C***********************************************************************
       IMPLICIT NONE
                     
       INTEGER, INTENT(IN) :: ND, NF, N, NDIM, NATOM, MAXIND, MAXATOM,
-     >                       MAXION, LASTKON, MAXKONT, LASTIND,
-     >                       LASTINDAUTO, LASTINDALL
+     >                       LASTKON, LASTIND, LASTINDAUTO, LASTINDALL
       INTEGER, DIMENSION(N), INTENT(IN) :: NOM
       INTEGER, DIMENSION(NDIM), INTENT(IN) :: IONGRND, NCHARG
       INTEGER, DIMENSION(MAXIND), INTENT(IN) :: INDNUP, INDLOW
       INTEGER, DIMENSION(LASTKON), INTENT(IN) :: KONTNUP, KONTLOW,
      >                                           KEYCBF
-      INTEGER, DIMENSION(NATOM), INTENT(IN) :: NFIRST, NLAST
-      INTEGER, DIMENSION(MAXATOM), INTENT(IN) :: KODAT
-      CHARACTER(8), DIMENSION(MAXKONT), INTENT(IN) :: IGAUNT      
-
+      INTEGER, DIMENSION(NATOM), INTENT(IN) :: NFIRST, NLAST, KODAT
+      
       REAL, INTENT(IN) :: RSTAR
       REAL, DIMENSION(NDIM,NDIM), INTENT(IN) :: EINST
       REAL, DIMENSION(4,MAXIND), INTENT(IN) :: COCO
@@ -50,10 +44,8 @@ C***********************************************************************
       REAL, DIMENSION(NF), INTENT(IN) :: XLAMBDA, FWEIGHT
       REAL, DIMENSION(ND, NF), INTENT(IN) :: XJC
       REAL, DIMENSION(NF, LASTKON), INTENT(IN) :: SIGMAKI
-      REAL, DIMENSION(MAXATOM, MAXION), INTENT(IN) :: 
+      REAL, DIMENSION(MAXATOM, MAXATOM), INTENT(IN) :: 
      >                                        SIGMATHK, SEXPOK, EDGEK
-      REAL, DIMENSION(MAXKONT), INTENT(IN) :: 
-     >                ALPHA, SEXPO, ADDCON1, ADDCON2, ADDCON3
 
       CHARACTER(4), DIMENSION(LASTIND), INTENT(IN) :: KEYCBB      
       
@@ -65,10 +57,8 @@ C***********************************************************************
       REAL, DIMENSION(ND) :: DELTAQ, DELTAQDT
       REAL, DIMENSION(ND, 2) :: QFF, QBF, QC, QFFDT, QBFDT, QCDT   !H is 1, C is 2
       
-      LOGICAL, INTENT(IN) :: bKUBATDEBUG
-      LOGICAL, DIMENSION(N, ND), INTENT(IN) :: ZERO_RATES
-      LOGICAL, DIMENSION(N,N), INTENT(INOUT) :: bCOLLIDONE 
-      LOGICAL :: bKSHELL, bPrintQTable
+      LOGICAL, DIMENSION(N,N) :: bCOLLIDONE 
+      LOGICAL :: bKSHELL
       
       INTEGER :: L, NUP, LOW, I, J, K, IND, KON, KONEDGE, NCHARGE, 
      >           NA, ISTATE, NOMJ
@@ -77,7 +67,7 @@ C***********************************************************************
      >        AFF, W3, W, ABF, ABFINT1, ABFINT2, ABFINT2d, RL, RCML,
      >        ENE, ETRANSIT, TL, EDGELAM, EDGE, ENTOTL, DTB, OPAMEAN,
      >        DGDT, GIIITP, AFFDGDT, AFFINT1d, AFFINT2dd, POPSUM2dd,
-     >        WK, SIGMAK, TLmod, POPLOW, POPNUP, POPLJ, XJCLK
+     >        WK, SIGMAK, TLmod
      
       INTEGER, EXTERNAL :: ISRCHFGT
 
@@ -86,19 +76,15 @@ C***********************************************************************
       REAL, PARAMETER :: HPLANCK = 6.625E-27     !PLANCK's CONSTANT (erg s)
       REAL, PARAMETER :: C1 = 1.4388             !C1 = H * C / K    ( CM * K )
       REAL, PARAMETER :: C2 = 3.9724E-16         !C2 = 2 * H * C    ( G * CM**3 / S**2 
-      REAL, PARAMETER :: CLIGHT = 2.99792458E10      !Speed of Light in cm/s
+      REAL, PARAMETER :: CLIGHT = 2.9979E10      !Speed of Light in cm/s
       REAL, PARAMETER :: CFF = 1.370E-23         !COEFFICIENT FOR FREE-FREE CROSS SECTION ( ALLEN PAGE 100 )
       REAL, PARAMETER :: COM = 5.465E-11         !Com = a0**2 * sqrt( 8 * Pi * k / m )
-      REAL, PARAMETER :: STEBOL = 5.6705E-5      !STEFAN-BOLTZMANN CONSTANT (CGS-UNITS)
-      REAL, PARAMETER :: STEBOLDPI = 1.8046E-5   !STEFAN-BOLTZMANN CONSTANT (CGS-UNITS) / PI      
-      REAL, PARAMETER :: BOLTZ = 1.38E-16        !BOLTZMANN CONSTANT (ERG/DEG)
-
+      REAL, PARAMETER :: STEBOL = 5.6705E-5         !STEFAN-BOLTZMANN CONSTANT (CGS-UNITS)
+      
       !File and channel handles (=KANAL)
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
       INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
-      
-      bPrintQTable = bKUBATDEBUG            !print out table if debug option is set
-      
+
       bKSHELL = .FALSE.
       bksloop: DO NA=1, MAXATOM
         DO ISTATE=1, MAXATOM
@@ -108,7 +94,7 @@ C***********************************************************************
           ENDIF
         ENDDO
       ENDDO bksloop
-      
+
       DO L=1, ND
         POPSUM1 = 0.
         POPSUM1d = 0.
@@ -134,43 +120,39 @@ C****** FREE-FREE transitions ******************************************
           AFFINT2d = 0.  
           AFFINT2dd = 0.
           NCHARGE = NCHARG(J)
-          POPLJ = POPNUM(L, J)
-          IF (ZERO_RATES(J, L))  POPLJ = 0.
           DO K=1, NF-1
             W = 1.E8/XLAMBDA(K)
             W3 = W*W*W         
-            XJCLK = MAX(0., XJC(L,K))
             IF (NCHARGE > 0) THEN
               CALL GAUNTFF (GIII,NCHARGE,XLAMBDA(K),TL)
               CALL GAUNTFF (GIIITP,NCHARGE,XLAMBDA(K),1.01*TL)
               DGDT = (GIIITP - GIII) / (0.01 * TL)              
-              AFF = CFF/W3/SQRT(TL) * NCHARGE**(2.) * GIII   !AlphaFF for Kubat method
-              AFFDGDT = CFF/W3/SQRT(TL) * NCHARGE**(2.) * DGDT
+              AFF = CFF/W3/SQRT(TOLD(L)) * NCHARGE**(2.) * GIII   !AlphaFF for Kubat method
+              AFFDGDT = CFF/W3/SQRT(TOLD(L)) * NCHARGE**(2.) * DGDT
             ELSE
               GIIITP = 0.
               GIII = 0.
               AFF = 0.
               AFFDGDT = 0.
             ENDIF
-            AFFINT1 = AFFINT1 + FWEIGHT(K) * AFF * XJCLK
-            AFFINT1d = AFFINT1d + FWEIGHT(K) * 
-     >                                   AFFDGDT * XJCLK
+            AFFINT1 = AFFINT1 + FWEIGHT(K) * AFF * XJC(L, K)
+            AFFINT1d = AFFINT1d + FWEIGHT(K) * AFFDGDT * XJC(L, K)
             AFFINT2 = AFFINT2 + FWEIGHT(K) * AFF
-     >        * ( XJCLK + C2 * W3) * EXP(-C1*W/TL)
+     >        * ( XJC(L,K) + C2 * W3) * EXP(-C1*W/TL)
             AFFINT2d = AFFINT2d + FWEIGHT(K) * AFF
-     >        * ( XJCLK + C2 * W3) * EXP(-C1*W/TL) * W
+     >        * ( XJC(L,K) + C2 * W3) * EXP(-C1*W/TL) * W
             AFFINT2dd = AFFINT2dd + FWEIGHT(K) * AFFDGDT
-     >        * ( XJCLK + C2 * W3) * EXP(-C1*W/TL)
+     >        * ( XJC(L,K) + C2 * W3) * EXP(-C1*W/TL)
           ENDDO
-          POPSUM1 = POPSUM1 + ENTOTL*POPLJ * AFFINT1
-          POPSUM1d = POPSUM1d + ENTOTL*POPLJ * AFFINT1d
-          POPSUM2 = POPSUM2 + ENTOTL*POPLJ * AFFINT2
-          POPSUM2d = POPSUM2d + ENTOTL*POPLJ * AFFINT2d
-          POPSUM2dd = POPSUM2dd + ENTOTL*POPLJ * AFFINT2dd
+          POPSUM1 = POPSUM1 + ENTOTL*POPNUM(L, J) * AFFINT1
+          POPSUM1d = POPSUM1d + ENTOTL*POPNUM(L, J) * AFFINT1d
+          POPSUM2 = POPSUM2 + ENTOTL*POPNUM(L, J) * AFFINT2
+          POPSUM2d = POPSUM2d + ENTOTL*POPNUM(L, J) * AFFINT2d
+          POPSUM2dd = POPSUM2dd + ENTOTL*POPNUM(L, J) * AFFINT2dd
         ENDDO
         QFF(L,1) = PI4 * ENE * POPSUM1        
         QFF(L,2) = PI4 * ENE * POPSUM2 
-C        QFFDT(L,1) = - 1. / ( 2 * TL) * QFF(L,1) 
+        QFFDT(L,1) = - 1. / ( 2 * TL) * QFF(L,1) 
         QFFDT(L,1) = - 1. / ( 2 * TL) * QFF(L,1) + PI4 * ENE * POPSUM1d
         QFFDT(L,2) = - 1. / ( 2 * TL) * QFF(L,2) 
      >               + PI4 * ENE * (C1 / TL**2 * POPSUM2d + POPSUM2dd)
@@ -181,20 +163,9 @@ C        QFFDT(L,1) = - 1. / ( 2 * TL) * QFF(L,1)
 C****** BOUND-FREE transitions *****************************************
         CALL LTEPOP (N,ENLTE,TL,ENE,WEIGHT,NCHARG,EION,ELEVEL,
      >               NOM,ABXYZ,NFIRST,NLAST,NATOM)
-        CALL BFCROSS (SIGMAKI,NF,N,ELEVEL,EION,EINST,NDIM,
-     >                XLAMBDA,ALPHA,SEXPO,ADDCON1,ADDCON2,ADDCON3,
-     >                IGAUNT,KONTNUP,KONTLOW,LASTKON)
-     
         DO KON=1, LASTKON
           NUP=KONTNUP(KON)
           LOW=KONTLOW(KON)
-          POPLOW = POPNUM(L,LOW)
-          POPNUP = POPNUM(L,NUP) 
-          IF (ZERO_RATES(LOW,L)) POPLOW = 0.
-          IF (ZERO_RATES(NUP,L)) THEN
-            POPNUP = 0.
-            POPLOW = 0.
-          ENDIF
           IF (NCHARG(NUP) == NCHARG(LOW)) THEN
             STOP 'FATAL ERROR in PREPKUBAT (KON)'
           ENDIF
@@ -209,29 +180,27 @@ C****** BOUND-FREE transitions *****************************************
             W = 1.E8/XLAMBDA(K)
             W3 = W*W*W
             ABF = SIGMAKI(K, KON)
-C            XJCLK = MAX(0., XJC(L,K))
-            XJCLK = XJC(L,K)
-            IF (W < EDGE .AND. ABS(ABF) > 0.) THEN
+            IF (W < EDGE .AND. ABS(ABF) > 0) THEN
               STOP 'FATAL ERROR in PREPKUBAT: SIGMAKI should be Zero!'
             ENDIF
             
             ABFINT1 = ABFINT1 
-     >           + FWEIGHT(K) * ABF * XJCLK
+     >           + FWEIGHT(K) * ABF * XJC(L, K) 
      >               * (1. - EDGE / W)
 
             ABFINT2 = ABFINT2
      >           + FWEIGHT(K) * ABF * EXP(-C1*W/TL) *
-     >             (XJCLK  + C2 * W3) *
+     >             (XJC(L,K)  + C2 * W3) *
      >             (1. -  EDGE / W)
 
             ABFINT2d = ABFINT2d
      >           + FWEIGHT(K) * ABF * EXP(-C1*W/TL) *
-     >             (XJCLK  + C2 * W3) *
+     >             (XJC(L,K)  + C2 * W3) *
      >             (1. -  EDGE / W) * W
           ENDDO
 
-          POPSUM1 = POPSUM1 + ENTOTL*POPLOW * ABFINT1
-          PADD2 = ENTOTL*POPNUP
+          POPSUM1 = POPSUM1 + ENTOTL*POPNUM(L,LOW) * ABFINT1
+          PADD2 = ENTOTL*POPNUM(L,NUP) 
      >                     * ENLTE(LOW)/ENLTE(NUP) 
           POPSUM2 = POPSUM2 + PADD2 * ABFINT2
           POPSUM2d = POPSUM2d + C1 / (TL*TL) * PADD2 * ABFINT2d
@@ -253,20 +222,19 @@ C***  K-SHELL IONISATION (not carefully tested yet!)  **************************
             DO K=1, NF
               IF (XLAMBDA(K) > WK) EXIT  !Stop if radiation is too soft for K-SHELL ionization
               W = 1.E8 / XLAMBDA(K)
-              XJCLK = MAX(0., XJC(L,K))
               CALL KSIGMA (SIGMAK, SIGMATHK(NOMJ,ISTATE), 
      >                     EDGEK(NOMJ,ISTATE), W, SEXPOK(NOMJ,ISTATE))
               ABFINT1 = ABFINT1 
-     >             + FWEIGHT(K) * SIGMAK * XJCLK
+     >             + FWEIGHT(K) * SIGMAK * XJC(L, K) 
      >                 * (1. - WK / W)
 
               ABFINT2 = ABFINT2
      >             + FWEIGHT(K) * SIGMAK * EXP(-C1*W/TL) *
-     >                 (XJCLK  + C2 * W3) *
+     >                 (XJC(L,K)  + C2 * W3) *
      >                 (1. -  WK / W)
               ABFINT2d = ABFINT2d
      >           + FWEIGHT(K) * SIGMAK * EXP(-C1*W/TL) *
-     >             (XJCLK  + C2 * W3) *
+     >             (XJC(L,K)  + C2 * W3) *
      >             (1. -  WK / W) * W
             ENDDO
             POPSUM1 = POPSUM1 + ENTOTL*POPNUM(L,LOW) * ABFINT1
@@ -295,11 +263,11 @@ C***    a temperature being enhanced by 1%
         CALL COLLI (NDIM,N,ENLTE,TLmod,ENE,NCHARG,ELEVEL,EINST,DCRATEDT,
      >          EION,COCO,KEYCBB,WEIGHT,ALTESUM,NATOM,NOM,KODAT,
      >          INDNUP, INDLOW, LASTIND, LASTINDAUTO, LASTINDALL, 
-     >          KONTNUP, KONTLOW, LASTKON, KEYCBF, IONGRND, MAXATOM)
+     >          KONTNUP, KONTLOW, LASTKON, KEYCBF, IONGRND)
         CALL COLLI (NDIM,N,ENLTE,TL,ENE,NCHARG,ELEVEL,EINST,CRATE,
      >          EION,COCO,KEYCBB,WEIGHT,ALTESUM,NATOM,NOM,KODAT,
      >          INDNUP, INDLOW, LASTIND, LASTINDAUTO, LASTINDALL, 
-     >          KONTNUP, KONTLOW, LASTKON, KEYCBF, IONGRND, MAXATOM)
+     >          KONTNUP, KONTLOW, LASTKON, KEYCBF, IONGRND)
         DO I=1, N
           DO J=1, N
             !calculate temperature derivative
@@ -394,13 +362,6 @@ C***    collisonal ionization
         DO KON=1, LASTKON
             NUP=KONTNUP(KON)
             LOW=KONTLOW(KON)
-            POPLOW = POPNUM(L,LOW)
-            POPNUP = POPNUM(L,NUP) 
-            IF (ZERO_RATES(LOW,L)) POPLOW = 0.
-            IF (ZERO_RATES(NUP,L)) THEN
-              POPNUP = 0.
-              POPLOW = 0.
-            ENDIF
             IF (NCHARG(NUP) == NCHARG(LOW)) THEN
               STOP 'FATAL ERROR in PREPKUBAT (COLLI - KON)'
             ENDIF
@@ -410,23 +371,23 @@ C            EDGE = ELEVEL(NUP)-ELEVEL(LOW)
 C            ETRANSIT = EDGE * HPLANCK
             ETRANSIT = EDGE * CLIGHT * HPLANCK
             
-            PADD1 = ENTOTL * POPNUP * ETRANSIT
+            PADD1 = ENTOTL * POPNUM(L,NUP) * ETRANSIT
             POPSUM1 = POPSUM1 + PADD1 * CRATE(NUP,LOW)
             POPSUM1d = POPSUM1d 
      >        + PADD1 * ENLTE(LOW)/ENLTE(NUP) * DCRATEDT(LOW,NUP)
      >        - PADD1 * (3./(2.*TL) + C1*EDGE/(TL*TL)) * CRATE(NUP,LOW)
             
-C            PADD1 = ENTOTL * POPNUP * CRATE(NUP,LOW) * ETRANSIT
-C            PADD1 = ENTOTL * POPNUP * CRATE(LOW,NUP) 
+C            PADD1 = ENTOTL * POPNUM(L,NUP) * CRATE(NUP,LOW) * ETRANSIT
+C            PADD1 = ENTOTL * POPNUM(L,NUP) * CRATE(LOW,NUP) 
 C     >                        * ENLTE(LOW)/ENLTE(NUP) * ETRANSIT
 C            POPSUM1 = POPSUM1 + PADD1
 C            POPSUM1d = POPSUM1d - PADD1 * (1./TL)
 
-            PADD2 = ENTOTL * POPLOW * ETRANSIT
+            PADD2 = ENTOTL * POPNUM(L,LOW) * ETRANSIT
             POPSUM2 = POPSUM2 + PADD2 * CRATE(LOW,NUP)
             POPSUM2d = POPSUM2d + PADD2 * DCRATEDT(LOW,NUP)
 
-C            PADD2 = ENTOTL * POPLOW * CRATE(LOW,NUP) * ETRANSIT
+C            PADD2 = ENTOTL * POPNUM(L,LOW) * CRATE(LOW,NUP) * ETRANSIT
 C            POPSUM2 = POPSUM2 + PADD2
 C            POPSUM2d = POPSUM2d + PADD2 * (1./(2.*TL) + C1*EDGE/(TL*TL))
 C            POPSUM2d = POPSUM2d + PADD2 * (1./TL)
@@ -466,53 +427,42 @@ C        DTKUBAT(L) = PI4*DELTAQ(L) / (16.*STEBOL* OPAROSS(L)* TL**3)
         DTKUBAT(L) = - DELTAQ(L) / DELTAQDT(L) / 1000.      !transform to kK for plots
         
       ENDDO
-            
-      IF (bPrintQTable) THEN
-        WRITE (hCPR,*)
-        WRITE (hCPR,*) 'TESTAUSGABE ZUR KUBAT-METHODE:'
-        WRITE (hCPR,'(5X,4(3(A10,2X),3X),A7)') 
-     >    '   QFF_H  ', '   QFF_C  ', ' DELTA QFF', 
-     >    '   QBF_H  ', '   QBF_C  ', ' DELTA QBF', 
-     >    '   QC_H   ', '   QC_C   ', ' DELTA QC ', 
-     >    '  DELTA Q ', '  DDQDT   ', '   N-R    ', 'Planck '
-        DO L=1, ND
-          OPAMEAN = OPASMEANTC(L)
-c          DTB = PI4 / 
+      
+      
+C      useful test output: terms and derivatives of thermal-balance       
+c      WRITE (hCPR,*)
+c      WRITE (hCPR,*) 'TESTAUSGABE ZUR KUBAT-METHODE:'
+c      WRITE (hCPR,'(5X,4(3(A10,2X),3X),A7)') 
+c     >    '   QFF_H  ', '   QFF_C  ', ' DELTA QFF', 
+c     >    '   QBF_H  ', '   QBF_C  ', ' DELTA QBF', 
+c     >    '   QC_H   ', '   QC_C   ', ' DELTA QC ', 
+c     >    '  DELTA Q ', '  DDQDT   ', '   N-R    ', 'Planck '
+c      DO L=1, ND
+c        OPAMEAN = OPASMEANTC(L) - OPALAMBDAMEAN(L)
+c        DTB = PI4 / 
 c     >       (16. * TOLD(L)**(3.) * STEBOL * OPAMEAN * 1000.)
-          IF (L > 1. .AND. L < ND) THEN
-            DTB = RSTAR * 0.5 * (RADIUS(L-1) - RADIUS(L+1)) / 
-     >         (4. * TOLD(L)**(3.) * STEBOLDPI * 1000.)
-          ELSEIF (L==ND) THEN 
-            DTB = RSTAR * 0.5 * (RADIUS(ND-1) - RADIUS(ND)) / 
-     >         (4. * TOLD(L)**(3.) * STEBOLDPI * 1000.)            
-          ELSE
-            DTB = RSTAR * 0.5 * (RADIUS(1) - RADIUS(2)) / 
-     >         (4. * TOLD(L)**(3.) * STEBOLDPI * 1000.)            
-          ENDIF
-          WRITE (hCPR,FMT='(I3,3(3(2X,G10.3),2X,"#"),4(2X,G10.3))') 
-     >      L, QFF(L,1), QFF(L,2), QFF(L,1)- QFF(L,2), 
-     >      QBF(L,1), QBF(L,2), QBF(L,1) - QBF(L,2),
-     >      QC(L,1), QC(L,2), QC(L,1)-QC(L,2),      
-     >      DELTAQ(L),  DELTAQDT(L), 
-     >      - DELTAQ(L) / DELTAQDT(L) / 1000.,
-C     >    (2./3.*(QFF(L,2)+QBF(L,2)+QC(L,2))/BOLTZ/ENE)/1000.
-     >      DELTAQ(L) * DTB
-        ENDDO
-        WRITE (hCPR,*) 'maxmin: ', MAXVAL(DTKUBAT), MINVAL(DTKUBAT)
-        WRITE (hCPR,*) 'TESTAUSGABE ZUR KUBAT-METHODE (ABLEITUNGEN):'
-        DO L=1, ND
-          WRITE (hCPR,FMT='(I3,3(3(2X,G10.3),2X,"#"),3(2X,G10.3))') 
-     >      L, QFFDT(L,1), QFFDT(L,2), QFFDT(L,1)- QFFDT(L,2), 
-     >      QBFDT(L,1), QBFDT(L,2), QBFDT(L,1) - QBFDT(L,2),
-     >      QCDT(L,1), QCDT(L,2), QCDT(L,1)-QCDT(L,2),
-     >      QFFDT(L,1) + QBFDT(L,1) + QCDT(L,1), 
-     >      QFFDT(L,2) + QBFDT(L,2) + QCDT(L,2),
-     >      QFFDT(L,1) + QBFDT(L,1) + QCDT(L,1) - 
-     >       ( QFFDT(L,2) + QBFDT(L,2) + QCDT(L,2) )
-        ENDDO
-      ENDIF
-      
-      
+c        WRITE (hCPR,FMT='(I3,3(3(2X,G10.3),2X,"#"),4(2X,G10.3))') 
+c     >    L, QFF(L,1), QFF(L,2), QFF(L,1)- QFF(L,2), 
+c     >    QBF(L,1), QBF(L,2), QBF(L,1) - QBF(L,2),
+c     >    QC(L,1), QC(L,2), QC(L,1)-QC(L,2),      
+c     >    DELTAQ(L),  DELTAQDT(L), 
+c     >    - DELTAQ(L) / DELTAQDT(L) / 1000.,
+c     >    DELTAQ(L) * DTB
+c      ENDDO
+
+c      WRITE (hCPR,*) 'maxmin: ', MAXVAL(DTKUBAT), MINVAL(DTKUBAT)
+c      WRITE (hCPR,*) 'TESTAUSGABE ZUR KUBAT-METHODE (ABLEITUNGEN):'
+c      DO L=1, ND
+c        WRITE (hCPR,FMT='(I3,3(3(2X,G10.3),2X,"#"),3(2X,G10.3))') 
+c     >    L, QFFDT(L,1), QFFDT(L,2), QFFDT(L,1)- QFFDT(L,2), 
+c     >    QBFDT(L,1), QBFDT(L,2), QBFDT(L,1) - QBFDT(L,2),
+c     >    QCDT(L,1), QCDT(L,2), QCDT(L,1)-QCDT(L,2),
+c     >    QFFDT(L,1) + QBFDT(L,1) + QCDT(L,1), 
+c     >    QFFDT(L,2) + QBFDT(L,2) + QCDT(L,2),
+c     >    QFFDT(L,1) + QBFDT(L,1) + QCDT(L,1) - 
+c     >     ( QFFDT(L,2) + QBFDT(L,2) + QCDT(L,2) )
+c      ENDDO
+
       RETURN
       END
       
