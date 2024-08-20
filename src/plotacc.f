@@ -2,7 +2,7 @@
      >                   ATHOM, WORKRATIO, VELO, RADIUS, ND, ATMEAN,
      >                   ENTOT, RNE, TAUROSS, RCON, T, TEFF, RSTAR, 
      >                   XMU, VTURB, XMSTAR, Rcritical, bFULLHYDROSTAT, 
-     >                   bNoARAD, MODHEAD, JOBNUM, hPLOT)
+     >                   bNoARAD, MODHEAD, JOBNUM, hPLOT, HYSTACC)
 C******************************************************************************
 C***  DIRECT TRANSFER OF HSUM PLOT
 C***  TOTAL (FREQUENCY-INTEGRATED) FLUX versus DEPTH INDEX
@@ -22,13 +22,13 @@ C******************************************************************************
      >                                   ACONT, ATHOM, VELO, VTURB, XMU,
      >                                   RADIUS, ENTOT, RNE, TAUROSS
       REAL, INTENT(IN) :: WORKRATIO, RCON, ATMEAN, XMSTAR, RSTAR, TEFF, 
-     >                    Rcritical
+     >                    Rcritical, HYSTACC
      
       LOGICAL, INTENT(IN) :: bFULLHYDROSTAT, bNoARAD
 
       CHARACTER(110) :: MODHEAD, HEADLINE
       CHARACTER(4) :: NormalizeTo
-      CHARACTER(8) :: CENTER, CNORM
+      CHARACTER(8) :: CENTER, CNORM, TEXT_X2
       CHARACTER(40) :: XTEXT
       CHARACTER(20) :: CUROPT, XAXISMODE, YLABEL
       CHARACTER PLOTOPT*(*)
@@ -238,6 +238,7 @@ C***     X-Axis = Depth Index
          XTEXT = CENTER//'DEPTH INDEX L'
          XMIN = 0.
          XMAX = FLOAT(ND)
+         TEXT_X2 = ' XMAX '
          XTICK = 5.
          XABST = 10. 
          DO L=1, ND-1
@@ -254,17 +255,15 @@ C***     X-Axis: velocity / v_infty
          XTEXT = CENTER//'v(r) / v' // CHAR(92) // '8'
          XMIN = 0.
          XMAX = 1.
+         TEXT_X2 = ' XMIN '
          XTICK = 0.1
          XABST = 0.5 
          DO L=1, ND-1
            CALL SPLINPOX(VINT, RI(L), VELO, RADIUS, ND)
            X(L) = VINT/VELO(1)
          ENDDO
-         IF (Lcand > 1) THEN
+         IF (Lcand > 1 .AND. Lcand < ND) THEN
            Xsonic = Vsonic/VELO(1)
-         ENDIF
-         IF (Ltcand > 1) THEN
-           Xts = Vts/VELO(1)
          ENDIF
       ELSEIF (XAXISMODE == 'RADIUS' .OR. XAXISMODE == 'R') THEN
          XTEXT = CENTER//'LOG (R/R\*-1)'
@@ -351,6 +350,7 @@ C***     X-Axis: velocity / v_infty
       WRITE (hPLOT, '(A)') '\DEFINECOLOR 5 1.0 0.58 0.0'
       WRITE (hPLOT, '(A)') '\DEFINECOLOR 7 0.0 0.50 0.0'
       WRITE (hPLOT, '(A)') '\DEFINECOLOR 9 0.6 0.60 0.6'
+      WRITE (hPLOT, '(A)') '\DEFINECOLOR 8 0.6 0.8 1.0'
       WRITE (hPLOT, '(A)') '\PEN=1'     !needed to get rid of definecolor pen bug 
 
       WRITE (hPLOT, '(A)') '\COLOR=3'
@@ -396,6 +396,16 @@ c        IF (XICON >= 0.005) THEN
         ENDIF
       ENDIF
       WRITE (hPLOT, '(A)') '\BGRLUN OFF'
+
+      IF (HYSTACC .GT. 0.) THEN
+         WRITE (hPLOT, '(A)') '* HYDROSTATIC INTEGRATION EPSILON'
+         WRITE (hPLOT, '(A)') '\COLOR = 8'
+         WRITE (hPLOT, '(A,F6.3,1X,F6.3,A,F6.3,A)')
+     >    '\RECT ', XICON, ALOG10(1. - HYSTACC), TEXT_X2, ALOG10(1. + HYSTACC),
+     >    '  0 0 FILLED'
+      ENDIF
+
+
       WRITE (hPLOT, '(A)') '\COLOR=1'
 
       WRITE (hPLOT, '(A,F6.3)') 

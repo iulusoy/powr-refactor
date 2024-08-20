@@ -69,8 +69,18 @@ C***  Steps for Runge-Kutta integration
 
         RIN = RL + DR
         VIN = VL + X3
-        CALL SPLINPOX(A2SUMI, RIN, A2SUM, RADIUS, ND, DFDX=DA2DR)
-        CALL SPLINPOX(GEFFI,  RIN, GEFFL, RADIUS, ND)
+        IF (RIN > RADIUS(1)) THEN
+C***      In the rare case that this routine runs up to
+C***      the outer boundary, we have to avoid that due to
+C***      numerical reasons RIN is slightly larger than RMAX
+C***      and thus SPLINPOX calls would fail.
+          A2SUMI = A2SUM(1)
+          GEFFI = GEFFL(1)
+          DA2DR = (A2SUM(1) - A2SUM(2))/(RADIUS(1) - RADIUS(2))
+        ELSE
+          CALL SPLINPOX(A2SUMI, RIN, A2SUM, RADIUS, ND, DFDX=DA2DR)
+          CALL SPLINPOX(GEFFI,  RIN, GEFFL, RADIUS, ND)
+        ENDIF
         R = RIN * RSTAR
         DA2DR = DA2DR / RSTAR
         DVDR =  (GEFFI/RIN/RIN - 2.*A2SUMI/R + DA2DR) / 

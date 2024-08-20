@@ -38,9 +38,11 @@ C***  Copy vector LEVUPAUTO to LEVAUTO, skipping multiple occurrences
 
 C***  Number of levels is increased
       N_WITH_DRLEVELS = N + NLEVEL_AUTO
+C*    ERROR STOP:
       IF (N_WITH_DRLEVELS .GT. NDIM) THEN
-         WRITE (*,'(A, I5,A,I5)') 
+         WRITE (0,'(A, I5,A,I5)') 
      >    '*** NDIM=', NDIM, ' insufficient: needed', N_WITH_DRLEVELS
+         STOP '*** FATAL ERROR detected by subr. APPEND_AUTOLEVELS'
       ENDIF
 
 C***  The new AUTO-Levels are appended to LEVEL list

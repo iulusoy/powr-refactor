@@ -21,6 +21,10 @@ C************************************************************************
       CHARACTER(20) :: ACTPAR
       CHARACTER*(*) :: DENSCON_LINE
 
+C***  Status integer to print on clumping stratification update
+      INTEGER, SAVE :: IINFO
+      DATA IINFO /0/
+
 C***  Local arrays      
       INTEGER, PARAMETER :: NDIPMAX = 100
       REAL, DIMENSION(NDIPMAX) :: AMACH, VHELP 
@@ -148,6 +152,51 @@ C***        Parameter is interpreted as a fraction of the sonic speed
          GOTO 100
       ENDIF
 
+C***  Branch to simulate Paco's recommended clumping for BHGs (called 'RUN2' in CMFGEN)
+C***  SYNTAX:   DENSCON [D1] RUN2 V1 D2 V2
+      IF (CLUMP_CRIT == 'RUN2' .OR. CLUMP_CRIT == 'PACO2') THEN
+         IF (NPAR < 6) GOTO 93
+         CALL SARGV (DENSCON_LINE, 4, ACTPAR)
+         LENPAR = LEN_TRIM(ACTPAR)
+         IF (ACTPAR(LENPAR:LENPAR) == 'S') THEN
+C***        Parameter is interpreted as a fraction of the sonic speed
+            READ (ACTPAR(1:LENPAR-1), '(F20.0)', ERR=97) PAR1
+            PAR1 = PAR1 * Vsonic
+         ELSEIF (ACTPAR == 'SONIC') THEN
+            PAR1 = Vsonic
+         ELSE
+            READ (ACTPAR, '(F20.0)', ERR=93) PAR1
+         ENDIF
+         IF (PAR1 <= .0) GOTO 95
+
+C***     Read outermost clumping factor (reached only in the limit)
+         CALL SARGV (DENSCON_LINE, 5, ACTPAR)
+         READ (ACTPAR, '(F20.0)', ERR=93) D2
+
+         CALL SARGV (DENSCON_LINE, 6, ACTPAR) 
+         LENPAR = LEN_TRIM(ACTPAR)
+         IF (ACTPAR(LENPAR:LENPAR) == 'S') THEN
+C***        Parameter is interpreted as a fraction of the sonic speed            
+            READ (ACTPAR(1:LENPAR-1), '(F20.0)', ERR=97) PAR2
+            PAR2 = PAR2 * Vsonic
+         ELSEIF (ACTPAR == 'SONIC') THEN
+            PAR2 = Vsonic
+         ELSE
+            READ (ACTPAR, '(F20.0)', ERR=93) PAR2
+         ENDIF
+         IF (PAR2 <= .0) GOTO 95 
+         
+         F1 = 1. / DENSCON_FIX
+         F8 = 1. / D2
+         DO L = 1, ND
+            FILLFAC(L) = F1 + (1.-F1)*EXP(-(VELO(L)/PAR1)**2.)
+     >                      + (F8-F1)*EXP(-((VELO(L)-VELO(1))/PAR2)**2.)
+            IF (FILLFAC(L) > 1.) FILLFAC(L) = 1.
+            DENSCON(L) = 1. / FILLFAC(L)
+         ENDDO
+
+         GOTO 100
+      ENDIF
 C***  Exponential clumping onset (like in Hillier's formula)
 C***  but using the radius scale
       IF (CLUMP_CRIT == 'EXPRADIUS') THEN
@@ -175,7 +224,10 @@ C***          distance of the sonic radius from RSTAR
 
 C***  Exponential clumping onset (like in Hillier's formula)
 C***  but using the Tauross_cont scale
-      IF (CLUMP_CRIT == 'EXPTAU') THEN
+C***  SYNTAX:   DENSCON D1 EXPTAU TAU1 
+C***            DENSCON D1 DEXPTAU TAU1 D2 TAU2
+C***      e.g.  DENSCON 50 DEXPTAU  3.  10  0.01    
+      IF (CLUMP_CRIT == 'EXPTAU' .OR. CLUMP_CRIT == 'DEXPTAU') THEN
          IF (NPAR .LT. 4) GOTO 94
             CALL SARGV (DENSCON_LINE, 4, ACTPAR) 
             LENPAR = LEN_TRIM(ACTPAR)
@@ -189,16 +241,37 @@ C***          sonic Tau value
             ELSE
               READ (ACTPAR, '(F20.0)', ERR=97) PAR1
             ENDIF
-            IF (PAR1 <= .0) GOTO 95 
-            F8 = 1. / DENSCON_FIX
-            DO L = 1, ND
-              IF (TAUROSS(L) <= 1.E-30) THEN
-                FILLFAC(L) = F8
-              ELSE
-                FILLFAC(L) = F8 + (1.-F8)*EXP(-PAR1/TAUROSS(L))
-              ENDIF
-              DENSCON(L) = 1. / FILLFAC(L)
-            ENDDO
+            IF (PAR1 <= .0) GOTO 91
+            IF (CLUMP_CRIT == 'DEXPTAU') THEN
+              IF (NPAR < 6) GOTO 92
+C***          Read outermost clumping factor (reached only in the limit)
+              CALL SARGV (DENSCON_LINE, 5, ACTPAR)
+              READ (ACTPAR, '(F20.0)', ERR=97) D2
+              CALL SARGV (DENSCON_LINE, 6, ACTPAR) 
+              READ (ACTPAR, '(F20.0)', ERR=97) PAR2
+              IF (PAR2 <= 1.E-20) GOTO 91
+              F1 = 1. / DENSCON_FIX
+              F8 = 1. / D2
+              DO L = 1, ND
+                IF (TAUROSS(L) <= 1.E-30) THEN
+                  FILLFAC(L) = F8
+                ELSE
+                  FILLFAC(L) = F1 + (1.-F1)*EXP(-PAR1/TAUROSS(L)) 
+     >                      + (F8-F1)*EXP(-TAUROSS(L)/PAR2)
+                ENDIF
+                DENSCON(L) = 1. / FILLFAC(L)
+              ENDDO
+            ELSE
+              F8 = 1. / DENSCON_FIX
+              DO L = 1, ND
+                IF (TAUROSS(L) <= 1.E-30) THEN
+                  FILLFAC(L) = F8
+                ELSE
+                  FILLFAC(L) = F8 + (1.-F8)*EXP(-PAR1/TAUROSS(L))
+                ENDIF
+                DENSCON(L) = 1. / FILLFAC(L)
+              ENDDO
+            ENDIF
          GOTO 100
       ENDIF
       
@@ -237,10 +310,10 @@ C***  Clumping increases from VDENS1 to VDENS2
 
 C***  Branch: Clumping scales with Rosseland optical depth
       IF (CLUMP_CRIT .EQ. 'TAU') THEN
-         X1 = AMIN1 (PAR1, PAR2)
-         X1 = AMAX1 (TAUROSS(1), X1)
-         X2 = AMAX1 (PAR1, PAR2)
-         X2 = AMIN1 (TAUROSS(ND), X2)
+         X1 = MIN (PAR1, PAR2)
+         X1 = MAX (TAUROSS(1), X1)
+         X2 = MAX (PAR1, PAR2)
+         X2 = MIN (TAUROSS(ND), X2)
          DX = X2 - X1
          DO L=1, ND
             IF (TAUROSS(L) .LE. X1) THEN
@@ -257,10 +330,10 @@ C***  Branch: Clumping scales with Rosseland optical depth
 
 C***  Branch: Clumping scales with velocity
       ELSE IF (CLUMP_CRIT .EQ. 'VELO') THEN
-         X1 = AMIN1 (PAR1, PAR2)
-         X1 = AMAX1 (VELO(ND), X1)
-         X2 = AMAX1 (PAR1, PAR2)
-         X2 = AMIN1 (VELO(1), X2)
+         X1 = MIN (PAR1, PAR2)
+         X1 = MAX (VELO(ND), X1)
+         X2 = MAX (PAR1, PAR2)
+         X2 = MIN (VELO(1), X2)
          DX = X2 - X1
          DO L=1, ND
             IF (VELO(L) .LE. X1) THEN
@@ -411,14 +484,29 @@ C***           - decreases to D=10 in the outermost wind (TAUROSS_cont < 0.005)
 C***  Error: invalid choice of Clumping Criterion
          GOTO 96
       ENDIF
+
+      IF (IINFO == 0) THEN
+        WRITE (hCPR,*) 'Clumping stratifcation has been updated. '
+     >      // 'Main criterion: ', CLUMP_CRIT
+        IINFO = 1
+      ENDIF
       
   100 RETURN
 
 
 C***  ERROR branches *********************************************
 
+  91  WRITE (0,*) 'ERROR: ' 
+      WRITE (0,*) '(D)EXPTAU parameters must be > 0'
+      GOTO 99
+
+  92  WRITE (0,*) 'ERROR: ' 
+      WRITE (0,*) 'DEXPTAU needs three additional parameters'
+      GOTO 99
+
   93  WRITE (0,*) 'ERROR: '
-      WRITE (0,*) 'Najarro formula needs three additional parameters'
+      WRITE (0,*) CLUMP_CRIT // 
+     >              ' formula needs three additional parameters'
       GOTO 99
 
   94  WRITE (0,*) 'ERROR: ' 
@@ -426,7 +514,8 @@ C***  ERROR branches *********************************************
       GOTO 99
 
   95  WRITE (0,*) 'ERROR: ' 
-      WRITE (0,*) 'Hillier/Najarro velocity parameters must be > 0'
+      WRITE (0,*) 'Hillier/Najarro/Runacres velocity parameters '
+     >  // 'must be > 0'
       GOTO 99
 
   96  WRITE (0,*) 'ERROR: ' 

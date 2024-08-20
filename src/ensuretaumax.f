@@ -462,6 +462,9 @@ C***           this routine are decoded in DECSTE
                 ENDIF            
               CASE ('NOIVWRC')
                 bIVWRC = .FALSE.
+              CASE ('IPENTOT')
+C***            Switch on interpolation over density (instead of radius)
+                bUseENTOT = .TRUE.
               CASE ('FIXGRID')
                 bNoRGrid = .TRUE.               
               CASE ('TMIX')
@@ -1601,7 +1604,7 @@ C***  now including all grid updates
 C***  Final calculation of the DENSCON and FILLFAC vectors,
 C***  now including all damping and grid update effects
       CALL CLUMP_STRUCT (DENSCON, FILLFAC, ND, DENSCON_FIX, 
-     >     VELO, TAUROSScont, DENSCON_LINE, RADIUS, T, XMU)     
+     >                   VELO, TAUROSScont, DENSCON_LINE, RADIUS, T, XMU)     
       
 C***  Calculate Tau2/3 (always on Rosseland continuum scale)
       TAU23=0.666666666666

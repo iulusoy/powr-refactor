@@ -16,7 +16,8 @@
      >                 NOWIND_LINE, TAUMINBROAD, 
      >                 bDDOPAFORMCMF, bDDFECONVOL, 
      >                 LPHISTA_ORIG, LPHIEND_ORIG,
-     >                 BVSINI_AT_RCOROT, DX_WINDROT, SECONDMODEL_LINE)
+     >                 BVSINI_AT_RCOROT, DX_WINDROT, SECONDMODEL_LINE,
+     >                 bNoIronLaser)
 C***********************************************************************
 C***  DECODING INPUT CARDS FOR PROGRAM "FORMAL" FROM FTO5 = $IN (DEFAULT)
 C***  THIS ROUTINE IS LEFT WHEN A "LINE" OR "BLEND" OPTION IS FOUND,
@@ -29,6 +30,7 @@ C***********************************************************************
       LOGICAL ABSWAV, BCONT, LINELIST, BIRONLINES, BNOCONT, BCALIBRATED
       LOGICAL :: BTRANSVELO, BTRANSOD,  BPLOTVDOP, 
      >           bBIGBANDLIMIT, bDDOPAFORMCMF, bDDFECONVOL
+      LOGICAL :: bNoIronLaser
       CHARACTER*132 STRING1(0:MAXSTRI), FUNIT*(*)
       CHARACTER KARTE*(*), ACTPAR*80, MODHEAD*100, MACROCLUMPLINE*(*)
       CHARACTER ACTPAR2*80
@@ -57,6 +59,7 @@ C***  Set Defaults
       LPHIEND_ORIG = 999
 
       SECONDMODEL_LINE = ''
+      bNoIronLaser = .FALSE.
 
 C***  BEFORE ANY NEW DECODED 'LINE'-CARD OR 'BLEND'-BLOCK:
 C***  FIRST, CLEAR THE STRING ARRAY FOR COMMENTS WHICH ARE TO BE 
@@ -445,6 +448,16 @@ C***     (use for comparison calculations with models before Feb 2017)
 C                          ========
          bDDFECONVOL = .TRUE.
          
+      ELSE IF ( ACTPAR == 'NOFELASER' ) THEN
+C                          =========
+C***     Optional suppression of iron lasering in CMFFEOP
+         bNoIronLaser = .TRUE.
+
+      ELSE IF ( ACTPAR == 'FELASER' ) THEN
+C                          =======
+C***     Switch off optional suppression of iron lasering in CMFFEOP
+         bNoIronLaser = .FALSE.
+
       ENDIF
  
       GOTO 1
