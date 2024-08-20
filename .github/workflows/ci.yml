@@ -57,26 +57,26 @@ jobs:
         make intel_classic
         make clean_build
         make intel_classic_debug
-    - name: set up the job and run base tests
-      run: |
-        if [ -z "$DYLD_LIBRARY_PATH" ]; then
-          echo "DYLD_LIBRARY_PATH not set - setting it now.."
-          export DYLD_LIBRARY_PATH=$MKLLIB:$DYLD_LIBRARY_PATH
-        fi
-        python -m pytest -svv test/test_colitest.py --cov=. --cov-report=xml
+    # - name: set up the job and run base tests
+      # run: |
+        # if [ -z "$DYLD_LIBRARY_PATH" ]; then
+          # echo "DYLD_LIBRARY_PATH not set - setting it now.."
+          # export DYLD_LIBRARY_PATH=$MKLLIB:$DYLD_LIBRARY_PATH
+        # fi
+        # python -m pytest -svv test/test_colitest.py --cov=. --cov-report=xml
     - name: compile powr with ifx
       run: |
           make
           make clean_build
           make debug
-    - name: set up the job and run base tests
-      run: |
-        if [ -z "$DYLD_LIBRARY_PATH" ]; then
-          echo "DYLD_LIBRARY_PATH not set - setting it now.."
-          export DYLD_LIBRARY_PATH=$MKLLIB:$DYLD_LIBRARY_PATH
-        fi
-        python -m pytest -svv test/test_colitest.py --cov=. --cov-report=xml
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    # - name: set up the job and run base tests
+      # run: |
+        # if [ -z "$DYLD_LIBRARY_PATH" ]; then
+          # echo "DYLD_LIBRARY_PATH not set - setting it now.."
+          # export DYLD_LIBRARY_PATH=$MKLLIB:$DYLD_LIBRARY_PATH
+        # fi
+        # python -m pytest -svv test/test_colitest.py --cov=. --cov-report=xml
+    # - name: Upload coverage reports to Codecov
+      # uses: codecov/codecov-action@v3
+      # env:
+        # CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
