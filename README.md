@@ -34,6 +34,7 @@ After installing the compiler(s) and libraries, make sure that the environment v
 To compile, simply execute `make` in the base repository directory of PoWR. This will provide you with (optimized) executables in the `powr/exe.dir` directory, compiled with `ifx`, the modern Fortran compiler by Intel.
 
 Other compilation options are:
+- `make small`: Compilation with `ifx` and optimization, of only `coli` and `steal` as targets
 - `make debug`: Compilation with debug options and no optimization for `ifx`, only `coli` and `steal` are compiled and the executables are placed in `powr/exe_dev.dir`
 - `make debug_all`: Compilation with debug options and no optimization for `ifx`, all programs are compiled and the executables are placed in `powr/exe_dev.dir`
 - `make intel_classic`: Compilation with the classic `ifort` compiler with optimization, all programs are compiled and the executables are placed in `powr/exe.dir`
