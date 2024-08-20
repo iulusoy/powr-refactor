@@ -20,8 +20,8 @@
      >   KONTNUP,KONTLOW,LASTKON,KODRNUP,KODRLOW,LASTKDR,KEYCBF,NATOUT,
      >   BRRESET,NOCON,ENOLD,TEFF,
      >   KRUDAUT, 
-     >   BAUTO, CKONVER, SMALLPOP, BUNLU, 
-     >   FILLFAC, ENTOTDENS,
+     >   BAUTO, BAUTO_ABORT, CKONVER, SMALLPOP, BUNLU, 
+     >   DENSCON, FILLFAC, ENTOTDENS,
      >   WFELOW, WFENUP, GAMMAD, NKONVER, WJC, 
      >   OPC, BPLOCC, LPLOCC, KPLOCC, KANAL, 
      >   LASTFE, WJCMIN, NKONV_THRESH,
@@ -199,7 +199,7 @@ C*******************************************************************************
      >           NPLUS1, NPLUS2, NOUT, ITBR, NBRCANC, NKONVER, IADR16,
      >           INEGMIN, INEGMAX, LNEGMIN, LNEGMAX, NEGINTL, NEGINTC,
      >           INEGMINC, INEGMAXC, LNEGMINC, LNEGMAXC, NFL, KANAL, LL,
-     >           KON, NUP, LOW, LPLOCC, KPLOCC, NA, NFIRNA, NF2,
+     >           KON, NUP, LOW, LPLOCC, KPLOCC, ICOUNT, NA, NFIRNA, NF2,
      >           NLANA, NSCHAR, ION, NAUTO, LASTFE, NLINE, MAXFEACT,
      >           IPLOT_XJCAPP, IPLOT_XJLAPP, LPLOT_XJCAPP, ITABS, IERR,
      >           NITER_PLOT_JAPP, IWARN_NEG_XJCAPP, IWARN_NEG_XJLAPP,
@@ -210,19 +210,19 @@ C*******************************************************************************
      >           nTest, iZRType, iAMT
       REAL :: RSTAR, GAMMAC, GAMMAD, GAMMAL, GAMMAR, DELTAC, EPSILON, 
      >        EPSDN, TL, TLOLD, EDGE, EDGELAM, ERXMIN, WJCMIN, DELTAX,
-     >        VDOPUNIT, VDOPFE, WAVENUM, XMAX, FN, FNOLD, 
-     >        FTN, FTNOLD, TEFF, ALOMIN,
+     >        VDOPUNIT, VDOPFE, WAVENUM, XMAX, OPARL, FN, FNOLD, 
+     >        FTN, FTNOLD, TSAVE, TMID, DTDR, TEFF, TLAST, ALOMIN,
      >        ENE, BRRESET, BRRES2, TLOG, ROOTTL, XLAM, XLAMLOG, W, W3,
      >        PRESIG, GIII, POPMIN, OPATHOM, DXFE, XLAM0FE, DFEINDR,
      >        SUM, ENMIN, ENMAX, ENNEW, XLAM_FINE_START, XLAM_FINE_END,
      >        IFF_N_MS, SMALLPOP, CORRLAST,
-     >        TLxj
+     >        TLxj, DTDRplus, DTDRminus, DTDRtest, DTDRorg
 
 C***  Iteration Sequence output ("Scharmer-Tapete")
       CHARACTER(1), DIMENSION(100) :: ITCODE        !@todo: warum nicht auf ITMAX dimensionieren?
 
 C***  tiefenabh. clumping nach goetz
-      REAL, DIMENSION(NDDIM) :: FILLFAC
+      REAL, DIMENSION(NDDIM) :: DENSCON, FILLFAC
 
 C***  AUTO_MODIFY FACILITY
       CHARACTER(3) :: CHR
@@ -235,7 +235,7 @@ C***  AUTO_MODIFY FACILITY
       CHARACTER(80) :: CHR1, CHR2
       CHARACTER(100) :: MODHEAD
       LOGICAL :: KONVER, NOTEMP, BROYDEN, TWOPNT, NOCON, BNUEFE,
-     >           BRIMP, BRIMP2, BAUTO, BNEWTONRESET,
+     >           BRIMP, BRIMP2, BAUTO, BAUTO_ABORT, BNEWTONRESET,
      >           BSUM, BUNLU, BPLOCC, BFECHECK, BFEWING, BFEMODEL,
      >           BXJLAPPNEW, BXJCAPPNEW, BXJLAPPCORE, BNEWOPER,
      >           BPLOTAPP, bFFASSET, bUseTWOPNT 
