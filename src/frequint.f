@@ -38,6 +38,7 @@ C***       Unsoeld-Lucy:
      >                   FERATUL, FERATLU, ELEVEL, 
      >                   EMCOLI, FTFE, IVERS_FE_EXPFAC, LPLOT_WCHARM, 
      >                   GAMMACOLI, OPAROSS, OPAROSSCONT, OPALAMBDAMEAN, 
+     >                   OPAROSSELEM, OPATOTELEM,
      >                   GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2, TEFF,
 C*** die folgenden SKALAREN Parameter werden ausgereicht, um den
 C*** Compiler-Bug seit Compaq Tru64 UNIX V5.0A (Ende 2000) zu umgehen
@@ -928,8 +929,8 @@ C***   (Ist dieser Fallback schlau oder eher problematisch?)
        IF (OPAKNOTHO(L) <= 1.E-30) THEN
          bKSKIPMEAN = .TRUE.
        ELSE
-         SMEAN(L) = SMEAN(L) + ETAKOLD(L)/OPAKOLD(L) * FWMID
-         IF (ABS(ETAKOLD(L)) > 0.) THEN
+         SMEAN(L)    = SMEAN(L)    + ETAKOLD(L)/OPAKOLD(L)   * FWMID
+         IF (ABS(ETAKOLD(L) > 0.)) THEN
 C***       CUTOPAMEANTHRES is set via CARDS option OPAMEANTHRES
 C***        recommended values between 1.E-5 and 1.E-3
 C***        Setting too high values can lead to a crash in STEAL

@@ -8,16 +8,24 @@ C***  wrh, 27-Aug-2002
 C***********************************************************************
 
       DIMENSION OPA(ND), RADIUS(ND), XLAMBDA(NF) 
-      CHARACTER*10 MAINPRO(ND), MAINLEV(ND), LASTMAINPRO, LASTMAINLEV
+      CHARACTER(10), DIMENSION(ND) :: MAINPRO, MAINLEV
       CHARACTER HEAD1*60, HEAD2*60, MODHEAD*100
       PARAMETER (MAXIDENT = 100)
       CHARACTER*45 IDLINE(MAXIDENT)
+
+C***  This routine makes use of a few SAVE variables
+C***  which must keep its value for the next call
+      CHARACTER(10), SAVE :: LASTMAINPRO, LASTMAINLEV
+      REAL, SAVE :: RTAU1LAST
+      INTEGER, SAVE :: NIDENT
+    
+C***  PLOT file handle
+      KANAL=2
  
 C***  INITIALIZATION
       IF (K .EQ. 1) THEN
          RTAU1LAST = 1.0
          NIDENT=0
-         KANAL=2
          OPEN (KANAL, FILE='PLOT', STATUS='UNKNOWN')
          CALL JSYMSET ('G2','TRANSFER')
          CALL REMARK ('RTAU1-PLOT TO BE ROUTED')
@@ -29,9 +37,13 @@ C***     AUTO-SCALING by WRplot
          XMAX = .0
  
          XTICK = 0.1
-         XABST = 1.
-         YTICK = 10.
-         YABST = 50.
+         XABST = 1. 
+         YBASE = FLOOR(LOG10(RADIUS(1)))
+         YTICK = FLOOR(10.**(YBASE - 1.))
+         IF (LOG10(RADIUS(1)) - YBASE > 0.5) THEN
+           YTICK = YTICK * 2.
+         ENDIF
+         YABST = YTICK * 5.
          CALL PLOTANF (KANAL,'RTAU1', '&E'//MODHEAD
      >        ,'\CENTER\log #l#/\A'
      >        ,'\CENTER\Radius where #t# = 1'
@@ -59,7 +71,7 @@ C***     AUTO-SCALING by WRplot
          ENDIF
     6 CONTINUE
 
-      IF (K. GT. 1) THEN
+      IF (K > 1) THEN
         IF (LASTMAINPRO .NE. MAINPRO(LTAU1) 
      >       .OR. LASTMAINLEV .NE. MAINLEV(LTAU1) ) THEN 
 ccc     >       .OR. RTAU1 .LT. RTAU1LAST*0.95) THEN 

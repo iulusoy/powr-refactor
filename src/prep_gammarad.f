@@ -1,8 +1,8 @@
-      SUBROUTINE PREP_GAMMARAD (bOLDRAD, bFULLHYDROSTAT, GEDD, 
+      SUBROUTINE PREP_GAMMARAD (iOLDRAD, bFULLHYDROSTAT, GEDD, 
      >      IGEddFix, GAMMARAD, NDold, ARAD, GLOG, RSTAR,
      >      RADIUSold, RSTARold, XMGold, TAURold, RCONold, GEFFLOG,
      >      STAPEL, ATMEAN, XLOGL, XMSTAR, RADGAMMASTART, 
-     >      GEDDRAD, bOldStratification, bGAMMARADMEAN, bSaveGEFF)
+     >      GEDDRAD, iOldStratification, bGAMMARADMEAN, bSaveGEFF)
 C***********************************************************************
 C***  This subroutine prepares GAMMARAD and related quentities for
 C***  the hydrostatic equation
@@ -11,22 +11,23 @@ C***********************************************************************
 
       IMPLICIT NONE
       
-      INTEGER, INTENT(IN) :: NDold, IGEddFix
+      INTEGER, INTENT(IN) :: NDold, IGEddFix, iOLDRAD, 
+     >                       iOldStratification
       REAL, INTENT(IN) :: XMGold, XLOGL, STAPEL, ATMEAN,
      >                    RSTARold, RCONold, RADGAMMASTART
       
+      INTEGER, PARAMETER :: NDMAX = 200
+      
       REAL, DIMENSION(NDold), INTENT(IN) :: RADIUSold, TAURold, ARAD
       REAL, DIMENSION(NDold), INTENT(OUT) :: GAMMARAD
-      REAL, DIMENSION(NDold) :: ARADL 
+      REAL, DIMENSION(NDMAX) :: ARADL 
 
-      REAL, INTENT(INOUT) :: GEDD, GEFFLOG, GLOG, XMSTAR
-      REAL, INTENT(OUT) :: GEDDRAD
+      REAL, INTENT(INOUT) :: GEDD, GEFFLOG, GLOG, XMSTAR, GEDDRAD
 
-      LOGICAL, INTENT(IN) :: bOLDRAD, bFULLHYDROSTAT, bSaveGEFF,
-     >                       bOldStratification, bGAMMARADMEAN
+      LOGICAL, INTENT(IN) :: bFULLHYDROSTAT, bSaveGEFF, bGAMMARADMEAN
 
       INTEGER :: L
-      REAL :: GEDDRADMEAN, TAUNORM, WTAU, RSTAR
+      REAL :: GEDDRADMEAN, GEDDRADMID, TAUMID, TAUNORM, WTAU, RSTAR
 
       !Physical constants
       REAL, PARAMETER :: GCONST = 6.670E-8  !GRAVITATION CONSTANT (CGS UNITS)
@@ -36,9 +37,18 @@ C***********************************************************************
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
       INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
 
+      IF (NDold > NDMAX) THEN
+        WRITE (hCPR,'(A)') 'PREP_GAMMARAD: FATAL ERROR ******'
+        WRITE (hCPR,'(A)') 'PREP_GAMMARAD: NDMAX INSUFFICIENT'
+        WRITE (hCPR,'(2(A,I4))') 'NDold = ', NDold, ', NDMAX = ', NDMAX
+        STOP 'FATAL ERROR IN WRSTART->PREP_GAMMARAD'
+      ENDIF
+      
+      
       GEDDRAD = 0.      
       
-      IF (bOLDRAD .AND. bFULLHYDROSTAT) THEN
+c      WRITE (hCPR,*) 'Preparing subsonic stratification...'
+      IF (iOLDRAD == 2 .AND. bFULLHYDROSTAT) THEN
         !calculate effective g via ARAD from OLD MODEL
 
         IF (GEDD > .0 .AND. IGEddFix == 2) THEN
@@ -65,16 +75,22 @@ C***        restrict GAMMARAD
 
           !Calculate mean value, needed for g-g_eff-Relation
           ! if RADGAMMASTART: OLD is used (cannot be done in DECSTAR)
-          GEDDRADMEAN = GAMMARAD(NDold) * EXP(-TAURold(NDold))
+c          GEDDRADMEAN = GAMMARAD(NDold) * EXP(-TAURold(NDold))
+          GEDDRADMEAN = GAMMARAD(NDold) 
           TAUNORM = 0.
-          DO L=NDold-1, 1, -1
-            IF (RADIUSold(L) > RCONold) EXIT  
-            WTAU = (TAURold(L+1) - TAURold(L)) * EXP(-TAURold(L))
-            GEDDRADMEAN = GEDDRADMEAN + GAMMARAD(L) * WTAU
-            TAUNORM = TAUNORM + WTAU
-          ENDDO
-          IF (TAUNORM > 0.) THEN
-            GEDDRADMEAN = GEDDRADMEAN / TAUNORM
+          IF (RCONold >= RADIUSold(NDold-1)) THEN
+            GEDDRADMEAN = 0.
+            DO L=NDold-1, 1, -1
+              IF (RADIUSold(L) > RCONold) EXIT  
+              TAUMID = 0.5 * ( TAURold(L+1) + TAURold(L) )
+              WTAU = (TAURold(L+1) - TAURold(L)) * EXP(-TAUMID)
+              GEDDRADMID = 0.5 * ( GAMMARAD(L) +  GAMMARAD(L+1) )
+              GEDDRADMEAN = GEDDRADMEAN + GEDDRADMID * WTAU
+              TAUNORM = TAUNORM + WTAU
+            ENDDO
+            IF (TAUNORM > 0.) THEN
+              GEDDRADMEAN = GEDDRADMEAN / TAUNORM
+            ENDIF
           ENDIF
           IF (bSaveGEFF) THEN
             GLOG = LOG10((10.**GEFFLOG)/(1.-GEDDRADMEAN))
@@ -115,7 +131,7 @@ C***    unless RADGAMMA-START is specified
       ENDIF
 
       IF (bFULLHYDROSTAT) THEN
-        IF (bOLDRAD) THEN
+        IF (iOLDRAD == 2) THEN
           GEDDRAD = GEDDRADMEAN
         ELSEIF (RADGAMMASTART >= 0.) THEN
           GEDDRAD = RADGAMMASTART
@@ -125,7 +141,7 @@ C***    unless RADGAMMA-START is specified
       ENDIF
       
 C***  Only if not copying the old stratification
-      IF (.NOT. bOldStratification) THEN
+      IF (iOldStratification == 0) THEN
         IF (bFULLHYDROSTAT) THEN
           WRITE (hCPR,FMT='(A,/,A,F6.3,2(A,F10.5))')
      >      'Values used for hydrostatic domain: ',

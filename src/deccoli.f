@@ -14,7 +14,7 @@
      >             bForceCOLIP, bTDIFFUS, bPLOTRTAU1, bNoIronLaser, 
      >             iHTOTCUT, bMAXEMIX, bALOTri,
      >             bNoNEGEDDIG, bDDVDOP, LPRDH, 
-     >             bDEBUG, CUTOPAMEANTHRES, DRLINES_CARD)
+     >             bDEBUG, CUTOPAMEANTHRES, DRLINES_CARD, EMIXMAX)
 C*******************************************************************************
 C***  DECODES INPUT CARDS FOR MAIN PROGRAM "COLI"
 C*******************************************************************************
@@ -26,8 +26,7 @@ C*******************************************************************************
       LOGICAL :: NOLAP, LASERSET, DRNORUD, BLLIST, 
      >           BCOLIRAY, CLHLP, BITCONT, 
      >           BPLOT, BKUDRITZKI,
-     >           BEMIX, BEMIXFIX, BPLOTALPHA, bCustomVMOD,
-     >           bALOTri
+     >           BEMIX, BEMIXFIX, BPLOTALPHA, bCustomVMOD
       INTEGER :: IVERS_FE_EXPFAC, iHTOTCUT
       INTEGER, DIMENSION(MAXPLOT) :: LPOPAB, LPOPABD, LPJNUE, LPJNUED,
      >                               LPSNUE, LPSNUED
@@ -39,7 +38,7 @@ C*******************************************************************************
       LOGICAL, INTENT(INOUT) :: bKALPHA, bForceCOLIP, bTDIFFUS, bDDVDOP
       LOGICAL, INTENT(OUT) :: bHYDROSOLVE, bPLOTRTAU1
       LOGICAL :: bReadPOPMIN, bNoIronLaser, bMAXEMIX, 
-     >           bNoNEGEDDIG, bDEBUG
+     >           bNoNEGEDDIG, bDEBUG, bALOTri
        
       INTEGER :: LSOPA, LSINT, IPLOT, LPLOT, LPRDH
       REAL :: RANGE1, RANGE2
@@ -101,6 +100,7 @@ C***  EDDIMIX enabled
       BEMIXFIX = .FALSE.
       EMIXFIX = 1.0
       bMAXEMIX = .FALSE.
+      EMIXMAX = -1.0
 
       DO I=1,MAXPLOT
         LPOPAB (I) = 0
@@ -452,6 +452,12 @@ C                           =======
         IF (ACTPAR(1) == 'EDDIMIX' .AND.  ACTPAR(2) == 'MAX') THEN
 C                         =======                       ===
           bMAXEMIX = .TRUE.
+          IF (NPAR .LT. 3) THEN
+            WRITE (0,*) 'ERROR: EDDIMIX MAX needs a value'
+            GOTO 99
+          ENDIF
+
+          READ (ACTPAR(3),'(F10.0)', ERR=99) EMIXMAX 
           GOTO 6
         ENDIF
 

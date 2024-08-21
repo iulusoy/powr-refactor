@@ -8,6 +8,8 @@ This is a development repository for refactoring and improving the numerical sta
 
 *This library is currently under development!*
 
+The code in this repository is the merged version between the Potsdam branch (branch "wrh-source") and the Heidelberg branch as of August 24.
+
 ## Workflow
 
 The source code is a collection of >400 Fortran77 files with >500 subroutines. For a complete PoWR cycle, different programs are called consecutively. The execution is handled by bash scripts that call each other. These bash scripts are placed in `powr/dummychain` and `powr/proc.dir`.

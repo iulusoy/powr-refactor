@@ -23,13 +23,14 @@ C*******************************************************************************
       INCLUDE 'interfacebib.inc'
 
       INTEGER, INTENT(IN) :: ND
-      REAL, INTENT(IN) :: RSTAR, RMAX, VTURB
+      REAL, INTENT(IN) :: RSTAR, RMAX
       !Note: XMU is now an array, earlier versions used only XMASS = XMU(ND)
-      REAL, DIMENSION(ND), INTENT(IN) :: T, RADIUS, XMU, GEFFL
+      REAL, DIMENSION(ND), INTENT(IN) :: T, RADIUS, XMU, VTURB, GEFFL
       !Do not use INTENT(OUT) for VELO because outer part is read later on
       REAL, DIMENSION(ND), INTENT(INOUT) :: VELO     
       CHARACTER(8), DIMENSION(ND), INTENT(OUT) :: CRITERION
       CHARACTER(80), INTENT(IN) :: ThinCard
+      CHARACTER(80) :: COMMAND
 
       REAL, DIMENSION(4) ::  RIP, VIP
       CHARACTER(40), DIMENSION(20) :: CURPAR
@@ -50,12 +51,12 @@ C*******************************************************************************
      >        RINT, RIN, XMUCUR, Hlast, RBETAMIN, RCONSTART, P, VAM,
      >        GEFF, GEFFR, A2SUML, A2, DA2DR, BETACON, VOFF, RONSET,
      >        RCONMAXguess, RCONMAXnow, tempREAL, fsonic, DVDR, VSOUND,
-     >        VMINUSA, VMINUSAM, DELTAB, VL,
+     >        VMINUSA, VMINUSAM, DELTAB, VL, fsmax,
      >        GRADRCONMIN, GRADRCONMAX
       LOGICAL :: bConFound, bConPointConv, bRFbi, bSmoothVelo, bDEBUG,
      >           bUseSonicConnectionCriterion, bForceMonotonic, bRUKU,
-     >           bFailsafe, bPrintVelo, bFullHD, bSMOCO, bTestMono, 
-     >           bNewSonic
+     >           bFailsafe, bPrintVelo, bFullHD, bSMOCO, bTestMono,
+     >           bNewSonic, bBackup, bSonicTurb
 
       REAL, EXTERNAL :: DELTAGRTHIN, VELOBETA
 
@@ -80,6 +81,7 @@ C*******************************************************************************
       REAL, PARAMETER :: RGAS = BOLTZ / AMU !Gas Constant (CGS) = BOLTZ / AMU
 
       !File and channel handles (=KANAL)
+      INTEGER, PARAMETER :: hMODEL = 3      !MODEL file handle
       INTEGER, PARAMETER :: hOUT = 6        !write to wruniqX.out (stdout)
       INTEGER, PARAMETER :: hCPR = 0        !write to wruniqX.cpr (stderr)
 
@@ -92,7 +94,11 @@ C*******************************************************************************
       bPrintVelo = .FALSE.        !Debug option: Print resulting VELO vector
       bFullHD = .FALSE.
       bRUKU = .TRUE.
+      bNewSonic = .FALSE.
+      bDEBUG = .FALSE.
+      bBackup = .FALSE.
       fsonic = 1.
+      bSonicTurb = .FALSE.
 
       IF (ND > NDTHINMAX) THEN
         WRITE (hCPR,'(A)') 'VELTHIN: FATAL ERROR ******'
@@ -119,14 +125,20 @@ c      ENDIF
               bForceMonotonic = .FALSE.
             CASE ('SMOOTH')
               bSmoothVelo = .TRUE.
-            CASE ('SONIC')
+            CASE ('SONIC', 'SONICTURB')
               bUseSonicConnectionCriterion = .TRUE.
               IF (NPAR >= (i+1)) THEN
                 READ (CURPAR(i+1), '(F10.0)', IOSTAT=IERR) tempREAL
                 IF (IERR == 0) THEN
                   fsonic = tempREAL
                 ENDIF                          
+                IF (CURPAR(i) == 'SONICTURB') THEN
+                  bSonicTurb = .TRUE.
+                ENDIF
               ENDIF
+            CASE ('NEWSONIC')
+C***          Use new connection method for sonic con crit            
+              bNewSonic = .TRUE.
             CASE ('RUKU')
               bRUKU = .TRUE.
             CASE ('NORUKU')
@@ -135,10 +147,20 @@ c      ENDIF
               bFullHD = .TRUE.
             CASE ('PRINTV')
               bPrintVelo = .TRUE.
+            CASE ('BACKUP')
+              bBackup = .TRUE.
+            CASE ('DEBUG')
+              bDEBUG = .TRUE.
           ENDSELECT
         ENDDO
       ENDIF
        
+      IF (bBackup) THEN
+        WRITE(UNIT=COMMAND, FMT='(A,I1,A)') 
+     >    "cp fort.", hMODEL, ' backup_hydrostatic_MODEL'
+        CALL SYSTEM(COMMAND)
+      ENDIF
+
   20  IF (bFailsafe) THEN
         !failsafe branch (only reached via jump)
         bUseSonicConnectionCriterion = .TRUE. 
@@ -175,8 +197,12 @@ C***  Calculate isothermal sound speed a (squared)
 C        and add turbulence contribution
       DO L=1, ND
         A2  = RGAS * T(L) / XMU(L)
-        A2SUM(L) = A2 + VTURB*VTURB*1.E10        
+        A2SUM(L) = A2 + VTURB(L)*VTURB(L)*1.E10        
       ENDDO
+      
+      IF (bDEBUG) THEN
+        WRITE (hCPR,*) 'ND values: VMIN, A2 ', VMIN, A2SUM(ND)
+      ENDIF
       
 C***  Initialize the loop at l=ND
       GEFFR = GEFFL(ND) / (RADIUS(ND) * RADIUS(ND))
@@ -191,9 +217,12 @@ C***  Initialize the loop at l=ND
         IF (bFullHD) THEN
 C***      use full hydrodynamic formula  
           IF (bRUKU) THEN
-c            WRITE (hCPR,'(A,3(2X,G15.8))') 'A/V= ', 
-c     >        SQRT(A2SUM(L+1))/VELO(L+1)/1.E5, 
-c     >        SQRT(A2SUM(L+1))/1.E5, VELO(L+1)
+            IF (bDEBUG) THEN
+              WRITE (hCPR,'(A,I3,A,3(2X,G15.8))') 
+     >          ' HDRUKU L+1=', L+1, ' A/V= ', 
+     >          SQRT(A2SUM(L+1))/VELO(L+1)/1.E5, 
+     >          SQRT(A2SUM(L+1))/1.E5, VELO(L+1)
+            ENDIF
             IF (SQRT(A2SUM(L+1))/VELO(L+1)/1.E5 - 1. < 1.) THEN
               RCONMAX = RADIUS(L+1)
               IMIN = L+1
@@ -201,7 +230,15 @@ c     >        SQRT(A2SUM(L+1))/1.E5, VELO(L+1)
             ELSE
               CALL HYSTHDRUKU(RADIUS(L+1), RADIUS(L), VELO(L+1), VL, 
      >                        RADIUS, GEFFL, A2SUM, ND, RSTAR)
-              VELO(L) = VL
+              IF (VL < VELO(L+1)) THEN
+                WRITE (0,*) '*** HDRUKU terminated at first '
+     >             // 'non-monotonic v(r) occurence'
+                RCONMAX = RADIUS(L+1)
+                IMIN = L+1
+                EXIT hydrostat
+              ELSE 
+                VELO(L) = VL
+              ENDIF
             ENDIF
           ELSE 
             CALL SPLINPOX(A2SUML, RADIUS(L), A2SUM, RADIUS, ND, 
@@ -251,6 +288,7 @@ C*         end the static part one point after VFINAL
         ENDIF
       ENDDO hydrostat
 
+
 C***  Define the index of the connection point 
 C***  (only if defined by the sonic speed, other wise this will happen later)
 C***  - find index interval (ICON-1, ICON) where VELO first time exceeds f*VSOUND 
@@ -260,10 +298,22 @@ C***      For FULLHD option take last good point of integration
 C***      and check if we can still go lower from there
           ICON = IMIN
           IF (ICON < ND) THEN
-            VSOUND = SQRT(RGAS * T(ICON) / XMU(ICON)) * 1.E-5   !speed of sound in km/s
+            IF (bSonicTurb) THEN
+C***          Calculated sound speed adjusted for turbulent velocity
+              VSOUND = SQRT(RGAS*T(ICON) / XMU(ICON)*1.E-10
+     >                        + VTURB(ICON)*VTURB(ICON))
+            ELSE
+C***          Calculate raw sound speed
+              VSOUND = SQRT(RGAS * T(ICON) / XMU(ICON)) * 1.E-5   !speed of sound in km/s
+            ENDIF
             VMINUSAM = VELO(ICON) - fsonic*VSOUND
             DO L=ICON+1, ND
-              VSOUND = SQRT(RGAS * T(L) / XMU(L)) * 1.E-5       !speed of sound in km/s
+              IF (bSonicTurb) THEN
+                VSOUND = SQRT(RGAS*T(L) / XMU(L)*1.E-10
+     >                        + VTURB(L)*VTURB(L))
+              ELSE
+                VSOUND = SQRT(RGAS * T(L) / XMU(L)) * 1.E-5       !speed of sound in km/s
+              ENDIF
               VMINUSA = VELO(L) - fsonic*VSOUND
               IF (VMINUSA < 0. .OR. L == ND) THEN
                 ICON = L
@@ -273,19 +323,41 @@ C***      and check if we can still go lower from there
               ENDIF
             ENDDO
           ENDIF
-          IF (bDEBUG) THEN
-            WRITE (0,*) 'DEBUG: ICON, IMIN = ', ICON, IMIN
-          ENDIF          
         ELSE
           ICON = ND+1  ! No hydrostatic domain!
           DO L=ND, IMIN, -1
               IF (L .LT. ND) VMINUSA = VMINUSAM
-              VSOUND = SQRT(RGAS * T(L) / XMU(L)) * 1.E-5       !speed of sound in km/s
+              IF (bSonicTurb) THEN
+                VSOUND = SQRT(RGAS * T(L) / XMU(L)*1.E-10
+     >                      + VTURB(L)*VTURB(L))
+              ELSE
+                VSOUND = SQRT(RGAS * T(L) / XMU(L)) * 1.E-5       !speed of sound in km/s
+              ENDIF
               VMINUSAM = VELO(L) - fsonic*VSOUND
               IF (VMINUSAM > .0) EXIT
               ICON = L
+              IF (L == IMIN .AND. VMINUSAM < 0.) THEN
+                WRITE (0,*) '*** FATAL ERROR: requested sound speed'
+     >            // ' fraction not reached for current VMIN.'
+                WRITE (0,*) '*** Please consider a different connection'
+     >            //  ' setting '
+                WRITE (0,*) ' and adjust the HYDROSTATIC INTEGRATION '
+     >            //  'card accordingly.'
+                WRITE (0,*) '*** Outermost HYST solution = ', VELO(L)
+                WRITE (0,*) '*** Innermost VSOUND        = ', VSOUND
+                IF (bSonicTurb) THEN
+                  WRITE (0,*) '*** Current setting: SONICTURB=', fsonic
+                ELSE
+                  WRITE (0,*) '*** Current setting: SONIC=', fsonic,
+     >              ' (w/o accounting for turbulence)'
+                ENDIF
+                STOP '*** FATAL ERROR IN VELTHIN'
+              ENDIF
           ENDDO
         ENDIF
+        IF (bDEBUG) THEN
+          WRITE (0,*) 'DEBUG: ICON, IMIN = ', ICON, IMIN
+        ENDIF          
       ENDIF
 
 C***  Ensure monotonic increase of the velocity
@@ -309,7 +381,21 @@ C***  Copy all points to help vectors, omitting those which are non-monotonic
         ENDIF
       ENDDO
       NDHELP = LL
+            
 
+      IF (bDEBUG) THEN
+        WRITE (0,*) 'Debug after limiting HYSTINT to monotonic part:'
+        DO L=1, NDHELP
+          WRITE (0,'(A,I2,2(2X,G14.6))') 'HELP: ', 
+     >              L, RHELP(L), VHELP(L)
+        ENDDO
+        DO L=ND, IMIN, -1
+          WRITE (0,'(A,I2,2(2X,G14.6))') 'HYSTINT: ', 
+     >              L, RADIUS(L), VELO(L)
+        ENDDO
+        WRITE (0,*) 'NDHELP, IMIN, ND-IMIN+1', NDHELP, IMIN, ND-IMIN+1
+      ENDIF
+      
       IF (NDHELP .EQ. ND-IMIN+1) GOTO 16 ! all points are (now) monotonic
 C***  If not, then replace all points by their interpolated value      
 C***    (trivially, points which had been copied will not change)
@@ -333,6 +419,8 @@ C***       Linear extrapolation is applied for these point(s)
 
    16 CONTINUE
 
+      IF (bDEBUG) WRITE (hCPR,*) 'DEBUG: Passed monotonic enforcer'
+   
       RCONMAX = RADIUS(IMIN+1)+0.9*(RADIUS(IMIN)-RADIUS(IMIN+1))
 
       DO I=ND, 1, -1
@@ -382,7 +470,7 @@ cc     >     VELO(ICON-1:ND), RADIUS(ICON-1:ND), ND-ICON+2)
       RCONSTART = RCON
       RCONOLD = RCON
       NSameRcon = 0
-c      WRITE (0,*) 'VELTHING: Searchin RCON...'
+c      WRITE (0,*) 'VELTHIN: Searchin RCON...'
 
       conpointloop: DO K=1, MAXIT !------------------------------------------
 
@@ -416,6 +504,10 @@ C     >                             RHELP(ND-IMIN)
           ENDIF
         ENDIF
 
+        IF (bDEBUG) THEN
+          WRITE (0,*) 'RCON, VCON = ', RCON, VCON
+        ENDIF
+
 C***    CALCULATION OF VELOCITY-FIELD PARAMETERS (ANALYTIC LAW)
         IF (bUseSonicConnectionCriterion .AND. bNewSonic 
      >                                      .AND. BETA /= 0.) THEN
@@ -447,7 +539,9 @@ c            WRITE (0,*) 'DEBUG: VINF, WRVEL(RMAX)', VFINAL, VELOBETA(RMAX)
           CALL INITVELBETAPAR(RMAX, RCON, Vcon, .TRUE.)
         ENDIF
 c        CALL INITVELBETAPAR(RMAX, RCON, Vcon, .FALSE.)
-c        WRITE (0,*) 'VCON = ', VCON, VELOBETA(RCON)
+        IF (bDEBUG) THEN
+          WRITE (0,*) 'VELOBETA(RCON) = ', VELOBETA(RCON)
+        ENDIF
 
         IF (bUseSonicConnectionCriterion) THEN
           !no connection point loop needed if sonic criterion is used
@@ -475,12 +569,17 @@ C***        => no hydrostatic domain
      >         CALL PLOTVGRAD(ND ,RADIUS, VELO, 'DEBUG', 1, 1., 1.)
             EXIT conpointloop
           ENDIF
+           
+          IF (bDEBUG) THEN
+            WRITE (hCPR,*) 'RCONMAX, RMAX, IMIN: ', RCONMAX, RMAX, IMIN
+          ENDIF
 
           IF ((IMIN >= ND) .OR. RCONMAX > RMAX) THEN          
             RCON=RMAX
             WRITE (hCPR,'(A)') 
      >          'VELTHIN: NO BETA-LAW DOMAIN ENCOUNTERED'
-            RETURN
+            EXIT conpointloop
+ccc            RETURN
           ENDIF
         ENDIF
 
@@ -527,6 +626,11 @@ C***    a solution
           ENDIF
         ENDDO conmaxmin
 
+        IF (bDEBUG) THEN
+          WRITE (0,*) 'DEBUG: ', RCONMIN, RCONMAX, RCONMAXguess, 
+     >                           RCON, IMIN
+          WRITE (0,*) 'DEBUG-VMIN: ', VMIN, Vcon
+        ENDIF
 
 C***    Try to find a good range for RCONMAX    
 C       DELTAGRTHIN = BETALAWGRADIENT - HYSTGRADIENT
@@ -564,7 +668,10 @@ C***         => no hydrostatic domain
 C***         => no wind domain        
           RCON = 1.1 * RMAX
           ICON = 1
-CCC       TODO: Check if ICON = 0 would be possible and better
+CCC       TODO: Check if ICON = 0 would be possible an better
+          IF (bDEBUG) THEN
+            WRITE (hCPR,*) 'DEBUG: NO BETA-LAW DOMAIN - ICON = ', ICON
+          ENDIF
           EXIT conpointloop
         ENDIF                        
 
@@ -626,7 +733,9 @@ CC        WRITE (0,*) ' RCON found = ', RCON
           STOP "*** FATAL ERROR IN VELTHIN"        
         ENDIF
         RCONHIST(K) = RCON
-C        WRITE (hCPR,*) ' THIN-IT:', K, ' RCON=', RCON
+        IF (bDEBUG) THEN
+          WRITE (hCPR,*) ' THIN-IT:', K, ' RCON=', RCON
+        ENDIF
 
         IF (ABS(RCON-RCONOLD) <= RCONACC) THEN
           bConPointConv = .TRUE.
@@ -753,7 +862,12 @@ C***  (This can be an issue in case of oscillating solutions)
           VIP(3) = VELO(INMS-1)
           VIP(4) = VELO(INMS-2)          
         ELSE
-          WRITE (hCPR,*) 'NONMONOTONIC BETA-PART IN WIND VELOCITY'
+          IF (VELO(IMAXBETA) < VBETA(1)) THEN
+            WRITE (hCPR,*) 'ERROR: MAXIMUM HYDROSTATIC VELOCITY LARGER '
+     >        // 'THAN VFINAL: Please Choose a different connection'
+          ELSE
+            WRITE (hCPR,*) 'NONMONOTONIC BETA-PART IN WIND VELOCITY'
+          ENDIF
           STOP 'FATAL ERROR IN VELTHIN'
         ENDIF
         DO J=INMS+1, INME, 1

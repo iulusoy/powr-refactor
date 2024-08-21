@@ -131,7 +131,7 @@ C      INTEGER, PARAMETER :: IFF_MAX_MS =   IFF_MAX / 8
      >        TOTOUT, POPMIN, HTOTMINUSND, HTOTND, HTOTNDCOR,
      >        EDDIHINM, EDDIHINMOLD, EDDIHINT, EDDIHINTOLD,
      >        HTOTNDS, DELTAR, ARADTOT, ARADTESTTOT,
-     >        DTDRIN, VDOPUNIT, CUTOPAMEANTHRES
+     >        DTDRIN, VDOPUNIT, CUTOPAMEANTHRES, EMIXMAX
      
 CC***  NO MORE CONTINUATION LINES ALLOWED IN BERLIN
  
@@ -575,7 +575,7 @@ C***  DECODE INPUT CARDS
      >       bForceCOLIP, bTDIFFUS, bPLOTRTAU1, bNoIronLaser, 
      >       iHTOTCUT, bMAXEMIX, bALOTri,
      >       bNoNEGEDDIG, bDDVDOP, LPRDH,
-     >       bDEBUG, CUTOPAMEANTHRES, DRLINES_CARD)
+     >       bDEBUG, CUTOPAMEANTHRES, DRLINES_CARD, EMIXMAX)
 
       DO LINEINDEX = 1, LASTIND+NAUTO
          LINE(LINEINDEX) = LINEINDEX
@@ -896,6 +896,7 @@ C***           if neccessary
           ELSE
             IF (BEMIXFIX) THEN
               EPSG(L,IT) = AMAX1 (EMIXFIX, EPSGMAX(L)) 
+              IF (EMIXMAX .GT. .0) EPSG(L,IT)=AMIN1(EPSG(L,IT),EMIXMAX)
             ELSE
               IF (BEPSGMAXERR) THEN 
                 EPSG(L,IT) = EMIXSTART
@@ -906,12 +907,12 @@ C***           if neccessary
           ENDIF          
           EPSGITMAX(IT) = MAX(EPSGITMAX(IT), EPSG(L,IT))
         ENDDO
-        IF (bMAXEMIX) THEN
-C***      New test option: Apply the maximum required EDDIMIX to ALL depth points        
-          DO L=1, ND-1
-            EPSG(L,IT) = EPSGITMAX(IT)
-          ENDDO
-        ENDIF
+c        IF (bMAXEMIX) THEN
+cC***      New test option: Apply the maximum required EDDIMIX to ALL depth points        
+c          DO L=1, ND-1
+c            EPSG(L,IT) = EPSGITMAX(IT)
+c          ENDDO
+c        ENDIF
       ENDDO
 
       EPSGMAX = 0.  !needed for multiple call of COLI (from Goetz)  
@@ -1580,6 +1581,7 @@ C***                Take Diagonal Weights from COLIMO
      >               FERATUL, FERATLU, ELEVEL, EMCOLI,
      >               FTFE, IVERS_FE_EXPFAC, LPLOT_WCHARM, GAMMACOLI,
      >               OPAROSS, OPAROSSCONT, OPALAMBDAMEAN, 
+     >               OPAROSSELEM, OPATOTELEM,
      >               GAMMAT, UNLU_TAUMAX, UNLU_TAUMAX2, TEFF,
 C*** die folgenden SKALAREN Parameter werden ausgereicht, weil sie sonst
 C*** ueberschrieben werden!!!!???
